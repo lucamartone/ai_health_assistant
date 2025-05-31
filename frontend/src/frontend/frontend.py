@@ -1,12 +1,10 @@
-import os
 from fastapi import FastAPI, HTTPException
 from typing import List, Tuple
-from backend_profile import router_generic_profile
-from backend_profile import router_doctor_profile
-from backend_profile import router_patient_profile
-from backend_database import router_database
+from frontend_profile import router_generic_profile
+from frontend_profile import router_doctor_profile
+from frontend_profile import router_patient_profile
+from frontend_database import router_database
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8001")
 app = FastAPI()
 
 app.include_router(router_generic_profile, prefix="/generic", tags=["generic"])

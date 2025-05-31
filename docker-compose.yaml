@@ -1,0 +1,40 @@
+services:
+  frontend:
+    build: 
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    networks:
+      - my_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      - BACKEND_URL=http://backend:8001
+    volumes:
+      - ./backend:/app
+    command: npm start
+    ports:
+      - "8001:8001"
+  
+  llm:
+    image: huggingface/transformers-pytorch-gpu:latest
+    environment:
+      - MODEL_NAME=distilbert-base-uncased
+    ports:
+      - "5000:5000"
+
+  database:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
