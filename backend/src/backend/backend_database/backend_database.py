@@ -1,5 +1,4 @@
-#per fare query al database prendendo i dati da LLM
 
-#query 1
+# dottori ordinati per geolocalizzazione
 
-#query 2
+# dottori ordinati per prezzo
