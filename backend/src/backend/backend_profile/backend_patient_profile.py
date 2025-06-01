@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 router_patient_profile = APIRouter()
 
-@router_patient_profile.get("/appointments_todo")
+@router_patient_profile.get("/appointments_todo") #not implemented
 async def get_appointments_todo(patient_id: int):
     """Endpoint to get appointments that have to be done for a patient."""
     # Implement logic to retrieve appointments for the patient
@@ -15,7 +15,7 @@ async def get_appointments_todo(patient_id: int):
         {"appointment_id": 2, "doctor_id": 102, "date": "2023-10-02", "time": "11:00"}
     ]
 
-@router_patient_profile.post("/appointments_history")
+@router_patient_profile.post("/appointments_history") #not implemented
 async def get_appointments_history(patient_id: int):
     """Endpoint to get appointment history for a patient."""
     # Implement logic to retrieve appointment history for the patient
@@ -28,7 +28,7 @@ async def get_appointments_history(patient_id: int):
         {"appointment_id": 2, "doctor_id": 102, "date": "2023-09-02", "time": "11:00", "status": "cancelled"}
     ]
 
-@router_patient_profile.post("/cancel_appointment")
+@router_patient_profile.post("/cancel_appointment") #not implemented
 async def cancel_appointment(appointment_id: int):
     """Endpoint to cancel an appointment."""
     # Implement logic to cancel the appointment
@@ -38,7 +38,7 @@ async def cancel_appointment(appointment_id: int):
     # Example response
     return {"message": f"Appointment {appointment_id} cancelled successfully."}
 
-@router_patient_profile.post("/book_appointment")
+@router_patient_profile.post("/book_appointment") #not implemented
 async def book_appointment(doctor_id: int, date: str, time: str):
     """Endpoint to book an appointment with a doctor."""
     # Implement logic to book the appointment

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 router_generic_profile = APIRouter()
 
-@router_generic_profile.post("/login")
+@router_generic_profile.post("/login") #not implemented
 async def login(username: str, password: str):
     """Endpoint to log in a user."""
     # Implement login logic here
@@ -13,7 +13,7 @@ async def login(username: str, password: str):
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-@router_generic_profile.post("/register")
+@router_generic_profile.post("/register") #not implemented
 async def register(username: str, password: str):
     """Endpoint to register a new user."""
     # Implement registration logic here
@@ -24,14 +24,14 @@ async def register(username: str, password: str):
     else:
         raise HTTPException(status_code=400, detail="Invalid input")
 
-@router_generic_profile.post("/logout")
+@router_generic_profile.post("/logout") #not implemented
 async def logout():
     """Endpoint to log out a user."""
     # Implement logout logic here
     
     return {"message": "Logout successful"}
 
-@router_generic_profile.delete("/delete_account")
+@router_generic_profile.delete("/delete_account") #not implemented
 async def delete_account(username: str):
     """Endpoint to delete a user account."""
     # Implement account deletion logic here
@@ -42,7 +42,7 @@ async def delete_account(username: str):
     else:
         raise HTTPException(status_code=400, detail="Invalid username")
 
-@router_generic_profile.post("/change_password")
+@router_generic_profile.post("/change_password") #not implemented
 async def change_password(username: str, old_password: str, new_password: str):
     """Endpoint to change a user's password."""
     # Implement password change logic here
