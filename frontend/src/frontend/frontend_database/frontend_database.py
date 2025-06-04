@@ -29,3 +29,15 @@ async def get_doctors_by_prezzo(prezzo: float) -> List[Dict[str, Any]]:
         return response.json()
     else:
         raise HTTPException(status_code=response.status_code, detail=response.text)
+    
+router_database.get("/doctors_by_availability")
+async def get_doctors_by_availability(date: str) -> List[Dict[str, Any]]:
+    """Endpoint to get doctors ordered by availability."""
+    response = requests.get(
+        f"{BACKEND_URL}/database/doctors_by_availability",
+        params={"date": date}
+    )
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise HTTPException(status_code=response.status_code, detail=response.text)

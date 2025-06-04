@@ -26,3 +26,15 @@ async def get_doctors_by_price(price: float) -> list:
         return [{"doctor_id": "1", "name": "Dr. Smith", "price": price}]
     else:
         raise HTTPException(status_code=400, detail="Invalid price data")
+    
+@router_database.get("/doctors_by_availability") #not implemented
+async def get_doctors_by_availability(date: str) -> list:
+    """Endpoint to get doctors ordered by availability."""
+    # Implement logic to retrieve and order doctors by availability
+
+
+    # This is a placeholder implementation
+    if date:
+        return [{"doctor_id": "1", "name": "Dr. Smith", "availability": date}]
+    else:
+        raise HTTPException(status_code=400, detail="Invalid date data")
