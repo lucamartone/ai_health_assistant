@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Login() {
+function Login() {
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
@@ -27,3 +27,4 @@ export default function Login() {
     </div>
   );
 }
+export default Login;
