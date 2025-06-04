@@ -1,0 +1,36 @@
+services:
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - BACKEND_URL=http://backend:8001
+    ports:
+      - "8001:8001"
+  
+  # llm:
+  #   image: huggingface/transformers-pytorch-gpu:latest
+  #   environment:
+  #     - MODEL_NAME=distilbert-base-uncased
+  #   ports:
+  #     - "5000:5000"
+
+  database:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+    ports:
+      - "3306:3306"
+
+volumes:
+  mariadb_data:
