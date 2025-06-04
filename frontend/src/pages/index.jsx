@@ -6,7 +6,7 @@ function Index() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
             <header className="w-full flex justify-between items-center p-4 bg-white shadow-md">
-                <h1 className="text-3xl font-bold text-blue-600">AI Health Assistant</h1>
+                <h1 className="text-3xl font-bold text-blue-600">Il tuo assistente per la salute</h1>
                 <div className="space-x-4">
                 <button
                     onClick={() => navigate('/register')}
