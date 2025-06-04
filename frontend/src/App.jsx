@@ -1,4 +1,3 @@
-import React from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css'
 import Login from './pages/Login';  // importa la pagina Login

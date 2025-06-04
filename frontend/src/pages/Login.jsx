@@ -1,5 +1,3 @@
-import React from 'react';
-
 function Login() {
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -7,7 +5,7 @@ function Login() {
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         <form className="space-y-4">
           <input
-            type="email"
+            types="email"
             placeholder="Email"
             className="w-full px-4 py-2 border rounded"
           />
