@@ -39,35 +39,69 @@ function Index() {
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
                     className="text-center relative z-10"
                 >
-                    <h1 className="text-6xl font-bold text-slate-800 mb-8 leading-tight">
-                        La tua salute è la nostra
-                        priorità
-                    </h1>
-                    <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                    <motion.h1 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                        className="text-6xl font-bold text-slate-800 mb-8 leading-tight"
+                    >
+                        La tua salute è la nostra{' '}
+                        <motion.span 
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+                            className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500"
+                        >
+                            priorità
+                        </motion.span>
+                    </motion.h1>
+                    <motion.p 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+                        className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed"
+                    >
                         Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
                         dal nostro chatbot AI. La tua salute è nelle mani giuste.
-                    </p>
-                    <div className="mt-12 flex justify-center gap-8">
+                    </motion.p>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+                        className="mt-12 flex justify-center gap-8"
+                    >
                         <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ 
+                                scale: 1.05,
+                                transition: { duration: 0.2, ease: "easeOut" }
+                            }}
+                            whileTap={{ 
+                                scale: 0.95,
+                                transition: { duration: 0.1, ease: "easeIn" }
+                            }}
                             onClick={() => navigate('/register')}
-                            className="px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white text-lg rounded-xl hover:shadow-lg transition-all duration-300 shadow-md"
+                            className="px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white text-lg rounded-xl hover:shadow-lg transition-all duration-500 shadow-md"
                         >
                             Inizia Ora
                         </motion.button>
                         <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ 
+                                scale: 1.05,
+                                transition: { duration: 0.2, ease: "easeOut" }
+                            }}
+                            whileTap={{ 
+                                scale: 0.95,
+                                transition: { duration: 0.1, ease: "easeIn" }
+                            }}
                             onClick={() => navigate('/login')}
-                            className="px-10 py-4 bg-white text-slate-700 text-lg border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-300 shadow-sm hover:shadow-md"
+                            className="px-10 py-4 bg-white text-slate-700 text-lg border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-500 shadow-sm hover:shadow-md"
                         >
                             Accedi
                         </motion.button>
-                    </div>
+                    </motion.div>
                 </motion.div>   
             </div>
             {/* Features Section */}
@@ -75,8 +109,8 @@ function Index() {
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    viewport={{ once: true, margin: "-100px" }}
                     className="flex flex-row justify-between items-stretch gap-8 w-full"
                 >
                     {features.map((feature, index) => (
