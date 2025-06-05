@@ -9,7 +9,7 @@ function Header() {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Sinistra: Titolo e link */}
         <div className="flex items-center space-x-8">
-          <h1 className="text-xl font-bold whitespace-nowrap">
+          <h1 className="text-3xl font-bold whitespace-nowrap">
             AI Health Assistant
           </h1>
           <nav className="flex space-x-6">

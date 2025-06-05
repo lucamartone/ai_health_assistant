@@ -1,9 +1,9 @@
 function Footer() {
   return (
-    <footer className="bg-gray-800 text-white py-4" style={{ position: 'absolute', bottom: 0, transform: 'translateX(-50%)', left: '50%' }}>
-      <div className="container mx-auto text-center">
-        <p className="text-sm">
-          &copy; {new Date().getFullYear()} AI Health Assistant. All rights reserved.
+    <footer className="bg-gray-800 text-white py-6 w-full mt-16">
+      <div className="max-w-7xl mx-auto px-4 text-center">
+        <p className="text-sm text-gray-400">
+          &copy; {new Date().getFullYear()} <span className="font-semibold text-white">AI Health Assistant</span>. Tutti i diritti riservati.
         </p>
       </div>
     </footer>
