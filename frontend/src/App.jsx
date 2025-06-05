@@ -1,7 +1,7 @@
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css'
 import Login from './pages/Login';
-import Index from './pages/Index';
+import Index from './pages/index';
 import Profile from './pages/Profile';
 import Chat from './pages/Chat';
 import Register from './pages/Register';
