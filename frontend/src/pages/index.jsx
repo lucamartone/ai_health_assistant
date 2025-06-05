@@ -60,55 +60,35 @@ function Index() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50">
-            {/* Hero Section */}
-            <div className="max-w-7xl mx-auto px-6 py-32 relative overflow-hidden">
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="text-center relative z-10"
+        <div className="flex flex-row items-center justify-center min-h-screen bg-gray-100 p-4 gap-4">
+            <header className="w-full flex justify-between items-center p-4 bg-white shadow-md">
+                <h1 className="text-3xl font-bold text-blue-600">Il tuo assistente per la salute</h1>
+                <div className="space-x-4">
+                <button
+                    onClick={() => navigate('/register')}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                 >
-                    <h1 className="text-6xl font-bold text-slate-800 mb-8 leading-tight">
-                        La tua salute è la nostra
-                        priorità
-                    </h1>
-                    <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-                        Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
-                        dal nostro chatbot AI. La tua salute è nelle mani giuste.
-                    </p>
-                    <div className="mt-12 flex justify-center gap-8">
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate('/register')}
-                            className="px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white text-lg rounded-xl hover:shadow-lg transition-all duration-300 shadow-md"
-                        >
-                            Inizia Ora
-                        </motion.button>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate('/login')}
-                            className="px-10 py-4 bg-white text-slate-700 text-lg border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-300 shadow-sm hover:shadow-md"
-                        >
-                            Accedi
-                        </motion.button>
-                    </div>
-                </motion.div>   
-            </div>
+                    Registrati
+                </button>
+                <button
+                    onClick={() => navigate('/login')}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                    Login
+                </button>
+                </div>
+            </header>
 
-            {/* space between hero and features */}
-            <div className="h-20"></div>
-            
-            {/* Features Section */}
-            <div className="max-w-7xl mx-auto px-6 py-20">
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    viewport={{ once: true }}
-                    className="flex flex-row justify-between items-stretch gap-8 w-full"
+            <main className="flex flex-row items-center justify-center flex-grow space-y-6 mt-10">
+                <button
+                onClick={() => navigate('/chat')}
+                className="w-64 py-4 bg-indigo-500 text-white text-xl rounded-xl shadow hover:bg-indigo-600"
+                >
+                Chat
+                </button>
+                <button
+                onClick={() => navigate('/book')}
+                className="w-64 py-4 bg-purple-500 text-white text-xl rounded-xl shadow hover:bg-purple-600"
                 >
                     {features.map((feature, index) => (
                         <FeatureCard key={index} {...feature} />
