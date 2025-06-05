@@ -35,4 +35,4 @@ function Register() {
     </div>
   );
 }
-export default Login;
+export default Register;
