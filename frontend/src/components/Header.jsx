@@ -7,7 +7,7 @@ function Header() {
         <h1 className="text-xl font-bold whitespace-nowrap">AI Health Assistant</h1>
 
         {/* Link centrali */}
-        <nav className="flex flex-row gap-4 overflow-x-auto">
+        <nav className="flex flex-column overflow-x-auto">
           <a href="/" className="hover:underline whitespace-nowrap inline-flex">Home</a>
           <a href="/about" className="hover:underline whitespace-nowrap inline-flex">About</a>
           <a href="/contact" className="hover:underline whitespace-nowrap inline-flex">Contacts</a>
