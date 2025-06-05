@@ -16,7 +16,7 @@ const FeatureCard = ({ icon, title, description, buttonText, gradient, onClick }
             {description}
         </p>
         <motion.button
-            whileHover={{ scale: 0.95 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onClick}
             className={`w-full px-6 py-3 bg-gradient-to-r ${gradient} text-white rounded-xl hover:shadow-lg transition-all duration-300 shadow-sm flex items-center justify-center gap-2 group`}
@@ -38,7 +38,7 @@ function Index() {
             title: "Chat AI",
             description: "Assistenza immediata per qualsiasi domanda sulla salute. Il nostro chatbot è disponibile 24/7 per aiutarti.",
             buttonText: "Inizia a chattare",
-            gradient: "from-violet-100 to-violet-50 text-violet-600",
+            gradient: "from-violet-500 to-violet-600 text-violet-50",
             onClick: () => navigate('/chat')
         },
         {
@@ -46,7 +46,7 @@ function Index() {
             title: "Prenotazioni",
             description: "Prenota le tue visite mediche in pochi click. Scegli data e ora più comode per te.",
             buttonText: "Prenota ora",
-            gradient: "from-rose-100 to-rose-50 text-rose-600",
+            gradient: "from-rose-500 to-rose-600 text-rose-50",
             onClick: () => navigate('/book')
         },
         {
@@ -54,7 +54,7 @@ function Index() {
             title: "Profilo",
             description: "Gestisci i tuoi dati e appuntamenti in un unico posto. Mantieni tutto sotto controllo.",
             buttonText: "Gestisci profilo",
-            gradient: "from-amber-100 to-amber-50 text-amber-600",
+            gradient: "from-amber-500 to-amber-600 text-amber-50",
             onClick: () => navigate('/profile')
         }
     ];
@@ -97,10 +97,6 @@ function Index() {
                     </div>
                 </motion.div>   
             </div>
-
-            {/* space between hero and features */}
-            <div className="h-20"></div>
-            
             {/* Features Section */}
             <div className="max-w-7xl mx-auto px-6 py-20">
                 <motion.div 
