@@ -1,38 +1,52 @@
+import { useNavigate } from 'react-router-dom';
+
 function Register() {
+  const navigate = useNavigate();
+
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Registrati</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600">
+      <div className="bg-blue-700 p-8 rounded-xl shadow-lg w-full max-w-sm text-white">
+        <h2 className="text-2xl font-bold text-center mb-4">Registrati</h2>
+        <p className="text-center text-sm text-blue-100 mb-6">
+          Crea un nuovo account per accedere
+        </p>
         <form className="space-y-4">
           <input
-            types="email"
+            type="text"
+            placeholder="Nome completo"
+            className="w-full px-4 py-2 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
+          />
+          <input
+            type="email"
             placeholder="Email"
-            className="w-full px-4 py-2 border rounded"
+            className="w-full px-4 py-2 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
           />
           <input
             type="password"
             placeholder="Password"
-            className="w-full px-4 py-2 border rounded"
+            className="w-full px-4 py-2 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
           />
           <input
-            type="geolocalization"
-            placeholder="adress"
-            className="w-full px-4 py-2 border rounded"
-          />
-          <input
-            type="gender"
-            placeholder="M/F"
-            className="w-full px-4 py-2 border rounded"
+            type="password"
+            placeholder="Conferma Password"
+            className="w-full px-4 py-2 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
           />
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+            className="w-full bg-white text-blue-700 py-2 rounded-md font-semibold hover:bg-blue-100 transition"
           >
-            Accedi
+            Registrati
           </button>
         </form>
+        <p className="text-center text-sm text-blue-100 mt-4">
+          Hai già un account?{' '}
+          <a onClick={() => navigate('/login')} className="text-white font-medium underline hover:text-blue-300">
+            Accedi
+          </a>
+        </p>
       </div>
     </div>
   );
 }
+
 export default Register;

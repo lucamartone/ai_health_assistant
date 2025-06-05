@@ -4,9 +4,11 @@ import Login from './pages/Login';
 import Index from './pages/Index';
 import Profile from './pages/Profile';
 import Chat from './pages/Chat';
+import Register from './pages/Register';
+
 import Footer from './components/Footer';
 import Header from './components/Header';
-import Register from './pages/register';
+
 
 function App() {
     return (
