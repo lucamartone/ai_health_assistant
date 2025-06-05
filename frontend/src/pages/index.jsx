@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import FeatureCard from '../components/FeatureCard';
+import MotionButton from '../components/MotionButton';
 
 function Index() {
     const navigate = useNavigate();
@@ -67,43 +68,18 @@ function Index() {
                         Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
                         dal nostro chatbot AI. La tua salute è nelle mani giuste.
                     </motion.p>
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-                        className="mt-12 flex justify-center gap-8"
-                    >
-                        <motion.button
-                            whileHover={{ 
-                                scale: 1.05,
-                                transition: { duration: 0.2, ease: "easeOut" }
-                            }}
-                            whileTap={{ 
-                                scale: 0.95,
-                                transition: { duration: 0.1, ease: "easeIn" }
-                            }}
-                            onClick={() => navigate('/register')}
-                            className="px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white text-lg rounded-xl hover:shadow-lg transition-all duration-500 shadow-md"
-                        >
-                            Inizia Ora
-                        </motion.button>
-                        <motion.button
-                            whileHover={{ 
-                                scale: 1.05,
-                                transition: { duration: 0.2, ease: "easeOut" }
-                            }}
-                            whileTap={{ 
-                                scale: 0.95,
-                                transition: { duration: 0.1, ease: "easeIn" }
-                            }}
-                            onClick={() => navigate('/login')}
-                            className="px-10 py-4 bg-white text-slate-700 text-lg border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-500 shadow-sm hover:shadow-md"
-                        >
+                    <div className="mt-12 flex justify-center gap-8">
+                        <MotionButton onClick={() => navigate('/register')}>
+                            Registrati
+                        </MotionButton>
+
+                        <MotionButton onClick={() => navigate('/login')}>
                             Accedi
-                        </motion.button>
-                    </motion.div>
-                </motion.div>   
+                        </MotionButton>
+                    </div>
+                </motion.div>
             </div>
+
             {/* Features Section */}
             <div className="max-w-7xl mx-auto px-6 py-20">
                 <motion.div 

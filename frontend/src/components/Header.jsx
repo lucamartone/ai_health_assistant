@@ -1,4 +1,4 @@
-import Button from './Button.jsx';
+import MotionButton from './MotionButton.jsx';
 import { useNavigate } from 'react-router-dom';
 
 function Header() {
@@ -17,12 +17,14 @@ function Header() {
           <a href="/contact" className="hover:underline whitespace-nowrap inline-flex">Contacts</a>
         </nav>
 
-        <div className="space-x-4 flex flex-row items-center"
-        style={{ position: 'absolute', display: 'flex', flexDirection: 'row', alignItems: 'center', right: '10%' }}>
+        <div className="space-x-4 flex flex-row items-center">
           {/* Pulsanti a destra */}
-          <Button onClick={() => navigate('/login')
-          }>Login</Button>
-          <Button>Registrati</Button>
+          <MotionButton onClick={() => navigate('/login')}>
+            Accedi
+          </MotionButton>
+          <MotionButton onClick={() => navigate('/register')}>
+            Registrati
+          </MotionButton>
         </div>
 
       </div>
