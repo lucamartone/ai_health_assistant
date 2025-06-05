@@ -4,7 +4,7 @@ function Index() {
     const navigate = useNavigate();
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+        <div className="flex flex-row items-center justify-center min-h-screen bg-gray-100 p-4 gap-4">
             <header className="w-full flex justify-between items-center p-4 bg-white shadow-md">
                 <h1 className="text-3xl font-bold text-blue-600">Il tuo assistente per la salute</h1>
                 <div className="space-x-4">
@@ -23,7 +23,7 @@ function Index() {
                 </div>
             </header>
 
-            <main className="flex flex-col items-center justify-center flex-grow space-y-6 mt-10">
+            <main className="flex flex-row items-center justify-center flex-grow space-y-6 mt-10">
                 <button
                 onClick={() => navigate('/chat')}
                 className="w-64 py-4 bg-indigo-500 text-white text-xl rounded-xl shadow hover:bg-indigo-600"
