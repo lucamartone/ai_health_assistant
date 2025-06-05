@@ -3,11 +3,11 @@ import mariadb
 def connect_to_mariadb():
     """Stabilisce una connessione al database MariaDB."""
     conn = mariadb.connect(
-        host="mariadb",
+        host="database",
         port=3306,
-        user="admin",
-        password="pass",
-        database="cinema"
+        user="user",
+        password="userpwd",
+        database="HealthDB"
     )
     print("Connesso a MariaDB")
     return conn

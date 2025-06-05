@@ -1,4 +1,11 @@
+-- DB creation
+CREATE DATABASE IF NOT EXISTS HealthDB;
+USE HealthDB;
 
+-- user creation with privilages
+DROP USER IF EXISTS 'user'@'localhost';
+CREATE USER 'user'@'localhost' IDENTIFIED BY 'userpwd';
+GRANT ALL PRIVILEGES ON HealthDB.* TO 'user'@'%' IDENTIFIED BY 'userpwd';
 
 
 CREATE TABLE utente (
