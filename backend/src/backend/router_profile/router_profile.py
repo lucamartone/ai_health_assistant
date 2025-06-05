@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from src.backend.router_profile.doctor_profile import router_doctor_profile
-from src.backend.router_profile.patient_profile import router_patient_profile
-from src.backend.router_profile.generic_profile import router_generic_profile
+from backend.router_profile.doctor_profile import router_doctor_profile
+from backend.router_profile.patient_profile import router_patient_profile
+from backend.router_profile.generic_profile import router_generic_profile
 
 router_profile = APIRouter()
 

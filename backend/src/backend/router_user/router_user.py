@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from src.backend.router_user.appointments import router_appointments
-from src.backend.router_user.rating import router_rating
+from backend.router_user.appointments import router_appointments
+from backend.router_user.rating import router_rating
 
 router_user = APIRouter()
 

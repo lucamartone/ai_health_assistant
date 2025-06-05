@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from src.backend.router_database.doctors_database import router_doctors_database
+from backend.router_database.doctors_database import router_doctors_database
 
 router_database = APIRouter()
 
