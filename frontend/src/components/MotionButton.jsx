@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-function MotionButton({ children, onClick }) {
+function MotionButton({ children, onClick, gradient, hover }) {
   return (
     <motion.button
       whileHover={{
@@ -12,7 +12,7 @@ function MotionButton({ children, onClick }) {
         transition: { duration: 0.1, ease: 'easeIn' }
       }}
       onClick={onClick}
-      className="px-6 py-2 md:px-8 md:py-3 bg-white text-slate-700 text-sm md:text-base font-medium border border-slate-200 rounded-lg hover:bg-slate-50 transition-all duration-300 shadow-sm hover:shadow-md"
+      className={`w-full px-6 py-3 bg-gradient-to-r ${gradient} text-white rounded-xl hover:shadow-lg transition-all duration-300 shadow-sm flex items-center justify-center gap-2 group ${hover}`}
     >
       {children}
     </motion.button>

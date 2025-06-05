@@ -9,7 +9,7 @@ function Index() {
         {
             icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />,
             title: "Chat AI",
-            description: "Assistenza immediata per qualsiasi domanda sulla salute. Il nostro chatbot è disponibile 24/7 per aiutarti.",
+            description: "Assistenza immediata per qualsiasi domanda sulla salute.",
             buttonText: "Inizia a chattare",
             gradient: "from-violet-500 to-violet-600 text-violet-50",
             onClick: () => navigate('/chat')
@@ -33,7 +33,7 @@ function Index() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50 bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600">
+        <div className="min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600">
             {/* Hero Section */}
             <div className="max-w-7xl mx-auto px-6 py-32 relative overflow-hidden">
                 <motion.div 
@@ -46,14 +46,14 @@ function Index() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                        className="text-6xl font-bold text-slate-800 mb-8 leading-tight"
+                        className="text-6xl font-bold text-white mb-8 leading-tight"
                     >
                         La tua salute è la nostra{' '}
                         <motion.span 
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
-                            className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500"
+                            className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-green-100"
                         >
                             priorità
                         </motion.span>
@@ -62,11 +62,46 @@ function Index() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-                        className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed"
+                        className="text-xl text-blue-50 max-w-3xl mx-auto leading-relaxed"
                     >
                         Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
                         dal nostro chatbot AI. La tua salute è nelle mani giuste.
                     </motion.p>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+                        className="mt-12 flex justify-center gap-8"
+                    >
+                        <motion.button
+                            whileHover={{ 
+                                scale: 1.05,
+                                transition: { duration: 0.2, ease: "easeOut" }
+                            }}
+                            whileTap={{ 
+                                scale: 0.95,
+                                transition: { duration: 0.1, ease: "easeIn" }
+                            }}
+                            onClick={() => navigate('/register')}
+                            className="px-10 py-4 bg-white text-blue-600 text-lg font-semibold rounded-xl hover:bg-blue-50 transition-all duration-500 shadow-lg hover:shadow-xl"
+                        >
+                            Inizia Ora
+                        </motion.button>
+                        <motion.button
+                            whileHover={{ 
+                                scale: 1.05,
+                                transition: { duration: 0.2, ease: "easeOut" }
+                            }}
+                            whileTap={{ 
+                                scale: 0.95,
+                                transition: { duration: 0.1, ease: "easeIn" }
+                            }}
+                            onClick={() => navigate('/login')}
+                            className="px-10 py-4 bg-transparent text-white text-lg border-2 border-white rounded-xl hover:bg-white/10 transition-all duration-500"
+                        >
+                            Accedi
+                        </motion.button>
+                    </motion.div>
                 </motion.div>
             </div>
 
