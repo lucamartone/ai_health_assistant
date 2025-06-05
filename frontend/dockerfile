@@ -4,7 +4,6 @@ COPY . .
 
 RUN npm install
 RUN npm install react-router-dom
-RUN node tailwind.config.cjs
 RUN npm run build
 
 FROM nginx:stable-alpine
