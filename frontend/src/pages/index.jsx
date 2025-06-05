@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import FeatureCard from '../components/FeatureCard';
-import MotionButton from '../components/MotionButton';
 
 function Index() {
     const navigate = useNavigate();
@@ -68,15 +67,6 @@ function Index() {
                         Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
                         dal nostro chatbot AI. La tua salute è nelle mani giuste.
                     </motion.p>
-                    <div className="mt-12 flex justify-center gap-8">
-                        <MotionButton onClick={() => navigate('/register')}>
-                            Registrati
-                        </MotionButton>
-
-                        <MotionButton onClick={() => navigate('/login')}>
-                            Accedi
-                        </MotionButton>
-                    </div>
                 </motion.div>
             </div>
 
