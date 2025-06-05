@@ -1,4 +1,8 @@
+import Button from './Button.jsx';
+import { useNavigate } from 'react-router-dom';
+
 function Header() {
+  const navigate = useNavigate();
   return (
     <header className="bg-gray-800 text-white px-6 py-4 fixed top-0 w-full z-50"
     style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50 }}>
@@ -12,6 +16,14 @@ function Header() {
           <a href="/about" className="hover:underline whitespace-nowrap inline-flex">About</a>
           <a href="/contact" className="hover:underline whitespace-nowrap inline-flex">Contacts</a>
         </nav>
+
+        <div className="space-x-4 flex flex-row items-center"
+        style={{ position: 'absolute', display: 'flex', flexDirection: 'row', alignItems: 'center', right: '10%' }}>
+          {/* Pulsanti a destra */}
+          <Button onClick={() => navigate('/login')
+          }>Login</Button>
+          <Button>Registrati</Button>
+        </div>
 
       </div>
     </header>

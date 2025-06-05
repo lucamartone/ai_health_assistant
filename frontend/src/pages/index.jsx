@@ -7,20 +7,6 @@ function Index() {
         <div className="flex flex-row items-center justify-center min-h-screen bg-gray-100 p-4 gap-4">
             <header className="w-full flex justify-between items-center p-4 bg-white shadow-md">
                 <h1 className="text-3xl font-bold text-blue-600">Il tuo assistente per la salute</h1>
-                <div className="space-x-4">
-                <button
-                    onClick={() => navigate('/register')}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                >
-                    Registrati
-                </button>
-                <button
-                    onClick={() => navigate('/login')}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                >
-                    Login
-                </button>
-                </div>
             </header>
 
             <main className="flex flex-row items-center justify-center flex-grow space-y-6 mt-10">
