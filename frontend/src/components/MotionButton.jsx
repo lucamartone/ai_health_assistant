@@ -5,7 +5,7 @@ function MotionButton({ children, onClick }) {
     <motion.button
       whileHover={{ 
           scale: 1.05,
-          transition: { duration: 0.2, ease: "easeOut" }
+          transition: { duration: 0.1, ease: "easeOut" }
       }}
       whileTap={{ 
           scale: 0.95,

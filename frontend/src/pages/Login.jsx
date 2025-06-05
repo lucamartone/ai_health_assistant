@@ -1,6 +1,7 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
+  const navigate = useNavigate();
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600">
       <div className="bg-blue-700 p-8 rounded-xl shadow-lg w-full max-w-sm text-white">
@@ -28,7 +29,7 @@ function Login() {
         </form>
         <p className="text-center text-sm text-blue-100 mt-4">
           Non hai un account?{' '}
-          <a href="/register" className="text-white font-medium underline hover:text-blue-300">
+          <a onClick={() => navigate('/register')} className="text-white font-medium underline hover:text-blue-300">
             Registrati
           </a>
         </p>

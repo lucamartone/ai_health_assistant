@@ -3,22 +3,24 @@ import { useNavigate } from 'react-router-dom';
 
 function Header() {
   const navigate = useNavigate();
+
   return (
-    <header className="bg-gray-800 text-white px-6 py-4 fixed top-0 w-full z-50"
-    style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50 }}>
-      <div className="flex flex-row items-center justify-start w-full">
-        {/* Titolo a sinistra */}
-        <h1 className="text-xl font-bold whitespace-nowrap">AI Health Assistant</h1>
+    <header className="bg-blue-700 text-white px-6 py-4 fixed top-0 w-full z-50 shadow-md">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* Sinistra: Titolo e link */}
+        <div className="flex items-center space-x-8">
+          <h1 className="text-xl font-bold whitespace-nowrap">
+            AI Health Assistant
+          </h1>
+          <nav className="flex space-x-6">
+            <a href="/" className="hover:underline whitespace-nowrap">Home</a>
+            <a href="/about" className="hover:underline whitespace-nowrap">About</a>
+            <a href="/contact" className="hover:underline whitespace-nowrap">Contacts</a>
+          </nav>
+        </div>
 
-        {/* Link centrali */}
-        <nav className="flex flex-column overflow-x-auto">
-          <a href="/" className="hover:underline whitespace-nowrap inline-flex">Home</a>
-          <a href="/about" className="hover:underline whitespace-nowrap inline-flex">About</a>
-          <a href="/contact" className="hover:underline whitespace-nowrap inline-flex">Contacts</a>
-        </nav>
-
-        <div className="space-x-4 flex flex-row items-center">
-          {/* Pulsanti a destra */}
+        {/* Destra: Pulsanti */}
+        <div className="flex space-x-4">
           <MotionButton onClick={() => navigate('/login')}>
             Accedi
           </MotionButton>
@@ -26,11 +28,9 @@ function Header() {
             Registrati
           </MotionButton>
         </div>
-
       </div>
     </header>
   );
 }
 
 export default Header;
-
