@@ -34,76 +34,80 @@ function Index() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600">
-            {/* Hero Section with background image */}
-            <div className="relative w-full h-[420px] sm:h-[480px] lg:h-[540px] mb-12 rounded-b-2xl overflow-hidden">
-                <img
-                    src="/sfondo_index_1.png"
-                    alt="Dottore"
-                    className="absolute inset-0 w-full h-full object-cover object-right mt-16"
-                />
-
-                <div className="absolute inset-0 z-10 flex flex-col justify-center px-4 sm:px-6 text-white text-left">
-                    <motion.div
+            {/* Hero Section */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-32 sm:pt-40 pb-20 sm:pb-25 relative overflow-hidden">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="text-center relative z-10"
+                >
+                    <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="max-w-2xl"
+                        transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                        className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 sm:mb-8 leading-tight"
                     >
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight"
+                        La tua salute è la nostra{' '}
+                        <motion.span 
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+                            className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-green-100"
                         >
-                            La tua salute è la nostra{' '}
-                            <motion.span
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
-                                className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-green-100"
-                            >
-                                priorità
-                            </motion.span>
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-                            className="text-md sm:text-lg max-w-xl leading-relaxed text-white"
+                            priorità
+                        </motion.span>
+                    </motion.h1>
+                    <motion.p 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+                        className="text-lg sm:text-xl text-blue-50 max-w-3xl mx-auto leading-relaxed px-4"
+                    >
+                        Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
+                        dal nostro chatbot AI. La tua salute è nelle mani giuste.
+                    </motion.p>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+                        className="mt-8 sm:mt-12 flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 px-4"
+                    >
+                        <motion.button
+                            whileHover={{ 
+                                scale: 1.05,
+                                transition: { duration: 0.2, ease: "easeOut" }
+                            }}
+                            whileTap={{ 
+                                scale: 0.95,
+                                transition: { duration: 0.1, ease: "easeIn" }
+                            }}
+                            onClick={() => navigate('/register')}
+                            className="w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 bg-white text-blue-600 text-base sm:text-lg font-semibold rounded-xl hover:bg-blue-50 transition-all duration-500 shadow-lg hover:shadow-xl"
                         >
-                            Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
-                            dal nostro chatbot AI. La tua salute è nelle mani giuste.
-                        </motion.p>
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-                            className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-4"
+                            Inizia Ora
+                        </motion.button>
+                        <motion.button
+                            whileHover={{ 
+                                scale: 1.05,
+                                transition: { duration: 0.2, ease: "easeOut" }
+                            }}
+                            whileTap={{ 
+                                scale: 0.95,
+                                transition: { duration: 0.1, ease: "easeIn" }
+                            }}
+                            onClick={() => navigate('/login')}
+                            className="w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 bg-transparent text-white text-base sm:text-lg border-2 border-white rounded-xl hover:bg-white/10 transition-all duration-500"
                         >
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => navigate('/register')}
-                                className="px-6 py-2 bg-white text-blue-700 font-semibold text-sm sm:text-base rounded-xl shadow hover:bg-blue-50 transition-all"
-                            >
-                                Inizia Ora
-                            </motion.button>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => navigate('/login')}
-                                className="px-6 py-2 border-2 border-white text-white font-semibold text-sm sm:text-base rounded-xl hover:bg-white/10 transition-all"
-                            >
-                                Accedi
-                            </motion.button>
-                        </motion.div>
+                            Accedi
+                        </motion.button>
                     </motion.div>
-                </div>
+                </motion.div>
             </div>
 
             {/* Features Section */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pt-2 sm:pb-30">
-                <motion.div
+                <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
