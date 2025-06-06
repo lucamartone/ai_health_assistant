@@ -35,7 +35,7 @@ function Index() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600">
             {/* Hero Section */}
-            <div className="max-w-7xl mx-auto px-6 py-32 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-32 sm:pt-40 pb-20 sm:pb-25 relative overflow-hidden">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -46,7 +46,7 @@ function Index() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                        className="text-6xl font-bold text-white mb-8 leading-tight"
+                        className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 sm:mb-8 leading-tight"
                     >
                         La tua salute è la nostra{' '}
                         <motion.span 
@@ -62,7 +62,7 @@ function Index() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-                        className="text-xl text-blue-50 max-w-3xl mx-auto leading-relaxed"
+                        className="text-lg sm:text-xl text-blue-50 max-w-3xl mx-auto leading-relaxed px-4"
                     >
                         Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
                         dal nostro chatbot AI. La tua salute è nelle mani giuste.
@@ -71,7 +71,7 @@ function Index() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-                        className="mt-12 flex justify-center gap-8"
+                        className="mt-8 sm:mt-12 flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 px-4"
                     >
                         <motion.button
                             whileHover={{ 
@@ -83,7 +83,7 @@ function Index() {
                                 transition: { duration: 0.1, ease: "easeIn" }
                             }}
                             onClick={() => navigate('/register')}
-                            className="px-10 py-4 bg-white text-blue-600 text-lg font-semibold rounded-xl hover:bg-blue-50 transition-all duration-500 shadow-lg hover:shadow-xl"
+                            className="w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 bg-white text-blue-600 text-base sm:text-lg font-semibold rounded-xl hover:bg-blue-50 transition-all duration-500 shadow-lg hover:shadow-xl"
                         >
                             Inizia Ora
                         </motion.button>
@@ -97,7 +97,7 @@ function Index() {
                                 transition: { duration: 0.1, ease: "easeIn" }
                             }}
                             onClick={() => navigate('/login')}
-                            className="px-10 py-4 bg-transparent text-white text-lg border-2 border-white rounded-xl hover:bg-white/10 transition-all duration-500"
+                            className="w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 bg-transparent text-white text-base sm:text-lg border-2 border-white rounded-xl hover:bg-white/10 transition-all duration-500"
                         >
                             Accedi
                         </motion.button>
@@ -106,13 +106,13 @@ function Index() {
             </div>
 
             {/* Features Section */}
-            <div className="max-w-7xl mx-auto px-6 py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pt-2 sm:pb-30">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     viewport={{ once: true, margin: "-100px" }}
-                    className="flex flex-row justify-between items-stretch gap-8 w-full"
+                    className="flex flex-col md:flex-row justify-between items-stretch gap-6 sm:gap-8 w-full"
                 >
                     {features.map((feature, index) => (
                         <FeatureCard key={index} {...feature} />
