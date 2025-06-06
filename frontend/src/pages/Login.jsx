@@ -13,7 +13,7 @@ function Login() {
     try {
       const data = await login(email, password); // CHIAMA LA FETCH
       console.log('Login riuscito:', data);
-      navigate('/home'); // redirige se va a buon fine
+      navigate('/'); // redirige se va a buon fine
     } catch (err) {
       alert(err.message); // gestisce l'errore
     }

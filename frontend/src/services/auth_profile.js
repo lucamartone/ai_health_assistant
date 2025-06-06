@@ -15,8 +15,8 @@ export async function login(email, password) {
   return await response.json();
 }
 
-export async function register(name, cognome, email, password, sesso) {
-  const dati = {name, cognome, email, password,sesso}
+export async function register(nome, cognome, email, password, sesso) {
+  const dati = {nome, cognome, email, password,sesso}
   const response = await fetch(`${BACKEND_URL}/profile/generic/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
