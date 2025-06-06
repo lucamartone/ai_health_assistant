@@ -28,9 +28,14 @@ services:
     image: mariadb:latest
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpwd
+      MYSQL_DATABASE: HealthDB
     ports:
       - "3306:3306"
+    volumes:
+      - ./database/:/docker-entrypoint-initdb.d
+      - mariadb_data:/var/lib/mysql
 
 volumes:
   mariadb_data:
