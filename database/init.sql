@@ -41,9 +41,10 @@ CREATE TABLE doctor (
 CREATE TABLE appointment (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_doctor INT NOT NULL,
-    id_user INT NOT NULL,
+    id_user INT,
     date_time TIMESTAMP NOT NULL,
-    state VARCHAR(20) DEFAULT 'pending',
+    price DECIMAL(10,2) DEFAULT 50,
+    state VARCHAR(20) DEFAULT 'waiting',
     FOREIGN KEY (id_doctor) REFERENCES doctor(id),
     FOREIGN KEY (id_user) REFERENCES user(id)
 );
@@ -58,3 +59,46 @@ CREATE TABLE history (
     FOREIGN KEY (id_appointment) REFERENCES appointment(id)
 );
 
+
+
+-- DOTTORI
+INSERT INTO user (name, surname, email, password, sex) VALUES
+('Giulia', 'Verdi', 'giulia.verdi@medico.it', 'pwd123', 'F'),
+('Luca', 'Bianchi', 'luca.bianchi@medico.it', 'pwd123', 'M'),
+('Francesca', 'Neri', 'francesca.neri@medico.it', 'pwd123', 'F'),
+('Marco', 'Russo', 'marco.russo@medico.it', 'pwd123', 'M');
+
+-- PAZIENTI
+INSERT INTO user (name, surname, email, password, sex) VALUES
+('Alessia', 'Rossi', 'alessia.rossi@paziente.it', 'pwd123', 'F'),
+('Paolo', 'Ferrari', 'paolo.ferrari@paziente.it', 'pwd123', 'M');
+
+INSERT INTO doctor (specialization, rank, id_doctor) VALUES
+('Cardiologia', 5, 1),
+('Dermatologia', 4, 2),
+('Psichiatria', 3, 3),
+('Ortopedia', 4, 4);
+
+INSERT INTO patient (id_patient, birth_date) VALUES
+(5, '1990-05-12'),
+(6, '1985-09-30');
+
+-- Appuntamenti per la Cardiologa (Giulia Verdi, id=1)
+INSERT INTO appointment (id_doctor, id_user, date_time, price, state) VALUES
+(1, NULL, '2025-06-10 10:00:00', 80.00, 'waiting'),
+(1, 5,    '2025-06-12 11:00:00', 85.00, 'waiting');
+
+-- Dermatologo (Luca Bianchi, id=2)
+INSERT INTO appointment (id_doctor, id_user, date_time, price, state) VALUES
+(2, NULL, '2025-06-11 14:30:00', 60.00, 'waiting'),
+(2, 6,    '2025-06-15 09:00:00', 65.00, 'waiting');
+
+-- Psichiatra (Francesca Neri, id=3)
+INSERT INTO appointment (id_doctor, id_user, date_time, price, state) VALUES
+(3, NULL, '2025-06-09 15:00:00', 120.00, 'waiting'),
+(3, NULL, '2025-06-13 10:00:00', 110.00, 'waiting');
+
+-- Ortopedico (Marco Russo, id=4)
+INSERT INTO appointment (id_doctor, id_user, date_time, price, state) VALUES
+(4, 5,    '2025-06-10 08:00:00', 70.00, 'waiting'),
+(4, NULL, '2025-06-14 10:30:00', 75.00, 'waiting');
