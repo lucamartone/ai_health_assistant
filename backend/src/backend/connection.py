@@ -12,11 +12,10 @@ def connect_to_mariadb():
     print("Connesso a MariaDB")
     return conn
 
-def execute_query(query: str, commit: bool = False):
-    """Esegue una query al database."""
+def execute_query(query: str, params: tuple = (), commit: bool = False):
     conn = connect_to_mariadb()
     cursor: mariadb.Cursor = conn.cursor()
-    cursor.execute(query)
+    cursor.execute(query, params)
 
     if commit:
         conn.commit()
@@ -26,11 +25,3 @@ def execute_query(query: str, commit: bool = False):
     conn.close()
     
     return results
-
-def close_connection(conn):
-    """Chiude la connessione al database."""
-    if conn:
-        conn.close()
-        print("Connessione a MariaDB chiusa")
-    else:
-        print("Nessuna connessione da chiudere")

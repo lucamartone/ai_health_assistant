@@ -1,17 +1,37 @@
 from fastapi import APIRouter, HTTPException
+from backend.connection import execute_query
+from backend.router_profile.basemodels import LoginRequest
 
 router_generic_profile = APIRouter()
 
 @router_generic_profile.post("/login") #not implemented
-async def login(username: str, password: str):
+async def login(data: LoginRequest):
     """Endpoint to log in a user."""
-    # Implement login logic here
+    try:
+        query = "SELECT id, nome, cognome, email, password FROM utente WHERE email = ?"
+        results = execute_query(query, (data.email,))
 
+        if not results:
+            raise HTTPException(status_code=401, detail="Email non registrata")
 
-    if username == "test" and password == "password":
-        return {"message": "Login successful"}
-    else:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        user = results[0]
+        db_password = user[4]  # 5° colonna: password
+
+        if data.password != db_password:
+            raise HTTPException(status_code=401, detail="Password errata")
+
+        return {
+            "message": "Login riuscito",
+            "user": {
+                "id": user[0],
+                "nome": user[1],
+                "cognome": user[2],
+                "email": user[3],
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore server: {str(e)}")
 
 @router_generic_profile.post("/register") #not implemented
 async def register(username: str, password: str):
