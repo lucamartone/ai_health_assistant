@@ -10,51 +10,51 @@ GRANT ALL PRIVILEGES ON HealthDB.* TO 'user'@'%' IDENTIFIED BY 'userpwd';
 FLUSH PRIVILEGES;
 
 
-CREATE TABLE utente (
+CREATE TABLE user (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL,
-    cognome VARCHAR(50) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    surname VARCHAR(50) NOT NULL,
     email VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(50) NOT NULL,
     reset_token VARCHAR(255),
     token_expiration TIMESTAMP,
-    saldo DECIMAL(10, 2) DEFAULT 0.00,
-    sesso CHAR(1) CHECK (sesso IN ('M', 'F')),
-    foto_profilo BLOB
+    balance DECIMAL(10, 2) DEFAULT 0.00,
+    sex CHAR(1) CHECK (sex IN ('M', 'F')),
+    profile_img BLOB
 );
 
-CREATE TABLE paziente (
+CREATE TABLE patient (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_paziente INT NOT NULL,
-    data_nascita DATE NOT NULL,
-    FOREIGN KEY (id_paziente) REFERENCES utente(id)
+    id_patient INT NOT NULL,
+    birth_date DATE NOT NULL,
+    FOREIGN KEY (id_patient) REFERENCES user(id)
 );
 
-CREATE TABLE medico (
+CREATE TABLE doctor (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    specializzazione VARCHAR(50) NOT NULL,
+    specialization VARCHAR(50) NOT NULL,
     rank INT NOT NULL,
-    id_medico INT NOT NULL,
-    FOREIGN KEY (id_medico) REFERENCES utente(id)
+    id_doctor INT NOT NULL,
+    FOREIGN KEY (id_doctor) REFERENCES user(id)
 );
 
-CREATE TABLE appuntamento (
+CREATE TABLE appointment (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_medico INT NOT NULL,
-    id_utente INT NOT NULL,
-    data_ora TIMESTAMP NOT NULL,
-    stato VARCHAR(20) DEFAULT 'in attesa',
-    FOREIGN KEY (id_medico) REFERENCES medico(id),
-    FOREIGN KEY (id_utente) REFERENCES utente(id)
+    id_doctor INT NOT NULL,
+    id_user INT NOT NULL,
+    date_time TIMESTAMP NOT NULL,
+    state VARCHAR(20) DEFAULT 'pending',
+    FOREIGN KEY (id_doctor) REFERENCES doctor(id),
+    FOREIGN KEY (id_user) REFERENCES user(id)
 );
 
-CREATE TABLE cronologia (
+CREATE TABLE history (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_paziente INT NOT NULL,
-    id_appuntamento INT NOT NULL,
-    resoconto TEXT,
-    valutazione INT CHECK (valutazione BETWEEN 1 AND 5),
-    FOREIGN KEY (id_paziente) REFERENCES paziente(id),
-    FOREIGN KEY (id_appuntamento) REFERENCES appuntamento(id)
+    id_patient INT NOT NULL,
+    id_appointment INT NOT NULL,
+    report TEXT,
+    review INT CHECK (review BETWEEN 1 AND 5),
+    FOREIGN KEY (id_patient) REFERENCES patient(id),
+    FOREIGN KEY (id_appointment) REFERENCES appointment(id)
 );
 

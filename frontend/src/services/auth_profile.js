@@ -15,12 +15,12 @@ export async function login(email, password) {
   return await response.json();
 }
 
-export async function register(nome, cognome, email, password, sesso) {
-  const dati = {nome, cognome, email, password,sesso}
+export async function register(name, surname, email, password, sex) {
+  const data = {name, surname, email, password, sex}
   const response = await fetch(`${BACKEND_URL}/profile/generic/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(dati),
+    body: JSON.stringify(data),
   });
 
   if (!response.ok) {

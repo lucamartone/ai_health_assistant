@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from backend.connection import execute_query
 from pydantic import EmailStr
-from backend.router_profile.pydantic.LogReg import LoginRequest, RegisterRequest
+from backend.src.backend.router_profile.pydantic.profile_requests import LoginRequest, RegisterRequest
 
 router_generic_profile = APIRouter()
 
@@ -42,7 +42,7 @@ async def register(data: RegisterRequest):
                      f"VALUES (%s, %s, %s, %s, %s)"
                      )
         
-        params = (data.nome, data.cognome, data.email, data.password, data.sesso)
+        params = (data.name, data.surname, data.email, data.password, data.sex)
 
         execute_query(reg_query, params, True)
 
