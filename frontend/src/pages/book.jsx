@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Loader } from '@googlemaps/js-api-loader';
 
 function Book() {
   const [search, setSearch] = useState('');
   const [specialization, setSpecialization] = useState('');
   const [city, setCity] = useState('');
   const [price, setPrice] = useState('');
-  const [doctors, setDoctors] = useState([
+  const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+
+  const [doctors] = useState([
     {
       id: 1,
       name: 'Dott.ssa Anna Bianchi',
@@ -13,6 +16,8 @@ function Book() {
       city: 'Milano',
       address: 'Via Roma 10, Milano',
       price: 80,
+      lat: 45.4654,
+      lng: 9.1866,
     },
     {
       id: 2,
@@ -21,6 +26,8 @@ function Book() {
       city: 'Roma',
       address: 'Via Appia 42, Roma',
       price: 40,
+      lat: 41.8735,
+      lng: 12.5011,
     },
   ]);
 
@@ -31,18 +38,60 @@ function Book() {
     (price === '' || doc.price <= parseInt(price))
   );
 
+  const mapRef = useRef(null);
+  const markersRef = useRef([]);
+
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDAGaYhV489MILIGcJUD_lg-y8mMXdcii4&callback=initMap`;
-    script.async = true;
-    window.initMap = function () {
-      new window.google.maps.Map(document.getElementById('map'), {
+    const loader = new Loader({
+      apiKey: 'AIzaSyDAGaYhV489MILIGcJUD_lg-y8mMXdcii4',
+      version: 'weekly',
+      libraries: ['marker'],
+    });
+
+    loader.load().then(() => {
+      mapRef.current = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 45.4642, lng: 9.19 },
         zoom: 6,
+        mapId: 'f606eee6e7ca5e231298b2a1'
       });
-    };
-    document.body.appendChild(script);
+    });
   }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || !window.google?.maps?.marker) return;
+
+    // Rimuovi i marker esistenti
+    markersRef.current.forEach((m) => m.map = null);
+    markersRef.current = [];
+
+    // Aggiungi nuovi marker
+    filteredDoctors.forEach((doctor) => {
+      const pinColor = doctor.id === selectedDoctorId ? '#1e40af' : '#3b82f6';
+
+      const pin = new google.maps.marker.PinElement({
+        background: pinColor,
+        glyphColor: 'white',
+        borderColor: '#1e3a8a',
+      });
+
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        map: mapRef.current,
+        position: { lat: doctor.lat, lng: doctor.lng },
+        title: doctor.name,
+        content: pin.element,
+      });
+
+      markersRef.current.push(marker);
+    });
+  }, [filteredDoctors, selectedDoctorId]);
+
+  const handleDoctorClick = (doctor) => {
+    setSelectedDoctorId(doctor.id);
+    if (mapRef.current) {
+      mapRef.current.setZoom(17);
+      mapRef.current.setCenter({ lat: doctor.lat, lng: doctor.lng });
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4 py-20">
@@ -63,7 +112,7 @@ function Book() {
               />
             </div>
 
-            {/* Filtri su una sola riga */}
+            {/* Filtri su una riga */}
             <div className="flex flex-wrap md:flex-nowrap gap-3 mb-6">
               <select
                 value={specialization}
@@ -96,13 +145,19 @@ function Book() {
               </select>
             </div>
 
-            {/* Card scrollabili */}
+            {/* Lista dottori scrollabile */}
             <div className="overflow-y-auto max-h-[400px] pr-2 space-y-4">
               {filteredDoctors.length === 0 && (
                 <p className="text-blue-100 text-center">Nessun dottore trovato.</p>
               )}
               {filteredDoctors.map((doc) => (
-                <div key={doc.id} className="bg-white text-blue-900 p-4 rounded-xl shadow-md">
+                <div
+                  key={doc.id}
+                  onClick={() => handleDoctorClick(doc)}
+                  className={`cursor-pointer bg-white text-blue-900 p-4 rounded-xl shadow-md hover:ring-2 transition ${
+                    doc.id === selectedDoctorId ? 'ring-2 ring-white' : ''
+                  }`}
+                >
                   <h3 className="text-xl font-semibold">{doc.name}</h3>
                   <p>{doc.specialization} — {doc.city}</p>
                   <p className="text-sm text-gray-600">{doc.address}</p>
@@ -116,7 +171,7 @@ function Book() {
           </div>
         </div>
 
-        {/* Mappa ingrandita e centrata */}
+        {/* Mappa */}
         <div className="w-full md:w-[35%] flex items-center">
           <div className="h-[480px] w-full rounded-2xl overflow-hidden shadow-xl bg-white">
             <div id="map" className="w-full h-full" />
