@@ -4,8 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.router_profile.router_profile import router_profile
-from backend.router_database.router_database import router_database
-from backend.router_user.router_user import router_user
+from backend.router_paz.router_user import router_user
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8001")
 app = FastAPI()
@@ -19,5 +18,4 @@ app.add_middleware(
 )
 
 app.include_router(router_profile, prefix="/profile", tags=["generic"])
-app.include_router(router_database, prefix="/database", tags=["database"])
 app.include_router(router_user, prefix="/user", tags=["user"])
