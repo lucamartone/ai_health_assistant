@@ -1,21 +1,21 @@
 from fastapi import APIRouter, HTTPException
 from backend.connection import execute_query
 from pydantic import EmailStr
-from backend.src.backend.router_profile.pydantic.profile_requests import LoginRequest, RegisterRequest
+from backend.router_profile.pydantic.profile_requests import LoginRequest, RegisterRequest
 
 router_generic_profile = APIRouter()
 
 @router_generic_profile.post("/login")
 async def login(data: LoginRequest):
     try:
-        query = "SELECT id, nome, cognome, email, password FROM utente WHERE email = %s"
+        query = "SELECT id, name, surname, email, password FROM user WHERE email = %s"
         results = execute_query(query, (data.email,))
 
         if not results:
             raise HTTPException(status_code=401, detail="Email non registrata")
 
         user = results[0]
-        db_password = user[4]  # 5° colonna: password
+        db_password = user[4]
 
         if data.password != db_password:
             raise HTTPException(status_code=401, detail="Password errata")
@@ -24,8 +24,8 @@ async def login(data: LoginRequest):
             "message": "Login riuscito",
             "user": {
                 "id": user[0],
-                "nome": user[1],
-                "cognome": user[2],
+                "name": user[1],
+                "surname": user[2],
                 "email": user[3],
             }
         }
@@ -38,7 +38,7 @@ async def login(data: LoginRequest):
 async def register(data: RegisterRequest):
   
     try:
-        reg_query = (f"INSERT INTO utente (nome, cognome, email, password, sesso)"
+        reg_query = (f"INSERT INTO user (name, surname, email, password, sex)"
                      f"VALUES (%s, %s, %s, %s, %s)"
                      )
         
@@ -65,13 +65,13 @@ async def delete_account(email:EmailStr):
             raise HTTPException(status_code=404, detail="Utente non trovato")
         user_id = res[0][0]
 
-        delete_paziente = "DELETE FROM paziente WHERE id_paziente = %s"
-        delete_medico = "DELETE FROM medico WHERE id_medico = %s"
-        delete_utente = "DELETE FROM utente WHERE id = %s"
+        delete_patient = "DELETE FROM patient WHERE id_patient = %s"
+        delete_doctor = "DELETE FROM doctor WHERE id_doctor = %s"
+        delete_user = "DELETE FROM user WHERE id = %s"
 
-        execute_query(delete_paziente, (user_id,), commit=True)
-        execute_query(delete_medico, (user_id,), commit=True)
-        execute_query(delete_utente, (user_id,), commit=True)
+        execute_query(delete_patient, (user_id,), commit=True)
+        execute_query(delete_doctor, (user_id,), commit=True)
+        execute_query(delete_user, (user_id,), commit=True)
 
 
     except Exception as e:
