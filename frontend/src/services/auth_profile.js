@@ -4,7 +4,7 @@ export async function login(email, password) {
   const response = await fetch(`${BACKEND_URL}/profile/generic/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ 'email':email, 'password':password }),
   });
 
   if (!response.ok) {
@@ -12,14 +12,15 @@ export async function login(email, password) {
     throw new Error(error.detail || 'Errore login');
   }
 
-  return await response.json(); // ad es. token, utente, ecc.
+  return await response.json();
 }
 
-export async function register(email, password) {
+export async function register(name, cognome, email, password, sesso) {
+  const dati = {name, cognome, email, password,sesso}
   const response = await fetch(`${BACKEND_URL}/profile/generic/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify(dati),
   });
 
   if (!response.ok) {

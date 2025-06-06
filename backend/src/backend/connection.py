@@ -20,8 +20,9 @@ def execute_query(query: str, params: tuple = (), commit: bool = False):
     if commit:
         conn.commit()
 
-    results = cursor.fetchall() if not commit else None
+    results = cursor.fetchall() if not commit else None #select commit = false-> fare fetch
     cursor.close()
     conn.close()
     
     return results
+
