@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Index from './pages/Index';
 import Profile from './pages/Profile';
 import Chat from './pages/Chat';
+import Book from './pages/Book';
 import Register from './pages/Register';
 
 import Footer from './components/Footer';
@@ -21,6 +22,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/book" element={<Book />} />
       </Routes>
 
       <Footer />
