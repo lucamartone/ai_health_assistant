@@ -12,15 +12,15 @@ function Register() {
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
-      e.preventDefault(); // blocca il reload della pagina
-      try {
-        const data = await register(name, surname, email, password, sex);
-        console.log('Login riuscito:', data);
-        navigate('/login'); // redirige se va a buon fine
-      } catch (err) {
-        alert(err.message); // gestisce l'errore
-      }
-    };
+    e.preventDefault();
+    try {
+      const data = await register(name, surname, email, password, sex);
+      console.log('Login riuscito:', data);
+      navigate('/login');
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
@@ -29,7 +29,7 @@ function Register() {
         <p className="text-center text-sm md:text-base text-blue-100 mb-6">
           Crea un nuovo account per accedere ai servizi
         </p>
-        <form onSubmit={ handleRegister }className="space-y-5">
+        <form onSubmit={handleRegister} className="space-y-5">
           <input
             type="text"
             value={name}
@@ -58,13 +58,32 @@ function Register() {
             placeholder="Password"
             className="w-full px-4 py-3 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
           />
-          <input
-            type="password"
-            placeholder="Conferma Password"
-            value={sex}
-            onChange={(e) => setSex(e.target.value)}
-            className="w-full px-4 py-3 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
-          />
+
+          {/* Riga con etichetta e selezione sesso */}
+          <div className="flex items-center justify-between bg-blue-100 px-4 py-3 rounded-md text-blue-900">
+            <span className="font-medium mr-4">Sesso</span>
+            <div className="flex items-center space-x-6">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={sex === 'M'}
+                  onChange={() => setSex('M')}
+                  className="form-checkbox h-5 w-5 text-blue-600"
+                />
+                <span className="text-sm font-medium">Maschio</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={sex === 'F'}
+                  onChange={() => setSex('F')}
+                  className="form-checkbox h-5 w-5 text-blue-600"
+                />
+                <span className="text-sm font-medium">Femmina</span>
+              </label>
+            </div>
+          </div>
+
           <button
             type="submit"
             className="w-full bg-white text-blue-700 py-3 rounded-md font-semibold hover:bg-blue-100 transition"
