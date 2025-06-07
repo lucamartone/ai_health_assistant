@@ -1,4 +1,3 @@
-import MotionButton from './MotionButton.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 function Header() {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user } = useAuth(); // 👈 prende lo stato utente
+  const { user, loading } = useAuth(); // 👈 prende lo stato utente
 
   const navLinkStyle =
     'px-5 py-2 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all duration-200 shadow-sm hover:shadow';
@@ -111,7 +110,7 @@ function Header() {
               Contacts
             </button>
 
-            {!user && ( // 👈 mostra i pulsanti solo se non loggato
+            {!loading && !user &&( // 👈 mostra i pulsanti solo se non loggato
               <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
                 <button 
                   onClick={() => {

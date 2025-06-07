@@ -13,11 +13,12 @@ def create_access_token(data: dict):
 
 router_cookies_login = APIRouter()
 
-def get_current_user(token: str = Cookie(None)):
-    if not token:
-        raise HTTPException(status_code=401, detail="Token mancante")
+def get_current_user(access_token: str = Cookie(None)):
+    if not access_token:
+        print("❌ Nessun token ricevuto!")
+        return None
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         return {"email": payload.get("sub"), "id": payload.get("id")}
     except JWTError:
         raise HTTPException(status_code=403, detail="Token non valido")
