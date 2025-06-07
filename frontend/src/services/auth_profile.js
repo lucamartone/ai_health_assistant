@@ -4,6 +4,7 @@ export async function login(email, password) {
   const response = await fetch(`${BACKEND_URL}/profile/generic/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // per inviare i cookie di sessione
     body: JSON.stringify({ 'email':email, 'password':password }),
   });
 

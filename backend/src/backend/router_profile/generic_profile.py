@@ -29,7 +29,8 @@ async def login(data: LoginRequest, response: Response):
             httponly=True,
             max_age=60 * 60,  # 1 ora
             samesite="Lax",
-            secure=False  # metti True in produzione con HTTPS
+            secure=False,  # metti True in produzione con HTTPS
+            path="/"
         )
 
         return {
