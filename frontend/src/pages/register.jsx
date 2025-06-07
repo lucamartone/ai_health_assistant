@@ -4,7 +4,7 @@ import { register } from '../services/auth_profile';
 
 function Register() {
   const [name, setName] = useState('');
-  const [surnname, setSurname] = useState('');
+  const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [sex, setSex] = useState('');
@@ -14,7 +14,7 @@ function Register() {
   const handleRegister = async (e) => {
       e.preventDefault(); // blocca il reload della pagina
       try {
-        const data = await register(name, surnname, email, password, sex);
+        const data = await register(name, surname, email, password, sex);
         console.log('Login riuscito:', data);
         navigate('/login'); // redirige se va a buon fine
       } catch (err) {
@@ -39,7 +39,7 @@ function Register() {
           />
           <input
             type="text"
-            value={surnname}
+            value={surname}
             onChange={(e) => setSurname(e.target.value)}
             placeholder="Cognome"
             className="w-full px-4 py-3 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"

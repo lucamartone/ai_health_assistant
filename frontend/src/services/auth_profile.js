@@ -20,6 +20,7 @@ export async function register(name, surname, email, password, sex) {
   const response = await fetch(`${BACKEND_URL}/profile/generic/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(data),
   });
 

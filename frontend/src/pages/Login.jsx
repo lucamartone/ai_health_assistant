@@ -2,17 +2,21 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 import { login } from '../services/auth_profile';
+import { useAuth } from '../contexts/AuthContext'; // 👈 importa il contesto
 
 function Login() {
-   const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { setUser } = useAuth(); // 👈 usa il setter del contesto
 
   const handleLogin = async (e) => {
     e.preventDefault(); // blocca il reload della pagina
     try {
-      const data = await login(email, password); // CHIAMA LA FETCH
+      const data = await login(email, password); // chiama la fetch
       console.log('Login riuscito:', data);
+
+      setUser(data); // 👈 imposta l'utente nel contesto
       navigate('/'); // redirige se va a buon fine
     } catch (err) {
       alert(err.message); // gestisce l'errore

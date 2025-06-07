@@ -1,12 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from backend.connection import execute_query
 from pydantic import EmailStr
 from backend.router_profile.pydantic.profile_requests import LoginRequest, RegisterRequest
+from backend.router_profile.cookies_login import create_access_token
 
 router_generic_profile = APIRouter()
 
 @router_generic_profile.post("/login")
-async def login(data: LoginRequest):
+async def login(data: LoginRequest, response: Response):
     try:
         query = "SELECT id, name, surname, email, password FROM user WHERE email = %s"
         results = execute_query(query, (data.email,))
@@ -19,6 +20,17 @@ async def login(data: LoginRequest):
 
         if data.password != db_password:
             raise HTTPException(status_code=401, detail="Password errata")
+        
+        token = create_access_token({"sub": user[3], "id": user[0]})
+
+        response.set_cookie(
+            key="access_token",
+            value=token,
+            httponly=True,
+            max_age=60 * 60,  # 1 ora
+            samesite="Lax",
+            secure=False  # metti True in produzione con HTTPS
+        )
 
         return {
             "message": "Login riuscito",
@@ -51,8 +63,6 @@ async def register(data: RegisterRequest):
     except Exception as e:
         print("Errore:", e)
         raise HTTPException(status_code=400, detail="Errore nella registrazione")
-    
-
 
 @router_generic_profile.delete("/delete_account") 
 async def delete_account(email:EmailStr):
@@ -78,7 +88,11 @@ async def delete_account(email:EmailStr):
         raise HTTPException(status_code=400, detail="Invalid delete username")
     
 
-
+@router_generic_profile.get("/logout")
+async def logout(response: Response):
+    """Endpoint to log out a user by clearing the access token cookie."""
+    response.delete_cookie("access_token")
+    return {"message": "Logout successful"}
     
 
 @router_generic_profile.post("/change_password") #not implemented

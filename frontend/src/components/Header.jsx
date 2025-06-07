@@ -1,10 +1,12 @@
 import MotionButton from './MotionButton.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useAuth(); // 👈 prende lo stato utente
 
   const navLinkStyle =
     'px-5 py-2 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all duration-200 shadow-sm hover:shadow';
@@ -44,21 +46,22 @@ function Header() {
 
         {/* Right: Buttons */}
         <div className="flex items-center space-x-2 sm:space-x-3">
-          {/* Desktop Buttons */}
-          <div className="hidden sm:flex items-center space-x-3">
-            <button 
-              onClick={() => navigate('/login')} 
-              className="px-4 sm:px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
-            >
-              Accedi
-            </button>
-            <button 
-              onClick={() => navigate('/register')} 
-              className="px-4 sm:px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
-            >
-              Registrati
-            </button>
-          </div>
+          {!user && ( // 👈 mostra solo se non loggato
+            <div className="hidden sm:flex items-center space-x-3">
+              <button 
+                onClick={() => navigate('/login')} 
+                className="px-4 sm:px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
+              >
+                Accedi
+              </button>
+              <button 
+                onClick={() => navigate('/register')} 
+                className="px-4 sm:px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
+              >
+                Registrati
+              </button>
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <button 
@@ -107,26 +110,29 @@ function Header() {
             >
               Contacts
             </button>
-            <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
-              <button 
-                onClick={() => {
-                  navigate('/login');
-                  setIsMobileMenuOpen(false);
-                }} 
-                className="w-full px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
-              >
-                Accedi
-              </button>
-              <button 
-                onClick={() => {
-                  navigate('/register');
-                  setIsMobileMenuOpen(false);
-                }} 
-                className="w-full px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
-              >
-                Registrati
-              </button>
-            </div>
+
+            {!user && ( // 👈 mostra i pulsanti solo se non loggato
+              <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
+                <button 
+                  onClick={() => {
+                    navigate('/login');
+                    setIsMobileMenuOpen(false);
+                  }} 
+                  className="w-full px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
+                >
+                  Accedi
+                </button>
+                <button 
+                  onClick={() => {
+                    navigate('/register');
+                    setIsMobileMenuOpen(false);
+                  }} 
+                  className="w-full px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
+                >
+                  Registrati
+                </button>
+              </div>
+            )}
           </nav>
         </div>
       )}
