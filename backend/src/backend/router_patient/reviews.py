@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 
-router_rating = APIRouter()
+router_reviews = APIRouter()
 
-@router_rating.get("/rate_doctor")
-async def rate_doctor(doctor_id: str, patient_id: str, rating: int):
+@router_reviews.get("/review_doctor")
+async def review_doctor(doctor_id: str, patient_id: str, rating: int):
     """Endpoint to rate a doctor."""
     # Implement logic to save the rating for the doctor
     if doctor_id and patient_id and 1 <= rating <= 5:

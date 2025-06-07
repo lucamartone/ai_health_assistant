@@ -2,11 +2,11 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 from backend.connection import execute_query
 
-router_doctors_database = APIRouter()
+router_show_doctors = APIRouter()
 
 
     
-@router_doctors_database.get("/free_doctors_by_specialization")
+@router_show_doctors.get("/free_doctors_by_specialization")
 async def get_doctors_by_availability(specialization: str) :
     """Endpoint to get doctors who have at least one free appointment for a given specialization."""
     try:
@@ -34,7 +34,7 @@ async def get_doctors_by_availability(specialization: str) :
     except Exception as e:
         raise HTTPException(status_code=400, detail="Error retrieving doctor availability")
     
-@router_doctors_database.get("/free_doctors_by_specialization_priceASC")
+@router_show_doctors.get("/free_doctors_by_specialization_priceASC")
 async def get_doctors_by_priceASC(specialization: str) -> List[dict]:
     """Get doctors with at least one waiting appointment in a given specialization, ordered by lowest price."""
     try:
@@ -64,7 +64,7 @@ async def get_doctors_by_priceASC(specialization: str) -> List[dict]:
         raise HTTPException(status_code=400, detail="Error retrieving doctors by price")
 
 
-@router_doctors_database.get("/free_doctors_by_specialization_priceDESC")
+@router_show_doctors.get("/free_doctors_by_specialization_priceDESC")
 async def get_doctors_by_priceDESC (specialization: str) -> List[dict]:
     """Endpoint to get doctors with available visits in given specialization, ordered by highest price."""
     try:
@@ -95,7 +95,7 @@ async def get_doctors_by_priceDESC (specialization: str) -> List[dict]:
         raise HTTPException(status_code=400, detail="Error retrieving doctors by price")
 
 
-@router_doctors_database.get("/doctors_by_location") #not implemented
+@router_show_doctors.get("/doctors_by_location") #not implemented
 async def get_doctors_by_location(latitude: float, longitude: float) -> list:
     """Endpoint to get doctors ordered by location."""
     # Implement logic to retrieve and order doctors by geolocation
