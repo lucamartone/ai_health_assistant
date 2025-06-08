@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 import os
 from dotenv import load_dotenv
-from openai import OpenAI
+import httpx
 
 # Load environment variables
 load_dotenv()
@@ -20,8 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+OLLAMA_API_URL = "http://localhost:11434/api/generate"
 
 class HealthQuery(BaseModel):
     query: str
@@ -40,24 +39,47 @@ async def process_health_query(query: HealthQuery):
         if query.context:
             user_message = f"Contesto: {query.context}\n\nDomanda: {query.query}"
 
-        # Call OpenAI API
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",  # or "gpt-3.5-turbo" for a more economical option
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_message}
-            ],
-            temperature=0.7,
-            max_tokens=500
-        )
+        # Prepare the full prompt
+        full_prompt = f"{system_message}\n\nUtente: {user_message}\n\nAssistente:"
 
-        return {
-            "response": response.choices[0].message.content,
-            "status": "success"
-        }
+        # Call Ollama API
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    OLLAMA_API_URL,
+                    json={
+                        "model": "mistral",
+                        "prompt": full_prompt,
+                        "stream": False,
+                        "options": {
+                            "temperature": 0.7,
+                            "num_predict": 500
+                        }
+                    }
+                )
+                
+                if response.status_code != 200:
+                    raise Exception(f"Ollama API returned status code {response.status_code}")
+
+                result = response.json()
+                return {
+                    "response": result["response"],
+                    "status": "success"
+                }
+
+        except Exception as e:
+            print(f"Ollama API Error: {str(e)}")  # Log the error
+            raise HTTPException(
+                status_code=500,
+                detail=f"Ollama API error: {str(e)}"
+            )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Server Error: {str(e)}")  # Log the error
+        raise HTTPException(
+            status_code=500,
+            detail=f"Server error: {str(e)}"
+        )
 
 @app.get("/api/health")
 async def health_check():
