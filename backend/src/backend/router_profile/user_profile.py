@@ -4,9 +4,9 @@ from pydantic import EmailStr
 from backend.router_profile.pydantic.profile_requests import LoginRequest, RegisterRequest
 from backend.router_profile.cookies_login import create_access_token
 
-router_generic_profile = APIRouter()
+router_user_profile = APIRouter()
 
-@router_generic_profile.post("/login")
+@router_user_profile.post("/login")
 async def login(data: LoginRequest, response: Response):
     try:
         query = "SELECT id, name, surname, email, password FROM user WHERE email = %s"
@@ -47,7 +47,7 @@ async def login(data: LoginRequest, response: Response):
         raise HTTPException(status_code=500, detail=f"Errore server: {str(e)}")
 
 
-@router_generic_profile.post("/register") 
+@router_user_profile.post("/register") 
 async def register(data: RegisterRequest):
   
     try:
@@ -65,7 +65,7 @@ async def register(data: RegisterRequest):
         print("Errore:", e)
         raise HTTPException(status_code=400, detail="Errore nella registrazione")
 
-@router_generic_profile.delete("/delete_account") 
+@router_user_profile.delete("/delete_account") 
 async def delete_account(email:EmailStr):
     """Endpoint to delete a user account."""
 
@@ -89,14 +89,14 @@ async def delete_account(email:EmailStr):
         raise HTTPException(status_code=400, detail="Invalid delete username")
     
 
-@router_generic_profile.get("/logout")
+@router_user_profile.get("/logout")
 async def logout(response: Response):
     """Endpoint to log out a user by clearing the access token cookie."""
     response.delete_cookie("access_token")
     return {"message": "Logout successful"}
     
 
-@router_generic_profile.post("/change_password") #not implemented
+@router_user_profile.post("/change_password") #not implemented
 async def change_password(username: str, old_password: str, new_password: str):
     """Endpoint to change a user's password."""
     # Implement password change logic here
