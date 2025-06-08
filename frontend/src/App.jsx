@@ -1,20 +1,22 @@
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css'
 import Login from './pages/Login';
-import Index from './pages/Index';
-import Profile from './pages/Profile';
-import Chat from './pages/Chat';
-import Book from './pages/Book';
-import Register from './pages/Register';
+import Index from './pages/index';
+import Profile from './pages/profile';
+import Chat from './pages/chat';
+import Book from './pages/book';
+import Register from './pages/register';
 
 import Footer from './components/Footer';
 import Header from './components/Header';
 
-
 function App() {
+    const location = useLocation();
+    const isChatPage = location.pathname === '/chat';
+
     return (
       <>
-      <Header />
+      {!isChatPage && <Header />}
 
       <Routes>
         <Route path="/" element={<Index />} />
@@ -25,7 +27,7 @@ function App() {
         <Route path="/book" element={<Book />} />
       </Routes>
 
-      <Footer />
+      {!isChatPage && <Footer />}
       </>
     );
 }

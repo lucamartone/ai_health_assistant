@@ -16,6 +16,16 @@ services:
       - BACKEND_URL=http://backend:8001
     ports:
       - "8001:8001"
+    
+
+  llm:
+    build:
+      context: ./LLM
+      dockerfile: Dockerfile
+    environment:
+      - OPENAI_API_KEY=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
+    ports:
+      - "5001:5001"
   
   # llm:
   #   image: huggingface/transformers-pytorch-gpu:latest
