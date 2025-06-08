@@ -1,4 +1,4 @@
-const BACKEND_URL = 'http://localhost:8001'; // cambia se usi Docker o ambiente diverso
+const BACKEND_URL = 'http://localhost:8001';
 
 export async function login(email, password) {
   const response = await fetch(`${BACKEND_URL}/profile/generic/login`, {
@@ -13,7 +13,8 @@ export async function login(email, password) {
     throw new Error(error.detail || 'Errore login');
   }
 
-  return await response.json();
+  const data = await response.json();
+  return data.user;
 }
 
 export async function register(name, surname, email, password, sex) {
@@ -32,3 +33,13 @@ export async function register(name, surname, email, password, sex) {
 
   return await response.json();
 }
+
+export async function logout(){
+  try {
+    await fetch('http://localhost:8001/profile/generic/logout', {
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.error('Errore logout:', error);
+  }
+};

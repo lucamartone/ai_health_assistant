@@ -2,26 +2,25 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { UserCircle } from 'lucide-react';
+import { logout } from '../services/auth_profile';
 
 function Header() {
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, loading, setUser } = useAuth();
-
-  const navLinkStyle =
-    'px-5 py-2 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all duration-200 shadow-sm hover:shadow';
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:8001/profile/generic/logout', {
-        credentials: 'include',
-      });
-      setUser(null);
+      await logout(); // chiama solo la fetch
+      setUser(null);         // modifica stato globale
       navigate('/');
-    } catch (error) {
-      console.error('Errore logout:', error);
+    } catch (err) {
+      console.error(err);
     }
   };
+
+  const navLinkStyle =
+    'px-5 py-2 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all duration-200 shadow-sm hover:shadow';
 
   return (
     <header className="bg-blue-700/90 backdrop-blur-sm text-white px-4 sm:px-6 py-4 fixed top-0 w-full z-50 shadow-lg h-[72px]">
@@ -73,7 +72,10 @@ function Header() {
           )}
 
           {!loading && user && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
+              <span className="text-sm sm:text-base font-medium text-white whitespace-nowrap">
+                Benvenuto, {user.name} {user.surname}
+              </span>
               <button
                 onClick={() => navigate('/profile')}
                 className="p-2 rounded-full hover:bg-white/20 transition-all"
@@ -82,7 +84,7 @@ function Header() {
                 <UserCircle className="w-7 h-7 text-white" />
               </button>
               <button
-                onClick={handleLogout}
+                onClick={ handleLogout }
                 className="px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
               >
                 Logout
@@ -161,6 +163,7 @@ function Header() {
 
             {!loading && user && (
               <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
+                <span className="text-white text-sm px-5">Benvenuto, {user.name} {user.surname}</span>
                 <button
                   onClick={() => {
                     navigate('/profile');
