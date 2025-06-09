@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
-import { get_free_doctors } from '../services/book/fetch_book';
+import { getFreeDoctors } from '../services/book/fetch_book';
 import BookingCalendar from '../components/BookingCalendar';
 
 function Book() {
@@ -18,7 +18,7 @@ function Book() {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const data = await get_free_doctors();
+        const data = await getFreeDoctors();
         console.log('Dottori recuperati:', data);
         setDoctors(data);
       } catch (error) {

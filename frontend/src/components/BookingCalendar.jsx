@@ -1,32 +1,15 @@
 import { useState, useEffect } from 'react';
-import { get_free_slots } from '../services/book/fetch_book';
-import { formatSlots } from '../services/book/aux_book';
+import { getSlots, getNewDate } from '../services/book/aux_book';
 
 function BookingCalendar({ onSlotSelect, doctor }) {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [slots, setSlots] = useState({});
-
-  useEffect(() => {
-    if (!doctor) return;
-    const fetchSlots = async () => {
-      try {
-        const data = await get_free_slots(doctor.doctor_id, doctor.latitude, doctor.longitude);
-        const formattedSlots = formatSlots(data);
-        setSlots(formattedSlots);
-      } catch (error) {
-        console.error('Errore recupero slot:', error);
-      }
-    };
-    fetchSlots();
-  }, [doctor]);
+  const slots = getSlots(doctor);
 
   const dateKey = currentDate.toISOString().split('T')[0];
   const currentSlots = slots[dateKey] || [];
 
   const changeDay = (delta) => {
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + delta);
-    setCurrentDate(newDate);
+    setCurrentDate(getNewDate(currentDate, delta));
   };
 
   return (

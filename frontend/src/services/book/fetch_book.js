@@ -1,6 +1,6 @@
 const BACKEND_URL = 'http://localhost:8001';
 
-export async function get_free_doctors() {
+export async function getFreeDoctors() {
   const response = await fetch(`${BACKEND_URL}/patient/show_doctors/free_doctors`, {
     method: 'GET'
   });
@@ -13,7 +13,7 @@ export async function get_free_doctors() {
   return data;
 }
 
-export async function get_free_slots(doctor_id, lat, lng) {
+export async function getFreeSlots(doctor_id, lat, lng) {
   const url = `${BACKEND_URL}/patient/appointments/get_free_appointment?doctor_id=${doctor_id}&lat=${lat}&long=${lng}`;
 
   const response = await fetch(url, {
