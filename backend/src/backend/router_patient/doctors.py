@@ -4,7 +4,7 @@ from backend.connection import execute_query
 
 router_show_doctors = APIRouter()
 
-@router_show_doctors.get("/free_doctors")
+@router_show_doctors.get("/get_free_doctors")
 async def get_free_doctors():
     """Endpoint to get doctors who have at least one free appointment"""
     try:

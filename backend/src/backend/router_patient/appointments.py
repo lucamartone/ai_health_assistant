@@ -36,8 +36,8 @@ async def cancel_appointment(appointment_id: int, patient_id: int):
         raise HTTPException(status_code=400, detail=f"Error canceling appointment: {str(e)}")
 
     
-@router_appointments.get("/get_free_appointment")
-async def get_free_appointment(doctor_id: int = Query(...), lat: float = Query(...), long: float = Query(...)):
+@router_appointments.get("/get_free_slots")
+async def get_free_slots(doctor_id: int = Query(...), lat: float = Query(...), long: float = Query(...)):
     """Endpoint to view free (not yet booked) appointments for a specific doctor at a specific location."""
     try:
         query = """

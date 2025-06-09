@@ -176,7 +176,7 @@ function Book() {
         </div>
 
         <div className="w-[35%] flex items-start">
-          <div className="h-[480px] w-full rounded-2xl overflow-hidden shadow-xl bg-white">
+          <div className="h-full w-full rounded-2xl overflow-hidden shadow-xl bg-white">
             <div id="map" className="w-full h-full" />
           </div>
         </div>
