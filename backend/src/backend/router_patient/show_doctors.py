@@ -5,7 +5,7 @@ from backend.connection import execute_query
 router_show_doctors = APIRouter()
 
 @router_show_doctors.get("/free_doctors")
-async def get_free_doctors() :
+async def get_free_doctors():
     """Endpoint to get doctors who have at least one free appointment"""
     try:
         query = """
@@ -15,20 +15,25 @@ async def get_free_doctors() :
             u.surname,
             d.specialization,
             d.rank,
-            u.profile_img
+            u.profile_img,
+            l.latitude,
+            l.longitude
         FROM doctor d
         JOIN user u ON d.id_doctor = u.id
         JOIN appointment a ON a.id_doctor = d.id
+        JOIN location l ON l.id = a.id_loc
+        WHERE a.id_user IS NULL
         ORDER BY d.rank DESC;
         """
         raw_result = execute_query(query)
 
-        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img"]
+        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
     
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Error retrieving doctor availability")
+        return {"error": str(e)}
+
     
     
 @router_show_doctors.get("/free_doctors_by_specialization")
@@ -42,17 +47,20 @@ async def get_doctors_by_specialization(specialization: str) :
             u.surname,
             d.specialization,
             d.rank,
-            u.profile_img
+            u.profile_img,
+            l.latitude,
+            l.longitude
         FROM doctor d
         JOIN user u ON d.id_doctor = u.id
         JOIN appointment a ON a.id_doctor = d.id
+        JOIN location l ON l.id = a.id_loc
         WHERE d.specialization = %s
           AND a.state = 'waiting'
         ORDER BY d.rank DESC;
         """
         raw_result = execute_query(query, (specialization,))
 
-        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img"]
+        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
     
@@ -71,17 +79,20 @@ async def get_doctors_by_priceASC(specialization: str) -> List[dict]:
             d.specialization,
             d.rank,
             u.profile_img,
-            MIN(a.price) AS min_price
+            MIN(a.price) AS min_price,
+            l.latitude,
+            l.longitude
         FROM doctor d
         JOIN user u ON d.id_doctor = u.id
         JOIN appointment a ON a.id_doctor = d.id
+        JOIN location l ON l.id = a.id_loc
         WHERE d.specialization = %s
           AND a.state = 'waiting'
-        GROUP BY d.id, u.name, u.surname, d.specialization, d.rank, u.profile_img
+        GROUP BY d.id, u.name, u.surname, d.specialization, d.rank, u.profile_img, l.latitude, l.longitude
         ORDER BY min_price ASC;
         """
         raw_result = execute_query(query, (specialization,))
-        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "min_price"]
+        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "min_price","latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
 
@@ -101,18 +112,21 @@ async def get_doctors_by_priceDESC (specialization: str) -> List[dict]:
             d.specialization,
             d.rank,
             u.profile_img,
-            MAX(a.price) AS max_price
+            MAX(a.price) AS max_price,
+            l.latitude,
+            l.longitude
         FROM doctor d
         JOIN user u ON d.id_doctor = u.id
         JOIN appointment a ON a.id_doctor = d.id
+        JOIN location l ON l.id = a.id_loc
         WHERE d.specialization = %s
           AND a.state = 'waiting'
-        GROUP BY d.id, u.name, u.surname, d.specialization, d.rank, u.profile_img
+        GROUP BY d.id, u.name, u.surname, d.specialization, d.rank, u.profile_img, l.latitude, l.longitude
         ORDER BY max_price DESC;
         """
         
         raw_result = execute_query(query, (specialization,))
-        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "max_price"]
+        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "max_price","latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
 
