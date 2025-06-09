@@ -23,7 +23,7 @@ def get_current_user(access_token: str = Cookie(None)):
         return None
     try:
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
-        return {"email": payload.get("sub"), "id": payload.get("id")}
+        return {"email": payload.get("sub"), "id": payload.get("id"), "name": payload.get("name"), "surname": payload.get("surname")}
     except JWTError:
         raise HTTPException(status_code=403, detail="Token non valido")
 
