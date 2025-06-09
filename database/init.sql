@@ -38,15 +38,28 @@ CREATE TABLE doctor (
     FOREIGN KEY (id_doctor) REFERENCES user(id)
 );
 
+CREATE TABLE location (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_doctor INT NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    city VARCHAR(100),
+    province VARCHAR(100),
+    latitude DECIMAL(10,8),
+    longitude DECIMAL(11,8),
+    FOREIGN KEY (id_doctor) REFERENCES doctor(id)
+);
+
 CREATE TABLE appointment (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_doctor INT NOT NULL,
     id_user INT,
+    id_loc INT,
     date_time TIMESTAMP NOT NULL,
     price DECIMAL(10,2) DEFAULT 50,
     state VARCHAR(20) DEFAULT 'waiting',
     FOREIGN KEY (id_doctor) REFERENCES doctor(id),
-    FOREIGN KEY (id_user) REFERENCES user(id)
+    FOREIGN KEY (id_user) REFERENCES user(id),
+    FOREIGN KEY (id_loc) REFERENCES location(id)
 );
 
 CREATE TABLE history (
@@ -83,22 +96,29 @@ INSERT INTO patient (id_patient, birth_date) VALUES
 (5, '1990-05-12'),
 (6, '1985-09-30');
 
--- Appuntamenti per la Cardiologa (Giulia Verdi, id=1)
-INSERT INTO appointment (id_doctor, id_user, date_time, price, state) VALUES
-(1, NULL, '2025-06-10 10:00:00', 80.00, 'waiting'),
-(1, 5,    '2025-06-12 11:00:00', 85.00, 'waiting');
+-- LOCATION per ogni dottore
+INSERT INTO location (id_doctor, address, city, province, latitude, longitude) VALUES
+(1, 'Via Roma 1', 'Milano', 'MI', 45.4654, 9.1866),        -- Giulia Verdi
+(2, 'Via Torino 23', 'Torino', 'TO', 45.0703, 7.6869),      -- Luca Bianchi
+(3, 'Piazza Duomo', 'Firenze', 'FI', 43.7696, 11.2558),     -- Francesca Neri
+(4, 'Via Napoli 45', 'Napoli', 'NA', 40.8518, 14.2681);     -- Marco Russo
 
--- Dermatologo (Luca Bianchi, id=2)
-INSERT INTO appointment (id_doctor, id_user, date_time, price, state) VALUES
-(2, NULL, '2025-06-11 14:30:00', 60.00, 'waiting'),
-(2, 6,    '2025-06-15 09:00:00', 65.00, 'waiting');
+-- Appuntamenti per la Cardiologa (Giulia Verdi, id_doctor=1, id_loc=1)
+INSERT INTO appointment (id_doctor, id_user, id_loc, date_time, price, state) VALUES
+(1, NULL, 1, '2025-06-10 10:00:00', 80.00, 'waiting'),
+(1, NULL,    1, '2025-06-12 11:00:00', 85.00, 'waiting');
 
--- Psichiatra (Francesca Neri, id=3)
-INSERT INTO appointment (id_doctor, id_user, date_time, price, state) VALUES
-(3, NULL, '2025-06-09 15:00:00', 120.00, 'waiting'),
-(3, NULL, '2025-06-13 10:00:00', 110.00, 'waiting');
+-- Dermatologo (Luca Bianchi, id_doctor=2, id_loc=2)
+INSERT INTO appointment (id_doctor, id_user, id_loc, date_time, price, state) VALUES
+(2, NULL, 2, '2025-06-11 14:30:00', 60.00, 'waiting'),
+(2, NULL,    2, '2025-06-15 09:00:00', 65.00, 'waiting');
 
--- Ortopedico (Marco Russo, id=4)
-INSERT INTO appointment (id_doctor, id_user, date_time, price, state) VALUES
-(4, 5,    '2025-06-10 08:00:00', 70.00, 'waiting'),
-(4, NULL, '2025-06-14 10:30:00', 75.00, 'waiting');
+-- Psichiatra (Francesca Neri, id_doctor=3, id_loc=3)
+INSERT INTO appointment (id_doctor, id_user, id_loc, date_time, price, state) VALUES
+(3, NULL, 3, '2025-06-09 15:00:00', 120.00, 'waiting'),
+(3, NULL, 3, '2025-06-13 10:00:00', 110.00, 'waiting');
+
+-- Ortopedico (Marco Russo, id_doctor=4, id_loc=4)
+INSERT INTO appointment (id_doctor, id_user, id_loc, date_time, price, state) VALUES
+(4, NULL,    4, '2025-06-10 08:00:00', 70.00, 'waiting'),
+(4, NULL, 4, '2025-06-14 10:30:00', 75.00, 'waiting');
