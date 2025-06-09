@@ -21,7 +21,7 @@ async def login(data: LoginRequest, response: Response):
         if data.password != db_password:
             raise HTTPException(status_code=401, detail="Password errata")
         
-        token = create_access_token({"sub": user[3], "id": user[0]})
+        token = create_access_token({"sub": user[3], "id": user[0], "name": user[1], "surname": user[2]})
 
         response.set_cookie(
             key="access_token",
