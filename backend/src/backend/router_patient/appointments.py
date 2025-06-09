@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from backend.connection import execute_query
 
 router_appointments = APIRouter()
@@ -36,8 +36,8 @@ async def cancel_appointment(appointment_id: int, patient_id: int):
         raise HTTPException(status_code=400, detail=f"Error canceling appointment: {str(e)}")
 
     
-@router_appointments.post("/get_free_appointment")
-async def get_free_appointments(doctor_id: int, long: float, lat: float):
+@router_appointments.get("/get_free_appointment")
+async def get_free_appointment(doctor_id: int = Query(...), lat: float = Query(...), long: float = Query(...)):
     """Endpoint to view free (not yet booked) appointments for a specific doctor at a specific location."""
     try:
         query = """
@@ -51,7 +51,9 @@ async def get_free_appointments(doctor_id: int, long: float, lat: float):
           AND l.longitude = %s
         ORDER BY a.date_time ASC
         """
-        result = execute_query(query, (doctor_id, lat, long))
+        raw_result = execute_query(query, (doctor_id, lat, long))
+        columns = ["appointment_id", "date_time"]
+        result = [dict(zip(columns, row)) for row in raw_result]
         return result
 
     except Exception as e:
