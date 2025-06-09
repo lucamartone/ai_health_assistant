@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
+import BookingCalendar from '../components/BookingCalendar';
 
 function Book() {
   const [search, setSearch] = useState('');
@@ -7,6 +8,10 @@ function Book() {
   const [city, setCity] = useState('');
   const [price, setPrice] = useState('');
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+
+  const handleSlotSelect = (doctor, date, time) => {
+    alert(`Prenotato con ${doctor.name} il ${date.toLocaleDateString()} alle ${time}`);
+  };
 
   const [doctors] = useState([
     {
@@ -60,11 +65,9 @@ function Book() {
   useEffect(() => {
     if (!mapRef.current || !window.google?.maps?.marker) return;
 
-    // Rimuovi i marker esistenti
     markersRef.current.forEach((m) => m.map = null);
     markersRef.current = [];
 
-    // Aggiungi nuovi marker
     filteredDoctors.forEach((doctor) => {
       const pinColor = doctor.id === selectedDoctorId ? '#1e40af' : '#3b82f6';
 
@@ -94,85 +97,81 @@ function Book() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4 py-20">
-      <div className="flex flex-col md:flex-row w-full max-w-7xl gap-6">
-        {/* Sezione dottori */}
-        <div className="flex-1 bg-blue-700 text-white rounded-2xl p-8 shadow-xl flex flex-col justify-between">
-          <div>
-            <h2 className="text-3xl font-bold mb-4 text-center">PRENOTA UN APPUNTAMENTO</h2>
-
-            {/* Cerca nome */}
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Cerca nome..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full px-4 py-2 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
-              />
-            </div>
-
-            {/* Filtri su una riga */}
-            <div className="flex flex-wrap md:flex-nowrap gap-3 mb-6">
-              <select
-                value={specialization}
-                onChange={(e) => setSpecialization(e.target.value)}
-                className="flex-1 min-w-[150px] px-4 py-2 rounded-md bg-blue-100 text-blue-900"
+    <div className="flex items-start justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4 py-20">
+      <div className="flex flex-row w-full max-w-7xl gap-6">
+        <div className="flex-1 bg-blue-700 text-white rounded-2xl p-8 shadow-xl flex flex-col">
+          <h2 className="text-3xl font-bold mb-4 text-center">PRENOTA UN APPUNTAMENTO</h2>
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Cerca nome..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-4 py-2 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
+            />
+          </div>
+          <div className="flex flex-wrap md:flex-nowrap gap-3 mb-6">
+            <select
+              value={specialization}
+              onChange={(e) => setSpecialization(e.target.value)}
+              className="flex-1 min-w-[150px] px-4 py-2 rounded-md bg-blue-100 text-blue-900"
+            >
+              <option value="">Specializzazioni</option>
+              <option value="Cardiologa">Cardiologa</option>
+              <option value="Dermatologo">Dermatologo</option>
+              <option value="Neurologo">Neurologo</option>
+            </select>
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="flex-1 min-w-[150px] px-4 py-2 rounded-md bg-blue-100 text-blue-900"
+            >
+              <option value="">Città</option>
+              <option value="Milano">Milano</option>
+              <option value="Roma">Roma</option>
+              <option value="Torino">Torino</option>
+            </select>
+            <select
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="flex-1 min-w-[150px] px-4 py-2 rounded-md bg-blue-100 text-blue-900"
+            >
+              <option value="">Prezzo</option>
+              <option value="50">Fino a 50€</option>
+              <option value="100">Fino a 100€</option>
+            </select>
+          </div>
+          <div className="space-y-4">
+            {filteredDoctors.length === 0 && (
+              <p className="text-blue-100 text-center">Nessun dottore trovato.</p>
+            )}
+            {filteredDoctors.map((doc) => (
+              <div
+                key={doc.id}
+                onClick={() => handleDoctorClick(doc)}
+                className={`flex flex-row items-start gap-6 bg-white text-blue-900 p-4 rounded-xl shadow-md hover:ring-2 transition ${
+                  doc.id === selectedDoctorId ? 'ring-2 ring-white' : ''
+                }`}
               >
-                <option value="">Specializzazioni</option>
-                <option value="Cardiologa">Cardiologa</option>
-                <option value="Dermatologo">Dermatologo</option>
-                <option value="Neurologo">Neurologo</option>
-              </select>
-              <select
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="flex-1 min-w-[150px] px-4 py-2 rounded-md bg-blue-100 text-blue-900"
-              >
-                <option value="">Città</option>
-                <option value="Milano">Milano</option>
-                <option value="Roma">Roma</option>
-                <option value="Torino">Torino</option>
-              </select>
-              <select
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="flex-1 min-w-[150px] px-4 py-2 rounded-md bg-blue-100 text-blue-900"
-              >
-                <option value="">Prezzo</option>
-                <option value="50">Fino a 50€</option>
-                <option value="100">Fino a 100€</option>
-              </select>
-            </div>
-
-            {/* Lista dottori scrollabile */}
-            <div className="overflow-y-auto max-h-[400px] pr-2 space-y-4">
-              {filteredDoctors.length === 0 && (
-                <p className="text-blue-100 text-center">Nessun dottore trovato.</p>
-              )}
-              {filteredDoctors.map((doc) => (
-                <div
-                  key={doc.id}
-                  onClick={() => handleDoctorClick(doc)}
-                  className={`cursor-pointer bg-white text-blue-900 p-4 rounded-xl shadow-md hover:ring-2 transition ${
-                    doc.id === selectedDoctorId ? 'ring-2 ring-white' : ''
-                  }`}
-                >
+                <div className="flex-1">
                   <h3 className="text-xl font-semibold">{doc.name}</h3>
                   <p>{doc.specialization} — {doc.city}</p>
                   <p className="text-sm text-gray-600">{doc.address}</p>
                   <p className="text-sm mt-1 font-medium">Prezzo: {doc.price}€</p>
-                  <button className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
+                  <button
+                    className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                  >
                     Prenota
                   </button>
                 </div>
-              ))}
-            </div>
+                <div className="min-w-[320px]">
+                  <BookingCalendar onSlotSelect={(date, time) => handleSlotSelect(doc, date, time)} doctor={doc} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Mappa */}
-        <div className="w-full md:w-[35%] flex items-center">
+        <div className="w-[35%] flex items-start">
           <div className="h-[480px] w-full rounded-2xl overflow-hidden shadow-xl bg-white">
             <div id="map" className="w-full h-full" />
           </div>
