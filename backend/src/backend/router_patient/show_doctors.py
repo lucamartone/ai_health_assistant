@@ -4,10 +4,35 @@ from backend.connection import execute_query
 
 router_show_doctors = APIRouter()
 
+@router_show_doctors.get("/free_doctors")
+async def get_free_doctors() :
+    """Endpoint to get doctors who have at least one free appointment"""
+    try:
+        query = """
+        SELECT DISTINCT 
+            d.id AS doctor_id,
+            u.name,
+            u.surname,
+            d.specialization,
+            d.rank,
+            u.profile_img
+        FROM doctor d
+        JOIN user u ON d.id_doctor = u.id
+        JOIN appointment a ON a.id_doctor = d.id
+        ORDER BY d.rank DESC;
+        """
+        raw_result = execute_query(query)
 
+        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img"]
+        result = [dict(zip(columns, row)) for row in raw_result]
+        return result
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error retrieving doctor availability")
+    
     
 @router_show_doctors.get("/free_doctors_by_specialization")
-async def get_doctors_by_availability(specialization: str) :
+async def get_doctors_by_specialization(specialization: str) :
     """Endpoint to get doctors who have at least one free appointment for a given specialization."""
     try:
         query = """
