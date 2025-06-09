@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { get_free_slots } from '../services/fetch_book';
+import { get_free_slots } from '../services/book/fetch_book';
+import { formatSlots } from '../services/book/aux_book';
 
 function BookingCalendar({ onSlotSelect, doctor }) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -18,19 +19,6 @@ function BookingCalendar({ onSlotSelect, doctor }) {
     };
     fetchSlots();
   }, [doctor]);
-
-  const formatSlots = (data) => {
-    const slotsMap = {};
-    data.forEach(item => {
-      const [datePart, timePart] = item.date_time.split('T');
-      const time = timePart.slice(0, 5); // Solo HH:mm
-      if (!slotsMap[datePart]) {
-        slotsMap[datePart] = [];
-      }
-      slotsMap[datePart].push(time);
-    });
-    return slotsMap;
-  };
 
   const dateKey = currentDate.toISOString().split('T')[0];
   const currentSlots = slots[dateKey] || [];

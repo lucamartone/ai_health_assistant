@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
-import { get_free_doctors } from '../services/fetch_book';
+import { get_free_doctors } from '../services/book/fetch_book';
 import BookingCalendar from '../components/BookingCalendar';
 
 function Book() {

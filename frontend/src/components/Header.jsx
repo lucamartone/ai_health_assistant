@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { UserCircle } from 'lucide-react';
-import { logout } from '../services/auth_profile';
+import { logout } from '../services/profile/fetch_profile';
 
 function Header() {
   const navigate = useNavigate();
@@ -11,8 +11,8 @@ function Header() {
 
   const handleLogout = async () => {
     try {
-      await logout(); // chiama solo la fetch
-      setUser(null);         // modifica stato globale
+      await logout();
+      setUser(null);
       navigate('/');
     } catch (err) {
       console.error(err);
