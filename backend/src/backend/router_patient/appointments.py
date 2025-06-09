@@ -37,16 +37,21 @@ async def cancel_appointment(appointment_id: int, patient_id: int):
 
     
 @router_appointments.post("/get_free_appointment")
-async def get_free_appointments(doctor_id: int):
-    """Endpoint to view free (not yet booked) appointments for a specific doctor."""
+async def get_free_appointments(doctor_id: int, long: float, lat: float):
+    """Endpoint to view free (not yet booked) appointments for a specific doctor at a specific location."""
     try:
         query = """
-        SELECT id, date_time
-        FROM appointment
-        WHERE id_doctor = %s AND id_user IS NULL AND state = 'waiting'
-        ORDER BY date_time ASC
+        SELECT a.id, a.date_time
+        FROM appointment a
+        JOIN location l ON a.id_loc = l.id 
+        WHERE a.id_doctor = %s
+          AND a.id_user IS NULL
+          AND a.state = 'waiting'
+          AND l.latitude = %s
+          AND l.longitude = %s
+        ORDER BY a.date_time ASC
         """
-        result = execute_query(query, (doctor_id,))
+        result = execute_query(query, (doctor_id, lat, long))
         return result
 
     except Exception as e:
