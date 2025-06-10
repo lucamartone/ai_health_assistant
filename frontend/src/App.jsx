@@ -6,6 +6,7 @@ import Profile from './pages/Profile';
 import Chat from './pages/Chat';
 import Book from './pages/Book';
 import Register from './pages/Register';
+import RegisterDoctor from './pages/RegisterDoctor';
 
 import Footer from './components/Footer';
 import Header from './components/Header';
@@ -25,6 +26,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/book" element={<Book />} />
+        <Route path="/register-doctor" element={<RegisterDoctor />} />
       </Routes>
 
       {!isChatPage && <Footer />}

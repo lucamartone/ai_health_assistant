@@ -100,6 +100,15 @@ function Register() {
             Accedi
           </a>
         </p>
+        <p className="text-center text-sm text-blue-100 mt-2">
+          Sei un dottore?{' '}
+          <a
+            onClick={() => navigate('/register-doctor')}
+            className="text-white font-medium underline hover:text-blue-300 cursor-pointer"
+          >
+            Registrati come dottore
+          </a>
+        </p>
       </div>
     </div>
   );
