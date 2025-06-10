@@ -27,7 +27,7 @@ async def get_free_doctors():
         """
         raw_result = execute_query(query)
 
-        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude"]
+        columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
     
@@ -60,7 +60,7 @@ async def get_doctors_by_specialization(specialization: str) :
         """
         raw_result = execute_query(query, (specialization,))
 
-        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude"]
+        columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
     
@@ -92,7 +92,7 @@ async def get_doctors_by_priceASC(specialization: str) -> List[dict]:
         ORDER BY min_price ASC;
         """
         raw_result = execute_query(query, (specialization,))
-        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "min_price","latitude", "longitude"]
+        columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "min_price","latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
 
@@ -126,7 +126,7 @@ async def get_doctors_by_priceDESC (specialization: str) -> List[dict]:
         """
         
         raw_result = execute_query(query, (specialization,))
-        columns = ["doctor_id", "name", "surname", "specialization", "rank", "profile_img", "max_price","latitude", "longitude"]
+        columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "max_price","latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
 
@@ -142,7 +142,7 @@ async def get_doctors_by_location(latitude: float, longitude: float) -> list:
 
     # This is a placeholder implementation
     if latitude and longitude:
-        return [{"doctor_id": "1", "name": "Dr. Smith", "location": (latitude, longitude)}]
+        return [{"id": "1", "name": "Dr. Smith", "location": (latitude, longitude)}]
     else:
         raise HTTPException(status_code=400, detail="Invalid location data")
 

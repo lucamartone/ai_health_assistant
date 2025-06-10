@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import { useState, useEffect } from 'react';
 import { getFreeDoctors } from '../services/book/fetch_book';
 import { getCoordinatesFromAddress } from '../services/maps/fetch_maps';
 import BookingCalendar from '../components/BookingCalendar';
+import MapView from '../components/MapView'; //
 
 function Book() {
   const [doctors, setDoctors] = useState([]);
@@ -11,20 +11,6 @@ function Book() {
   const [city, setCity] = useState('');
   const [price, setPrice] = useState('');
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
-
-  function MapExample() {
-    useEffect(() => {
-      async function fetchCoordinates() {
-        const coords = await getCoordinatesFromAddress("Via Roma 1", "Milano");
-        if (coords) {
-          console.log("Coordinate:", coords); // { lat: ..., lng: ... }
-          // Qui puoi aggiornare la mappa, ad esempio con Google Maps Marker
-        }
-      }
-
-      fetchCoordinates();
-    }, []);
-  }
 
   const handleSlotSelect = (doctor, date, time) => {
     alert(`Prenotato con ${doctor.name} il ${date.toLocaleDateString()} alle ${time}`);
@@ -51,75 +37,26 @@ function Book() {
     (price === '' || doc.price <= parseInt(price))
   );
 
-  const mapRef = useRef(null);
-  const markersRef = useRef([]);
-
-  useEffect(() => {
-    const loader = new Loader({
-      apiKey: 'AIzaSyDAGaYhV489MILIGcJUD_lg-y8mMXdcii4',
-      version: 'weekly',
-      libraries: ['marker'],
-    });
-
-    loader.load().then(() => {
-      mapRef.current = new google.maps.Map(document.getElementById('map'), {
-        center: { lat: 45.4642, lng: 9.19 },
-        zoom: 6,
-        mapId: 'f606eee6e7ca5e231298b2a1',
-      });
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!mapRef.current || !window.google?.maps?.marker) return;
-
-    markersRef.current.forEach((m) => m.map = null);
-    markersRef.current = [];
-
-    filteredDoctors.forEach((doctor) => {
-      const pinColor = doctor.id === selectedDoctorId ? '#1e40af' : '#3b82f6';
-
-      const pin = new google.maps.marker.PinElement({
-        background: pinColor,
-        glyphColor: 'white',
-        borderColor: '#1e3a8a',
-      });
-
-      const marker = new google.maps.marker.AdvancedMarkerElement({
-        map: mapRef.current,
-        position: {
-          lat: Number(doctor.latitude),
-          lng: Number(doctor.longitude)
-        },
-
-        title: doctor.name,
-        content: pin.element,
-      });
-
-      markersRef.current.push(marker);
-    });
-  }, [filteredDoctors, selectedDoctorId]);
-
   const handleDoctorClick = async (doctor) => {
     setSelectedDoctorId(doctor.id);
-    if (mapRef.current) {
-      mapRef.current.setZoom(17);
-      mapRef.current.setCenter({ lat: Number(doctor.latitude), lng: Number(doctor.longitude) });
-    }
-    const coords = await getCoordinatesFromAddress("Via Camesena, 22", "Roma");
-    if (coords) {
-      console.log("Coordinate da geocoding:", coords);
-      // opzionale: aggiorna mappa o altro
+
+    // (opzionale) geocoding per logging o altre funzioni
+    if (doctor.address && doctor.city) {
+      const coords = await getCoordinatesFromAddress(doctor.address, doctor.city);
+      if (coords) {
+        console.log("Coordinate da geocoding:", coords);
+      }
     }
   };
 
   return (
     <div className="flex items-start justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4 py-20">
       <div className="flex flex-row w-full max-w-7xl gap-6">
+        {/* Colonna sinistra */}
         <div className="flex-1 bg-blue-700 text-white rounded-2xl p-8 shadow-xl flex flex-col">
           <h2 className="text-3xl font-bold mb-4 text-center">PRENOTA UN APPUNTAMENTO</h2>
 
-          {/* Filtri fissi */}
+          {/* Filtri */}
           <div className="sticky top-0 bg-blue-700 z-10 pb-4">
             <div className="mb-4">
               <input
@@ -163,17 +100,17 @@ function Book() {
             </div>
           </div>
 
-          {/* Lista scrollabile */}
+          {/* Lista dottori */}
           <div className="mt-4 space-y-4 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 300px)' }}>
             {filteredDoctors.length === 0 && (
               <p className="text-blue-100 text-center">Nessun dottore trovato.</p>
             )}
             {filteredDoctors.map((doc) => (
               <div
-                key={doc.doctor_id}
+                key={doc.id}
                 onClick={() => handleDoctorClick(doc)}
                 className={`flex flex-row items-start gap-6 bg-white text-blue-900 p-4 rounded-xl shadow-md hover:ring-2 transition ${
-                  doc.doctor_id === selectedDoctorId ? 'ring-2 ring-white' : ''
+                  doc.id === selectedDoctorId ? 'ring-2 ring-white' : ''
                 }`}
               >
                 <div className="flex-1">
@@ -195,10 +132,9 @@ function Book() {
           </div>
         </div>
 
+        {/* Colonna destra: mappa */}
         <div className="w-[35%] flex items-start">
-          <div className="h-full w-full rounded-2xl overflow-hidden shadow-xl bg-white">
-            <div id="map" className="w-full h-full" />
-          </div>
+          <MapView doctors={filteredDoctors} selectedDoctorId={selectedDoctorId} />
         </div>
       </div>
     </div>
