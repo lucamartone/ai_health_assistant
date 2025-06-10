@@ -24,7 +24,7 @@ function Register() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
-      <div className="bg-blue-700 p-10 rounded-2xl shadow-xl w-full max-w-md md:max-w-lg text-white">
+      <div className="bg-blue-700 p-10 rounded-2xl shadow-xl w-full max-w-md md:max-w-lg text-white mt-24 mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">Registrati</h2>
         <p className="text-center text-sm md:text-base text-blue-100 mb-6">
           Crea un nuovo account per accedere ai servizi
