@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { getFreeDoctors } from '../services/book/fetch_book';
+import { getCoordinatesFromAddress } from '../services/maps/fetch_maps';
 import BookingCalendar from '../components/BookingCalendar';
 
 function Book() {
@@ -10,6 +11,20 @@ function Book() {
   const [city, setCity] = useState('');
   const [price, setPrice] = useState('');
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+
+  function MapExample() {
+    useEffect(() => {
+      async function fetchCoordinates() {
+        const coords = await getCoordinatesFromAddress("Via Roma 1", "Milano");
+        if (coords) {
+          console.log("Coordinate:", coords); // { lat: ..., lng: ... }
+          // Qui puoi aggiornare la mappa, ad esempio con Google Maps Marker
+        }
+      }
+
+      fetchCoordinates();
+    }, []);
+  }
 
   const handleSlotSelect = (doctor, date, time) => {
     alert(`Prenotato con ${doctor.name} il ${date.toLocaleDateString()} alle ${time}`);
@@ -85,11 +100,16 @@ function Book() {
     });
   }, [filteredDoctors, selectedDoctorId]);
 
-  const handleDoctorClick = (doctor) => {
+  const handleDoctorClick = async (doctor) => {
     setSelectedDoctorId(doctor.id);
     if (mapRef.current) {
       mapRef.current.setZoom(17);
       mapRef.current.setCenter({ lat: Number(doctor.latitude), lng: Number(doctor.longitude) });
+    }
+    const coords = await getCoordinatesFromAddress("Via Camesena, 22", "Roma");
+    if (coords) {
+      console.log("Coordinate da geocoding:", coords);
+      // opzionale: aggiorna mappa o altro
     }
   };
 
