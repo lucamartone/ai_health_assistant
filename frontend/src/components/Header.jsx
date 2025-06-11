@@ -6,7 +6,8 @@ import { logout } from '../services/profile/fetch_profile';
 
 function Header() {
   const navigate = useNavigate();
-  isDoctorApp = useLocation().pathname.startsWith('/doctor');
+  const location = useLocation();
+  const isDoctorApp = location.pathname.startsWith('/doctor');
   const { user, loading, setUser } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -42,7 +43,7 @@ function Header() {
           </div>
 
           <nav className="hidden md:flex space-x-1">
-            <button onClick={() => navigate('/')} className={navLinkStyle}>
+            <button onClick={() => navigate(isDoctorApp ? '/doctor' : '/')} className={navLinkStyle}>
               Home
             </button>
             <button onClick={() => navigate('/about')} className={navLinkStyle}>
@@ -68,21 +69,13 @@ function Header() {
 
               <button 
                 onClick={() => navigate('login')} 
-<<<<<<< Updated upstream
                 className="px-4 sm:px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200 active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
-=======
-                className="px-4 sm:px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
->>>>>>> Stashed changes
               >
                 Accedi
               </button>
               <button 
                 onClick={() => navigate('register')} 
-<<<<<<< Updated upstream
                 className="px-4 sm:px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
-=======
-                className="px-4 sm:px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
->>>>>>> Stashed changes
               >
                 Registrati
               </button>
