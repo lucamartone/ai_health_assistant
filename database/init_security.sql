@@ -2,7 +2,6 @@
 
 -- Modifica della tabella user per supportare le nuove funzionalità di sicurezza
 ALTER TABLE user
-    MODIFY COLUMN password VARCHAR(255) NOT NULL,
     ADD COLUMN last_login_attempt TIMESTAMP NULL,
     ADD COLUMN failed_attempts INT DEFAULT 0,
     ADD COLUMN password_changed_at TIMESTAMP NULL,
