@@ -20,7 +20,7 @@ function Header() {
   };
 
   const navLinkStyle =
-    'px-5 py-2 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all duration-200 shadow-sm hover:shadow';
+    'px-5 py-2 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all duration-200 shadow-sm hover:shadow active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20';
 
   return (
     <header className="bg-blue-700/90 backdrop-blur-sm text-white px-4 sm:px-6 py-4 fixed top-0 w-full z-50 shadow-lg h-[72px]">
@@ -66,20 +66,19 @@ function Header() {
               </span>
 
               <button 
-                onClick={() => navigate('/login')} 
-                className="px-4 sm:px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
+                onClick={() => navigate('login')} 
+                className="px-4 sm:px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200 active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
               >
                 Accedi
               </button>
               <button 
-                onClick={() => navigate('/register')} 
-                className="px-4 sm:px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
+                onClick={() => navigate('register')} 
+                className="px-4 sm:px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
                 Registrati
               </button>
             </div>
           )}
-
 
           {!loading && user && (
             <div className="flex items-center space-x-3">
@@ -88,14 +87,14 @@ function Header() {
               </span>
               <button
                 onClick={() => navigate('/profile')}
-                className="p-2 rounded-full hover:bg-white/20 transition-all"
+                className="p-2 rounded-full hover:bg-white/20 transition-all active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 title="Profilo"
               >
                 <UserCircle className="w-7 h-7 text-white" />
               </button>
               <button
-                onClick={ handleLogout }
-                className="px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm font-medium bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200 active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
               >
                 Logout
               </button>
@@ -104,7 +103,7 @@ function Header() {
 
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isMobileMenuOpen ? (
@@ -122,10 +121,10 @@ function Header() {
           <nav className="flex flex-col p-4 space-y-2">
             <button 
               onClick={() => {
-                navigate('');
+                navigate('/');
                 setIsMobileMenuOpen(false);
               }} 
-              className={navLinkStyle}
+              className={`${navLinkStyle} active:bg-white/10`}
             >
               Home
             </button>
@@ -134,7 +133,7 @@ function Header() {
                 navigate('/about');
                 setIsMobileMenuOpen(false);
               }} 
-              className={navLinkStyle}
+              className={`${navLinkStyle} active:bg-white/10`}
             >
               About
             </button>
@@ -143,7 +142,7 @@ function Header() {
                 navigate('/contact');
                 setIsMobileMenuOpen(false);
               }} 
-              className={navLinkStyle}
+              className={`${navLinkStyle} active:bg-white/10`}
             >
               Contacts
             </button>
@@ -155,7 +154,7 @@ function Header() {
                     navigate('/login');
                     setIsMobileMenuOpen(false);
                   }} 
-                  className="w-full px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
+                  className="w-full px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200 active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 >
                   Accedi
                 </button>
@@ -164,7 +163,7 @@ function Header() {
                     navigate('/register');
                     setIsMobileMenuOpen(false);
                   }} 
-                  className="w-full px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
+                  className="w-full px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
                 >
                   Registrati
                 </button>
@@ -179,7 +178,7 @@ function Header() {
                     navigate('/profile');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex items-center px-5 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-lg"
+                  className="flex items-center px-5 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-lg active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 >
                   <UserCircle className="w-5 h-5 mr-2" /> Profilo
                 </button>
@@ -188,7 +187,7 @@ function Header() {
                     handleLogout();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="px-5 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-lg"
+                  className="px-5 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-lg active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 >
                   Logout
                 </button>
