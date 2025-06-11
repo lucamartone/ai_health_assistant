@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Trash2 } from 'lucide-react'; // Puoi usare anche una tua icona
 
 function RegisterDoctor() {
   const [name, setName] = useState('');
@@ -20,6 +21,11 @@ function RegisterDoctor() {
 
   const addAddressField = () => {
     setAddresses([...addresses, '']);
+  };
+
+  const removeAddressField = (index) => {
+    const newAddresses = addresses.filter((_, i) => i !== index);
+    setAddresses(newAddresses);
   };
 
   return (
@@ -68,7 +74,7 @@ function RegisterDoctor() {
           </div>
 
           {/* Specializzazione + Sesso */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
               value={specialization}
@@ -77,9 +83,9 @@ function RegisterDoctor() {
               className="w-full px-4 py-3 rounded-md bg-green-100 text-green-900 placeholder-green-600 focus:outline-none"
             />
 
-            <div className="flex justify-start items-center space-x-4 bg-green-100 px-4 py-3 rounded-md text-green-900">
-              <span className="font-medium">Sesso:</span>
-              <label className="flex items-center space-x-1 cursor-pointer">
+            <div className="flex justify-center items-center bg-green-100 px-4 py-3 rounded-md text-green-900">
+              <span className="font-medium mr-4">Sesso:</span>
+              <label className="flex items-center space-x-1 mr-4 cursor-pointer">
                 <input
                   type="radio"
                   name="sex"
@@ -104,14 +110,25 @@ function RegisterDoctor() {
 
           {/* Indirizzi */}
           {addresses.map((address, index) => (
-            <input
-              key={index}
-              type="text"
-              value={address}
-              onChange={(e) => handleAddressChange(index, e.target.value)}
-              placeholder={`Indirizzo sede #${index + 1}`}
-              className="w-full px-4 py-3 rounded-md bg-green-100 text-green-900 placeholder-green-600 focus:outline-none"
-            />
+            <div key={index} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => handleAddressChange(index, e.target.value)}
+                placeholder={`Indirizzo sede #${index + 1}`}
+                className="w-full px-4 py-3 rounded-md bg-green-100 text-green-900 placeholder-green-600 focus:outline-none"
+              />
+              {index > 0 && (
+                <button
+                  type="button"
+                  onClick={() => removeAddressField(index)}
+                  className="text-white hover:text-red-400"
+                  title="Rimuovi sede"
+                >
+                  <Trash2 size={18} />
+                </button>
+              )}
+            </div>
           ))}
 
           {/* Pulsante Aggiungi sede */}

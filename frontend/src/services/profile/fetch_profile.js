@@ -1,7 +1,5 @@
-const BACKEND_URL = 'http://localhost:8001';
-
 export async function login(email, password) {
-  const response = await fetch(`${BACKEND_URL}/profile/user/login`, {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/profile/user/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include', // per inviare i cookie di sessione
@@ -19,7 +17,7 @@ export async function login(email, password) {
 
 export async function register(name, surname, email, password, sex) {
   const data = {name, surname, email, password, sex}
-  const response = await fetch(`${BACKEND_URL}/profile/user/register`, {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/profile/user/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -45,7 +43,7 @@ export async function logout(){
 };
 
 export async function getProfile() {
-  const response = await fetch(`${BACKEND_URL}/profile/user/profile`, {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/profile/user/profile`, {
     method: 'GET',
     credentials: 'include', // per inviare i cookie di sessione
   });
