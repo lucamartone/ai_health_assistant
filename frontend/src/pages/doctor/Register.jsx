@@ -29,10 +29,10 @@ function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[600px] bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
-      <div className="bg-green-700 px-6 py-6 rounded-2xl shadow-xl w-full max-w-2xl text-white max-h-[72vh] mt-24 mb-12 overflow-y-auto">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
+      <div className="bg-white px-6 py-6 rounded-2xl shadow-xl w-full max-w-2xl text-blue-900 max-h-[72vh] mt-24 mb-12 overflow-y-auto">
         <h2 className="text-3xl font-bold text-center mb-2">Registrazione Dottore</h2>
-        <p className="text-center text-sm text-green-100 mb-4">
+        <p className="text-center text-sm text-blue-600 mb-4">
           Crea un nuovo profilo per fornire i tuoi servizi
         </p>
 
@@ -44,14 +44,14 @@ function Register() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nome"
-              className="w-full px-4 py-3 rounded-md bg-green-100 text-green-900 placeholder-green-600 focus:outline-none"
+              className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="text"
               value={surname}
               onChange={(e) => setSurname(e.target.value)}
               placeholder="Cognome"
-              className="w-full px-4 py-3 rounded-md bg-green-100 text-green-900 placeholder-green-600 focus:outline-none"
+              className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -62,14 +62,14 @@ function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
-              className="w-full px-4 py-3 rounded-md bg-green-100 text-green-900 placeholder-green-600 focus:outline-none"
+              className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full px-4 py-3 rounded-md bg-green-100 text-green-900 placeholder-green-600 focus:outline-none"
+              className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -80,10 +80,10 @@ function Register() {
               value={specialization}
               onChange={(e) => setSpecialization(e.target.value)}
               placeholder="Specializzazione"
-              className="w-full px-4 py-3 rounded-md bg-green-100 text-green-900 placeholder-green-600 focus:outline-none"
+              className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-            <div className="flex justify-center items-center bg-green-100 px-4 py-3 rounded-md text-green-900">
+            <div className="flex justify-center items-center bg-blue-50 px-4 py-3 rounded-md text-blue-900">
               <span className="font-medium mr-4">Sesso:</span>
               <label className="flex items-center space-x-1 mr-4 cursor-pointer">
                 <input
@@ -91,7 +91,7 @@ function Register() {
                   name="sex"
                   checked={sex === 'M'}
                   onChange={() => setSex('M')}
-                  className="form-radio"
+                  className="form-radio text-blue-600"
                 />
                 <span className="text-sm">M</span>
               </label>
@@ -101,7 +101,7 @@ function Register() {
                   name="sex"
                   checked={sex === 'F'}
                   onChange={() => setSex('F')}
-                  className="form-radio"
+                  className="form-radio text-blue-600"
                 />
                 <span className="text-sm">F</span>
               </label>
@@ -116,13 +116,13 @@ function Register() {
                 value={address}
                 onChange={(e) => handleAddressChange(index, e.target.value)}
                 placeholder={`Indirizzo sede #${index + 1}`}
-                className="w-full px-4 py-3 rounded-md bg-green-100 text-green-900 placeholder-green-600 focus:outline-none"
+                className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               {index > 0 && (
                 <button
                   type="button"
                   onClick={() => removeAddressField(index)}
-                  className="text-white hover:text-red-400"
+                  className="text-blue-600 hover:text-red-500"
                   title="Rimuovi sede"
                 >
                   <Trash2 size={18} />
@@ -136,7 +136,7 @@ function Register() {
             <button
               type="button"
               onClick={addAddressField}
-              className="text-sm font-medium underline hover:text-green-300"
+              className="text-sm font-medium text-blue-600 hover:text-blue-800"
             >
               + Aggiungi sede
             </button>
@@ -145,27 +145,27 @@ function Register() {
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-white text-green-700 py-3 rounded-md font-semibold hover:bg-green-100 transition"
+            className="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition"
           >
             Registrati
           </button>
         </form>
 
         {/* Link Accedi / Registrati come paziente */}
-        <p className="text-center text-sm text-green-100 mt-4">
+        <p className="text-center text-sm text-blue-600 mt-4">
           Hai già un account?{' '}
           <span
             onClick={() => navigate('/login')}
-            className="text-white font-medium underline hover:text-green-300 cursor-pointer"
+            className="text-blue-800 font-medium hover:text-blue-900 cursor-pointer"
           >
             Accedi
           </span>
         </p>
-        <p className="text-center text-sm text-green-100 mt-1">
+        <p className="text-center text-sm text-blue-600 mt-1">
           Sei un paziente?{' '}
           <span
             onClick={() => navigate('/register')}
-            className="text-white font-medium underline hover:text-green-300 cursor-pointer"
+            className="text-blue-800 font-medium hover:text-blue-900 cursor-pointer"
           >
             Registrati come paziente
           </span>

@@ -89,10 +89,22 @@ const Chat = () => {
   };
 
   const handleDeleteChat = (chatId) => {
-    setConversations(prev => prev.filter(conv => conv.id !== chatId));
+    // Rimuovi la chat dalle conversazioni
+    const updatedConversations = conversations.filter(conv => conv.id !== chatId);
+    setConversations(updatedConversations);
+
+    // Se la chat eliminata era quella attiva
     if (chatId === activeConversation) {
-      // If we deleted the active chat, create a new one
-      createNewChat();
+      // Se ci sono altre chat, seleziona la prima disponibile
+      if (updatedConversations.length > 0) {
+        const nextChat = updatedConversations[0];
+        setActiveConversation(nextChat.id);
+        setMessages(nextChat.messages);
+        setIsFirstMessage(nextChat.messages.length === 0);
+      } else {
+        // Se non ci sono altre chat, creane una nuova
+        createNewChat();
+      }
     }
   };
 
