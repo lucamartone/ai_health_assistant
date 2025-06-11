@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { UserCircle } from 'lucide-react';
@@ -56,20 +56,30 @@ function Header() {
         <div className="flex items-center space-x-2 sm:space-x-3">
           {!loading && !user && (
             <div className="hidden sm:flex items-center space-x-3">
+
+              {/* Aggiunta testuale dinamica */}
+              <span 
+                onClick={() => navigate(location.pathname.startsWith('/doctor') ? '/' : '/doctor')}
+                className="text-sm underline cursor-pointer hover:text-blue-200 transition-colors duration-150"
+              >
+                {location.pathname.startsWith('/doctor') ? 'Sei un paziente?' : 'Sei un dottore?'}
+              </span>
+
               <button 
-                onClick={() => navigate('login')} 
+                onClick={() => navigate('/login')} 
                 className="px-4 sm:px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
               >
                 Accedi
               </button>
               <button 
-                onClick={() => navigate('register')} 
+                onClick={() => navigate('/register')} 
                 className="px-4 sm:px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
               >
                 Registrati
               </button>
             </div>
           )}
+
 
           {!loading && user && (
             <div className="flex items-center space-x-3">
