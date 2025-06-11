@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import { login } from '../services/profile/fetch_profile';
-import { useAuth } from '../contexts/AuthContext';
+import { login } from '../../services/profile/fetch_profile';
+import { useAuth } from '../../contexts/AuthContext';
 
 function Login() {
   const [email, setEmail] = useState('');

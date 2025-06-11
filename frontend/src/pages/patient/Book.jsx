@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getFreeDoctors } from '../services/book/fetch_book';
-import { getCoordinatesFromAddress } from '../services/maps/fetch_maps';
-import BookingCalendar from '../components/BookingCalendar';
-import MapView from '../components/MapView'; //
+import { getFreeDoctors } from '../../services/book/fetch_book';
+import { getCoordinatesFromAddress } from '../../services/maps/fetch_maps';
+import BookingCalendar from '../../components/BookingCalendar';
+import MapView from '../../components/MapView'; //
 
 function Book() {
   const [doctors, setDoctors] = useState([]);

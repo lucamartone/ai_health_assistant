@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react'; // Puoi usare anche una tua icona
 
-function RegisterDoctor() {
+function Register() {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
@@ -175,4 +175,4 @@ function RegisterDoctor() {
   );
 }
 
-export default RegisterDoctor;
+export default Register;

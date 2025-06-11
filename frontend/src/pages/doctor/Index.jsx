@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import FeatureCard from '../components/FeatureCard';
+import FeatureCard from '../../components/FeatureCard';
 
 function Index() {
     const navigate = useNavigate();

@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { llmService } from '../services/llmService';
-import Sidebar from '../components/Sidebar';
-import WelcomeMessage from '../components/chat/WelcomeMessage';
-import MessageList from '../components/chat/MessageList';
-import ChatInput from '../components/chat/ChatInput';
-import ChatStyles from '../components/chat/ChatStyles';
+import { llmService } from '../../services/llmService';
+import Sidebar from '../../components/Sidebar';
+import WelcomeMessage from '../../components/chat/WelcomeMessage';
+import MessageList from '../../components/chat/MessageList';
+import ChatInput from '../../components/chat/ChatInput';
+import ChatStyles from '../../components/chat/ChatStyles';
 
 const Chat = () => {
   const [conversations, setConversations] = useState([]);
