@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react'; // Puoi usare anche una tua icona
+import { Trash2 } from 'lucide-react';
+import AddressAutocomplete from '../../components/AddressAutocomplete';
 
 function Register() {
   const [name, setName] = useState('');
@@ -9,23 +10,39 @@ function Register() {
   const [password, setPassword] = useState('');
   const [sex, setSex] = useState('');
   const [specialization, setSpecialization] = useState('');
-  const [addresses, setAddresses] = useState(['']);
+  const [addresses, setAddresses] = useState([
+    { address: '', latitude: null, longitude: null }
+  ]);
 
   const navigate = useNavigate();
 
-  const handleAddressChange = (index, value) => {
-    const newAddresses = [...addresses];
-    newAddresses[index] = value;
-    setAddresses(newAddresses);
+  const handleAddressChange = (index, newVal) => {
+    const updated = [...addresses];
+    updated[index] = newVal;
+    setAddresses(updated);
   };
 
   const addAddressField = () => {
-    setAddresses([...addresses, '']);
+    setAddresses([...addresses, { address: '', latitude: null, longitude: null }]);
   };
 
   const removeAddressField = (index) => {
     const newAddresses = addresses.filter((_, i) => i !== index);
     setAddresses(newAddresses);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log({
+      name,
+      surname,
+      email,
+      password,
+      sex,
+      specialization,
+      addresses,
+    });
+    // TODO: invia al backend
   };
 
   return (
@@ -36,7 +53,7 @@ function Register() {
           Crea un nuovo profilo per fornire i tuoi servizi
         </p>
 
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Nome + Cognome */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
@@ -111,12 +128,9 @@ function Register() {
           {/* Indirizzi */}
           {addresses.map((address, index) => (
             <div key={index} className="flex items-center gap-2">
-              <input
-                type="text"
+              <AddressAutocomplete
                 value={address}
-                onChange={(e) => handleAddressChange(index, e.target.value)}
-                placeholder={`Indirizzo sede #${index + 1}`}
-                className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(val) => handleAddressChange(index, val)}
               />
               {index > 0 && (
                 <button

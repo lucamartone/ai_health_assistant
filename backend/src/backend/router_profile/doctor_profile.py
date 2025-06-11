@@ -35,3 +35,13 @@ async def set_cv(doctor_id: str, cv_data: str):
     else:
         raise HTTPException(status_code=400, detail="Invalid input")
 
+@router_doctor_profile.post("/register")
+async def register_doctor(data: RegisterRequest):
+    """Endpoint to register a doctor."""
+    # Implement logic to register the doctor in the system
+
+
+    if doctor_id and name and specialty:
+        return {"message": "Doctor registered successfully"}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid input")
