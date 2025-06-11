@@ -6,6 +6,7 @@ import { logout } from '../services/profile/fetch_profile';
 
 function Header() {
   const navigate = useNavigate();
+  isDoctorApp = useLocation().pathname.startsWith('/doctor');
   const { user, loading, setUser } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -27,12 +28,12 @@ function Header() {
       <div className="max-w-7xl mx-auto flex items-center justify-between h-full">
         <div className="flex items-center space-x-4 sm:space-x-8">
           <div 
-            onClick={() => navigate('/')}
+            onClick={() => navigate(isDoctorApp ? '/doctor' : '/')}
             className="flex items-center space-x-2 cursor-pointer"
           >
             <img 
               src="/favicon.png" 
-              alt="AI Health Assistant Logo" 
+              alt="AI Health Assistant Logo"
               className="w-8 h-8 sm:w-10 sm:h-10"
             />
             <h1 className="text-xl sm:text-2xl font-bold whitespace-nowrap bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent focus:outline-none">
@@ -67,13 +68,21 @@ function Header() {
 
               <button 
                 onClick={() => navigate('login')} 
+<<<<<<< Updated upstream
                 className="px-4 sm:px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200 active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
+=======
+                className="px-4 sm:px-5 py-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all duration-200"
+>>>>>>> Stashed changes
               >
                 Accedi
               </button>
               <button 
                 onClick={() => navigate('register')} 
+<<<<<<< Updated upstream
                 className="px-4 sm:px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+=======
+                className="px-4 sm:px-5 py-2 text-sm font-medium bg-white text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
+>>>>>>> Stashed changes
               >
                 Registrati
               </button>
