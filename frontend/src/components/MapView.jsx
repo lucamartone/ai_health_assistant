@@ -9,7 +9,7 @@ function MapView({ doctors, selectedDoctorId }) {
 
   useEffect(() => {
     const loader = new Loader({
-      apiKey: "AIzaSyDAGaYhV489MILIGcJUD_lg-y8mMXdcii4",
+      apiKey: import.meta.env.VITE_MAP_VIEW_KEY,
       version: 'weekly',
       libraries: ['marker'],
     });

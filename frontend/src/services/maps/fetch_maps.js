@@ -1,6 +1,6 @@
 export async function getCoordinatesFromAddress(address, city) {
   const fullAddress = `${address}, ${city}`;
-  const apiKey = "AIzaSyCgm3ECbZXvQYxg3YdFVhqZN_insAqlEJ8";
+  const apiKey = import.meta.env.VITE_GEOCODING_KEY;
 
   try {
     const response = await fetch(

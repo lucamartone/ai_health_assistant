@@ -1,31 +1,25 @@
 services:
   frontend:
-    build: 
-      context: ./frontend
-      dockerfile: dockerfile
+    build:
+      context: .  # ← root del progetto!
+      dockerfile: frontend/Dockerfile
     ports:
       - "80:80"
     depends_on:
       - backend
+    env_file:
+      - .env  # opzionale per runtime
 
   backend:
     build:
       context: ./backend
-      dockerfile: dockerfile
-    environment:
-      - BACKEND_URL=http://backend:8001
+      dockerfile: Dockerfile
     ports:
       - "8001:8001"
-
-  #llm:
-  #  build:
-  #    context: ./LLM
-  #    dockerfile: Dockerfile
-  #  ports:
-  #    - "5001:5001"
-  #    - "11434:11434"
-  #  volumes:
-  #    - ollama_data:/root/.ollama
+    env_file:
+      - .env  # Rende tutte le variabili disponibili
+    depends_on:
+      - database
 
   database:
     image: mariadb:latest

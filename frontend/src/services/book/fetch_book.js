@@ -1,7 +1,5 @@
-const BACKEND_URL = 'http://localhost:8001';
-
 export async function getFreeDoctors() {
-  const response = await fetch(`${BACKEND_URL}/patient/doctors/get_free_doctors`, {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/patient/doctors/get_free_doctors`, {
     method: 'GET'
   });
 
