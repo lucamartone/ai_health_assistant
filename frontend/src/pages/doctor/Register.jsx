@@ -155,7 +155,7 @@ function Register() {
         <p className="text-center text-sm text-blue-600 mt-4">
           Hai già un account?{' '}
           <span
-            onClick={() => navigate('login')}
+            onClick={() => navigate('/doctor/login')}
             className="text-blue-800 font-medium hover:text-blue-900 cursor-pointer"
           >
             Accedi
@@ -164,7 +164,7 @@ function Register() {
         <p className="text-center text-sm text-blue-600 mt-1">
           Sei un paziente?{' '}
           <span
-            onClick={() => navigate('register')}
+            onClick={() => navigate('/register')}
             className="text-blue-800 font-medium hover:text-blue-900 cursor-pointer"
           >
             Registrati come paziente
