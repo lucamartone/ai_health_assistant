@@ -103,7 +103,7 @@ function Register() {
         <p className="text-center text-sm text-blue-100 mt-2">
           Sei un dottore?{' '}
           <a
-            onClick={() => navigate('/register-doctor')}
+            onClick={() => navigate('/doctor/register')}
             className="text-white font-medium underline hover:text-blue-300 cursor-pointer"
           >
             Registrati come dottore

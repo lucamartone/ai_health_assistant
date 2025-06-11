@@ -112,7 +112,7 @@ function Header() {
           <nav className="flex flex-col p-4 space-y-2">
             <button 
               onClick={() => {
-                navigate('/');
+                navigate('');
                 setIsMobileMenuOpen(false);
               }} 
               className={navLinkStyle}
