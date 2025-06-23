@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from backend.router_profile.pydantic.profile_requests import RegisterDoctorRequest
 
 router_doctor_profile = APIRouter()
 
@@ -36,7 +37,7 @@ async def set_cv(doctor_id: str, cv_data: str):
         raise HTTPException(status_code=400, detail="Invalid input")
 
 @router_doctor_profile.post("/register")
-async def register_doctor(data: RegisterRequest):
+async def register_doctor(data: RegisterDoctorRequest):
     """Endpoint to register a doctor."""
     # Implement logic to register the doctor in the system
 
