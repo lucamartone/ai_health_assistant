@@ -65,6 +65,16 @@ CREATE TABLE appointment (
     CONSTRAINT valid_state CHECK (state IN ('waiting', 'booked', 'completed', 'cancelled'))
 );
 
+CREATE TABLE history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_patient INT NOT NULL,
+    id_appointment INT NOT NULL,
+    report TEXT,
+    review INT CHECK (review BETWEEN 1 AND 5),
+    FOREIGN KEY (id_patient) REFERENCES patient(id),
+    FOREIGN KEY (id_appointment) REFERENCES appointment(id)
+);
+
 -- Trigger per validare il sesso dell'utente
 DELIMITER //
 CREATE TRIGGER check_user_sex
@@ -134,18 +144,6 @@ BEGIN
     END IF;
 END;//
 DELIMITER ;
-
-CREATE TABLE history (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_patient INT NOT NULL,
-    id_appointment INT NOT NULL,
-    report TEXT,
-    review INT CHECK (review BETWEEN 1 AND 5),
-    FOREIGN KEY (id_patient) REFERENCES patient(id),
-    FOREIGN KEY (id_appointment) REFERENCES appointment(id)
-);
-
-
 
 -- DOTTORI
 INSERT INTO user (name, surname, email, password, sex) VALUES

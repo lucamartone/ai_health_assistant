@@ -8,12 +8,12 @@ ALTER TABLE user
     ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ADD CONSTRAINT email_format CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$');
 
--- Aggiornamento della tabella appointment per migliori controlli
 ALTER TABLE appointment
-    ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ADD CONSTRAINT valid_price CHECK (price >= 0),
-    ADD CONSTRAINT valid_date_time CHECK (date_time > CURRENT_TIMESTAMP),
-    MODIFY COLUMN state VARCHAR(20) DEFAULT 'waiting' CHECK (state IN ('waiting', 'booked', 'completed', 'cancelled'));
+MODIFY COLUMN state VARCHAR(20) DEFAULT 'waiting';
+
+ALTER TABLE appointment
+ADD CONSTRAINT valid_state CHECK (state IN ('waiting', 'booked', 'completed', 'cancelled'));
+
 
 -- Aggiornamento della tabella location per validazione coordinate
 ALTER TABLE location
@@ -63,30 +63,14 @@ BEGIN
 END//
 DELIMITER ;
 
--- Funzione per gestire il blocco dell'account
 DELIMITER //
-CREATE TRIGGER check_account_lock_trigger
-BEFORE UPDATE ON user
+CREATE TRIGGER check_valid_date_time
+BEFORE INSERT ON appointment
 FOR EACH ROW
 BEGIN
-    IF NEW.failed_attempts >= 5 AND 
-       NEW.last_login_attempt IS NOT NULL AND
-       TIMESTAMPDIFF(MINUTE, NEW.last_login_attempt, CURRENT_TIMESTAMP) < 15 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Account temporaneamente bloccato. Riprova più tardi.';
+    IF NEW.date_time <= CURRENT_TIMESTAMP THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = "La data dell'appuntamento deve essere nel futuro";
     END IF;
-END//
+END //
 DELIMITER ;
-
--- Funzione per pulire i tentativi di login falliti
-DELIMITER //
-CREATE TRIGGER reset_failed_attempts_trigger
-BEFORE UPDATE ON user
-FOR EACH ROW
-BEGIN
-    IF NEW.failed_attempts > 0 AND 
-       NEW.last_login_attempt IS NOT NULL AND
-       TIMESTAMPDIFF(MINUTE, NEW.last_login_attempt, CURRENT_TIMESTAMP) >= 15 THEN
-        SET NEW.failed_attempts = 0;
-    END IF;
-END//
-DELIMITER ; 
