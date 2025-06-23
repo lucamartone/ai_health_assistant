@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getSlots, getNewDate } from '../services/book/aux_book';
 
 function BookingCalendar({ onSlotSelect, doctor }) {
+  console.log(doctor);
   const [currentDate, setCurrentDate] = useState(new Date());
   const slots = getSlots(doctor);
 

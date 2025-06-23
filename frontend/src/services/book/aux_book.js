@@ -8,8 +8,9 @@ export function getSlots(doctor) {
     const fetchSlots = async () => {
       if (!doctor) return;
       try {
-        const data = await getFreeSlots(doctor.doctor_id, doctor.latitude, doctor.longitude);
-        setSlots(formatSlots(data));
+        const data = await getFreeSlots(doctor.id, doctor.latitude, doctor.longitude);
+        console.log('Slot disponibili:', data);
+        setSlots(formatSlots(data.slots));
       } catch (error) {
         console.error('Errore fetch slot:', error);
       }

@@ -12,7 +12,7 @@ export async function getFreeDoctors() {
 }
 
 export async function getFreeSlots(doctor_id, lat, lng) {
-  const url = `${BACKEND_URL}/patient/appointments/get_free_slots?doctor_id=${doctor_id}&lat=${lat}&long=${lng}`;
+  const url = `${import.meta.env.VITE_BACKEND_URL}/patient/appointments/get_free_slots?doctor_id=${doctor_id}&lat=${lat}&long=${lng}`;
 
   const response = await fetch(url, {
     method: 'GET',
