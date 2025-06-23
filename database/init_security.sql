@@ -8,13 +8,6 @@ ALTER TABLE user
     ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ADD CONSTRAINT email_format CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$');
 
-ALTER TABLE appointment
-MODIFY COLUMN state VARCHAR(20) DEFAULT 'waiting';
-
-ALTER TABLE appointment
-ADD CONSTRAINT valid_state CHECK (state IN ('waiting', 'booked', 'completed', 'cancelled'));
-
-
 -- Aggiornamento della tabella location per validazione coordinate
 ALTER TABLE location
     ADD CONSTRAINT valid_latitude CHECK (latitude BETWEEN -90 AND 90),
