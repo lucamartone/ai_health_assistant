@@ -187,7 +187,7 @@ async def delete_account(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore durante l'eliminazione dell'account: {str(e)}")
 
-@router_user_profile.get("/logout")
+@router_user_profile.post("/logout")
 async def logout(response: Response):
     """Endpoint per effettuare il logout di un utente eliminando il cookie di accesso."""
     response.delete_cookie(

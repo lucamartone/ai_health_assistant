@@ -8,7 +8,6 @@ async def set_id_card(doctor_id: str, id_card_data: str):
     """Endpoint to set the ID card for a doctor."""
     # Implement logic to save the ID card data for the doctor
 
-
     if doctor_id and id_card_data:
         return {"message": "ID card set successfully"}
     else:

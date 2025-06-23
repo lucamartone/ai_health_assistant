@@ -1,29 +1,29 @@
--- Aggiornamenti di sicurezza per il database esistente
+-- Creazione degli indici (senza IF NOT EXISTS)
+DROP INDEX IF EXISTS idx_user_email ON user;
+CREATE INDEX idx_user_email ON user(email);
 
--- Modifica della tabella user per supportare le nuove funzionalità di sicurezza
-ALTER TABLE user
-    ADD COLUMN last_login_attempt TIMESTAMP NULL,
-    ADD COLUMN failed_attempts INT DEFAULT 0,
-    ADD COLUMN password_changed_at TIMESTAMP NULL,
-    ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ADD CONSTRAINT email_format CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$');
+DROP INDEX IF EXISTS idx_user_login_attempts ON user;
+CREATE INDEX idx_user_login_attempts ON user(failed_attempts, last_login_attempt);
 
--- Aggiornamento della tabella location per validazione coordinate
-ALTER TABLE location
-    ADD CONSTRAINT valid_latitude CHECK (latitude BETWEEN -90 AND 90),
-    ADD CONSTRAINT valid_longitude CHECK (longitude BETWEEN -180 AND 180);
+DROP INDEX IF EXISTS idx_appointment_doctor ON appointment;
+CREATE INDEX idx_appointment_doctor ON appointment(id_doctor);
 
--- Creazione degli indici per ottimizzare le query
-CREATE INDEX IF NOT EXISTS idx_user_email ON user(email);
-CREATE INDEX IF NOT EXISTS idx_user_login_attempts ON user(failed_attempts, last_login_attempt);
-CREATE INDEX IF NOT EXISTS idx_appointment_doctor ON appointment(id_doctor);
-CREATE INDEX IF NOT EXISTS idx_appointment_user ON appointment(id_user);
-CREATE INDEX IF NOT EXISTS idx_appointment_state ON appointment(state);
-CREATE INDEX IF NOT EXISTS idx_appointment_datetime ON appointment(date_time);
-CREATE INDEX IF NOT EXISTS idx_doctor_specialization ON doctor(specialization);
-CREATE INDEX IF NOT EXISTS idx_location_coordinates ON location(latitude, longitude);
+DROP INDEX IF EXISTS idx_appointment_user ON appointment;
+CREATE INDEX idx_appointment_user ON appointment(id_user);
 
--- Funzione per aggiornare il timestamp di modifica password
+DROP INDEX IF EXISTS idx_appointment_state ON appointment;
+CREATE INDEX idx_appointment_state ON appointment(state);
+
+DROP INDEX IF EXISTS idx_appointment_datetime ON appointment;
+CREATE INDEX idx_appointment_datetime ON appointment(date_time);
+
+DROP INDEX IF EXISTS idx_doctor_specialization ON doctor;
+CREATE INDEX idx_doctor_specialization ON doctor(specialization);
+
+DROP INDEX IF EXISTS idx_location_coordinates ON location;
+CREATE INDEX idx_location_coordinates ON location(latitude, longitude);
+
+-- Trigger per aggiornare il timestamp della modifica password
 DELIMITER //
 CREATE TRIGGER update_password_changed_at_trigger
 BEFORE UPDATE ON user
@@ -32,10 +32,11 @@ BEGIN
     IF NEW.password != OLD.password THEN
         SET NEW.password_changed_at = CURRENT_TIMESTAMP;
     END IF;
-END//
+END;
+//
 DELIMITER ;
 
--- Funzione per verificare la validità della password
+-- Trigger per validare la forza della password
 DELIMITER //
 CREATE TRIGGER validate_password_trigger
 BEFORE INSERT ON user
@@ -53,9 +54,11 @@ BEGIN
     IF NEW.password NOT REGEXP '[0-9]' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La password deve contenere almeno un numero';
     END IF;
-END//
+END;
+//
 DELIMITER ;
 
+-- Trigger per verificare che la data dell'appuntamento sia futura
 DELIMITER //
 CREATE TRIGGER check_valid_date_time
 BEFORE INSERT ON appointment
@@ -63,7 +66,8 @@ FOR EACH ROW
 BEGIN
     IF NEW.date_time <= CURRENT_TIMESTAMP THEN
         SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = "La data dell'appuntamento deve essere nel futuro";
+            SET MESSAGE_TEXT = 'La data dello appuntamento deve essere nel futuro';
     END IF;
-END //
+END;
+//
 DELIMITER ;
