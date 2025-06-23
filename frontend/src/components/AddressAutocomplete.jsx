@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
-import loader from '../services/maps/loader';
+import loader_map from '../services/maps/loader';
 
 function AddressAutocomplete({ value, onChange }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    loader.load().then(() => {
+    loader_map.load().then(() => {
       const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
         types: ['geocode'],
         componentRestrictions: { country: 'it' },

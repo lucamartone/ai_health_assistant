@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import loader from '../services/maps/loader';
+import loader_map from '../services/maps/loader';
 
 function MapView({ doctors, selectedDoctorId }) {
   const mapRef = useRef(null);
@@ -8,7 +8,7 @@ function MapView({ doctors, selectedDoctorId }) {
 
 
   useEffect(() => {
-    loader.load().then(() => {
+    loader_map.load().then(() => {
       mapRef.current = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 45.4642, lng: 9.19 },
         zoom: 6,

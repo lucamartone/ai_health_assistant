@@ -1,9 +1,9 @@
 import { Loader } from "@googlemaps/js-api-loader";
 
-const loader = new Loader({
-  apiKey: "AIzaSyDAGaYhV489MILIGcJUD_lg-y8mMXdcii4",
+const loader_map = new Loader({
+  apiKey: import.meta.env.VITE_MAP_VIEW_KEY,
   version: "weekly",
   libraries: ["places", "marker"], // UNIONE di tutte le librerie richieste
 });
 
-export default loader;
+export default loader_map;

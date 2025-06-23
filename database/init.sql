@@ -34,9 +34,10 @@ CREATE TABLE patient (
 CREATE TABLE doctor (
     id INT AUTO_INCREMENT PRIMARY KEY,
     specialization VARCHAR(50) NOT NULL,
-    rank INT NOT NULL,
+    rank FLOAT DEFAULT 0,
     id_doctor INT NOT NULL,
-    FOREIGN KEY (id_doctor) REFERENCES user(id)
+    FOREIGN KEY (id_doctor) REFERENCES user(id),
+    CHECK (rank BETWEEN 0 AND 1)
 );
 
 CREATE TABLE location (
@@ -127,9 +128,9 @@ CREATE TRIGGER check_doctor_rank
 BEFORE INSERT ON doctor
 FOR EACH ROW
 BEGIN
-    IF NEW.rank < 1 OR NEW.rank > 5 THEN
+    IF NEW.rank < 0 OR NEW.rank > 1 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Il rank del dottore deve essere tra 1 e 5';
+        SET MESSAGE_TEXT = 'Il rank del dottore deve essere tra 0 e 1';
     END IF;
 END;
 //
@@ -179,10 +180,10 @@ INSERT INTO user (name, surname, email, password, sex) VALUES
 
 -- Dottori
 INSERT INTO doctor (specialization, rank, id_doctor) VALUES
-('Cardiologia', 5, 1),
-('Dermatologia', 4, 2),
-('Psichiatria', 3, 3),
-('Ortopedia', 4, 4);
+('Cardiologia', 0.5, 1),
+('Dermatologia', 0.4, 2),
+('Psichiatria', 0.3, 3),
+('Ortopedia', 0.4, 4);
 
 -- Pazienti
 INSERT INTO patient (id_patient, birth_date) VALUES
