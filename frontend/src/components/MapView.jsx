@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import loader from '../services/maps/loader';
 
 function MapView({ doctors, selectedDoctorId }) {
   const mapRef = useRef(null);
@@ -8,12 +8,6 @@ function MapView({ doctors, selectedDoctorId }) {
 
 
   useEffect(() => {
-    const loader = new Loader({
-      apiKey: import.meta.env.VITE_MAP_VIEW_KEY,
-      version: 'weekly',
-      libraries: ['marker'],
-    });
-
     loader.load().then(() => {
       mapRef.current = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 45.4642, lng: 9.19 },

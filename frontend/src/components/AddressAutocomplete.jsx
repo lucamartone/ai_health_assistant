@@ -1,15 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import loader from '../services/maps/loader';
 
 function AddressAutocomplete({ value, onChange }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    const loader = new Loader({
-      apiKey: import.meta.env.VITE_MAP_VIEW_KEY,
-      libraries: ['places'],
-    });
-
     loader.load().then(() => {
       const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
         types: ['geocode'],
