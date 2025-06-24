@@ -5,3 +5,4 @@ mariadb
 pydantic[email]
 python-dotenv==1.0.0
 passlib
+psycopg2-binary

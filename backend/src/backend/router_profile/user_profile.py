@@ -30,7 +30,7 @@ async def login(data: LoginRequest, response: Response):
         # Check for too many failed attempts (implement rate limiting)
         query = """
         SELECT id, name, surname, email, password, last_login_attempt, failed_attempts 
-        FROM user 
+        FROM "user"
         WHERE email = %s
         """
         results = execute_query(query, (data.email,))
@@ -55,7 +55,7 @@ async def login(data: LoginRequest, response: Response):
         if not pwd_context.verify(data.password, db_password):
             # Update failed attempts
             update_attempts = """
-            UPDATE user 
+            UPDATE "user" 
             SET failed_attempts = failed_attempts + 1,
                 last_login_attempt = CURRENT_TIMESTAMP
             WHERE email = %s
@@ -65,7 +65,7 @@ async def login(data: LoginRequest, response: Response):
 
         # Reset failed attempts on successful login
         reset_attempts = """
-        UPDATE user 
+        UPDATE "user" 
         SET failed_attempts = 0,
             last_login_attempt = CURRENT_TIMESTAMP
         WHERE email = %s
@@ -116,7 +116,7 @@ async def register(data: RegisterRequest):
             )
 
         # Check if email already exists
-        check_email = "SELECT id FROM user WHERE email = %s"
+        check_email = """SELECT id FROM "user" WHERE email = %s"""
         if execute_query(check_email, (data.email,)):
             raise HTTPException(status_code=400, detail="Email già registrata")
 
@@ -124,7 +124,7 @@ async def register(data: RegisterRequest):
         hashed_password = pwd_context.hash(data.password)
 
         reg_query = """
-        INSERT INTO user (
+        INSERT INTO "user" (
             name, surname, email, password, sex,
             created_at, last_login_attempt, failed_attempts
         ) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
@@ -157,7 +157,7 @@ async def delete_account(
             raise HTTPException(status_code=403, detail="Non autorizzato a eliminare questo account")
 
         # Verify password
-        query = "SELECT password FROM user WHERE email = %s"
+        query = """SELECT password FROM "user" WHERE email = %s"""
         result = execute_query(query, (email,))
         
         if not result:
@@ -167,14 +167,14 @@ async def delete_account(
             raise HTTPException(status_code=401, detail="Password non valida")
 
         # Get user ID
-        select_id_user = "SELECT id FROM user WHERE email = %s"
+        select_id_user = """SELECT id FROM "user"" WHERE email = %s"""
         res = execute_query(select_id_user, (email,))
         user_id = res[0][0]
 
         # Delete in correct order to maintain referential integrity
         delete_patient = "DELETE FROM patient WHERE id_patient = %s"
         delete_doctor = "DELETE FROM doctor WHERE id_doctor = %s"
-        delete_user = "DELETE FROM user WHERE id = %s"
+        delete_user = """DELETE FROM "user" WHERE id = %s"""
 
         execute_query(delete_patient, (user_id,), commit=True)
         execute_query(delete_doctor, (user_id,), commit=True)

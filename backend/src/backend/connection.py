@@ -1,28 +1,36 @@
-import mariadb
+import psycopg2
+from psycopg2.extensions import cursor as PgCursor
 
-def connect_to_mariadb():
-    """Stabilisce una connessione al database MariaDB."""
-    conn = mariadb.connect(
-        host="database",
-        port=3306,
-        user="user",
-        password="userpwd",
-        database="HealthDB"
+def connect_to_postgres():
+    """Stabilisce una connessione al database PostgreSQL."""
+    conn = psycopg2.connect(
+        host="database",      # nome del servizio nel docker-compose
+        port=5432,
+        user="user",          # deve combaciare con POSTGRES_USER
+        password="userpwd",   # POSTGRES_PASSWORD
+        dbname="HealthDB"     # POSTGRES_DB
     )
-    print("Connesso a MariaDB")
+    print("Connesso a PostgreSQL")
     return conn
 
+
 def execute_query(query: str, params: tuple = (), commit: bool = False):
-    conn = connect_to_mariadb()
-    cursor: mariadb.Cursor = conn.cursor()
-    cursor.execute(query, params)
-
-    if commit:
-        conn.commit()
-
-    results = cursor.fetchall() if not commit else None #select commit = false-> fare fetch
-    cursor.close()
-    conn.close()
+    conn = connect_to_postgres()
+    cursor: PgCursor = conn.cursor()
     
+    try:
+        cursor.execute(query, params)
+        if commit:
+            conn.commit()
+            results = None
+        else:
+            results = cursor.fetchall()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
+
     return results
 

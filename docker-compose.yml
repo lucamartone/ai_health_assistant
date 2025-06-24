@@ -1,14 +1,14 @@
 services:
   frontend:
     build:
-      context: .  # ← root del progetto!
+      context: .
       dockerfile: frontend/Dockerfile
     ports:
       - "80:80"
     depends_on:
       - backend
     env_file:
-      - .env  # opzionale per runtime
+      - .env
 
   backend:
     build:
@@ -17,23 +17,22 @@ services:
     ports:
       - "8001:8001"
     env_file:
-      - .env  # Rende tutte le variabili disponibili
+      - .env
     depends_on:
       - database
 
   database:
-    image: mariadb:latest
+    image: postgres:16
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: user
-      MYSQL_PASSWORD: userpwd
-      MYSQL_DATABASE: HealthDB
+      POSTGRES_DB: HealthDB
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: userpwd
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
       - ./database/:/docker-entrypoint-initdb.d
-      - mariadb_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  mariadb_data:
+  postgres_data:
   ollama_data:

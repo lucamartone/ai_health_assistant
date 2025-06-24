@@ -51,7 +51,7 @@ async def register_doctor(data: RegisterDoctorRequest):
             )
 
         # Check if email already exists
-        check_email = "SELECT id FROM user WHERE email = %s"
+        check_email = """SELECT id FROM "user"" WHERE email = %s"""
         if execute_query(check_email, (data.email,)):
             raise HTTPException(status_code=400, detail="Email già registrata")
 
@@ -59,7 +59,7 @@ async def register_doctor(data: RegisterDoctorRequest):
         hashed_password = pwd_context.hash(data.password)
 
         reg_query = """
-        INSERT INTO user (
+        INSERT INTO "user" (
             name, surname, email, password, sex,
             created_at, last_login_attempt, failed_attempts
         ) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
