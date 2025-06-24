@@ -35,12 +35,12 @@ function Register() {
   };
 
   const addLocationsField = () => {
-    setAddresses([...locations, { address: '', latitude: null, longitude: null }]);
+    setLocations([...locations, { address: '', latitude: null, longitude: null }]);
   };
 
   const removeLocationsField = (index) => {
     const newLocations = locations.filter((_, i) => i !== index);
-    setAddresses(newLocations);
+    setLocations(newLocations);
   };
 
   return (

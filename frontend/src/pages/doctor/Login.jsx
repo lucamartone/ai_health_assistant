@@ -16,7 +16,7 @@ function Login() {
       const data = await login(email, password);
       console.log('Login riuscito:', data);
       setUser(data);
-      navigate('/');
+      navigate('/doctor');
     } catch (err) {
       alert(err.message);
     }
