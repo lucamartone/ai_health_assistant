@@ -33,9 +33,25 @@ export async function login(email, password) {
   return data.account;
 };
 
-export async function register(name, surname, email, password, sex) {
+export async function register_patient(name, surname, email, password, sex) {
   const data = {name, surname, email, password, sex}
-  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/account/register`, {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  }, false); // la registrazione non deve tentare il refresh
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Errore registrazione');
+  }
+
+  return await response.json();
+};
+
+export async function register_doctor(name, surname, email, password, sex, addresses, specialization) {
+  const data = {name, surname, email, password, sex, addresses, specialization}
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/doctor/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),

@@ -1,45 +1,64 @@
 from fastapi import APIRouter, HTTPException
+from backend.router_profile.pydantic.profile_requests import RegisterRequest
+from backend.router_profile.account_profile import validate_password
+from backend.connection import execute_query
+from passlib.context import CryptContext
 
 router_patient_profile = APIRouter()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@router_patient_profile.get("/appointments_todo") #not implemented
-async def get_appointments_todo(patient_id: int):
-    """Endpoint to get appointments that have to be done for a patient."""
-    # Implement logic to retrieve appointments for the patient
-    if patient_id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid patient ID")
-    
-    # Example response
-    return [
-        {"appointment_id": 1, "doctor_id": 101, "date": "2023-10-01", "time": "10:00"},
-        {"appointment_id": 2, "doctor_id": 102, "date": "2023-10-02", "time": "11:00"}
-    ]
+@router_patient_profile.post("/register") 
+async def register(data: RegisterRequest):
+    """Endpoint per registrare un nuovo utente."""
+    try:
+        # Validate password strength
+        if not validate_password(data.password):
+            raise HTTPException(
+                status_code=400,
+                detail="La password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero"
+            )
 
-@router_patient_profile.post("/appointments_history") #not implemented
-async def get_appointments_history(patient_id: int):
-    """Endpoint to get appointment history for a patient."""
-    # Implement logic to retrieve appointment history for the patient
-    if patient_id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid patient ID")
-    
-    # Example response
-    return [
-        {"appointment_id": 1, "doctor_id": 101, "date": "2023-09-01", "time": "10:00", "status": "completed"},
-        {"appointment_id": 2, "doctor_id": 102, "date": "2023-09-02", "time": "11:00", "status": "cancelled"}
-    ]
+        # Check if email already exists
+        check_email = """SELECT id FROM "account" WHERE email = %s"""
+        if execute_query(check_email, (data.email,)):
+            raise HTTPException(status_code=400, detail="Email già registrata")
 
-@router_patient_profile.post("/cancel_appointment") #not implemented
-async def cancel_appointment(appointment_id: int):
-    """Endpoint to cancel an appointment."""
-    # Implement logic to cancel the appointment
-    if appointment_id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid appointment ID")
-    
-    # Example response
-    return {"message": f"Appointment {appointment_id} cancelled successfully."}
+        # Hash password
+        hashed_password = pwd_context.hash(data.password)
 
-@router_patient_profile.post("/book_appointment") #not implemented
-async def book_appointment(doctor_id: int, date: str, time: str):
+        reg_query = """
+        INSERT INTO "account" (
+            name, surname, email, password, sex,
+            created_at, last_login_attempt, failed_attempts
+        ) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
+        RETURNING id
+        """
+        
+        params = (data.name, data.surname, data.email, hashed_password, data.sex)
+        result = execute_query(reg_query, params, commit=True)
+
+        if not result or not result[0]:
+            raise HTTPException(status_code=500, detail="Errore durante la creazione dell'utente")
+        id_patient = result[0][0]
+
+        reg_query = """
+        INSERT INTO "patient" (account_id)
+        VALUES (%s)
+        """
+        params = (id_patient,)
+        execute_query(reg_query, params, commit=True)
+
+        return {
+            "message": "Registrazione completata con successo",
+            "account_id": id_patient
+        }
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore nella registrazione: {str(e)}")
+
+
     """Endpoint to book an appointment with a doctor."""
     # Implement logic to book the appointment
     if doctor_id <= 0 or not date or not time:

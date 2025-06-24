@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { register } from '../../services/profile/fetch_profile';
+import { register_patient } from '../../services/profile/fetch_profile';
 
 function Register() {
   const [name, setName] = useState('');
@@ -14,7 +14,7 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const data = await register(name, surname, email, password, sex);
+      const data = await register_patient(name, surname, email, password, sex);
       console.log('Login riuscito:', data);
       navigate('/login');
     } catch (err) {

@@ -1,6 +1,11 @@
 from pydantic import BaseModel, EmailStr
-from typing import List
-from typing import Literal
+from typing import List, Literal, Optional
+
+
+class LocationData(BaseModel):
+    address: str
+    latitude: Optional[float]
+    longitude: Optional[float]
 
 class RegisterRequest(BaseModel):
     name:str
@@ -16,7 +21,7 @@ class RegisterDoctorRequest(BaseModel):
     password: str
     sex: Literal['M', 'F']
     specialization: str
-    location: List[str]
+    location: List[LocationData]
 
 class LoginRequest(BaseModel):
     email: str

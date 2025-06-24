@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { register_doctor } from '../../services/profile/fetch_profile';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
 
 function Register() {
@@ -15,6 +16,17 @@ function Register() {
   ]);
 
   const navigate = useNavigate();
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      const data = await register_doctor(name, surname, email, password, sex, addresses, specialization);
+      console.log('Login riuscito:', data);
+      navigate('/login');
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   const handleAddressChange = (index, newVal) => {
     const updated = [...addresses];
@@ -31,20 +43,6 @@ function Register() {
     setAddresses(newAddresses);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log({
-      name,
-      surname,
-      email,
-      password,
-      sex,
-      specialization,
-      addresses,
-    });
-    // TODO: invia al backend
-  };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
       <div className="bg-white px-6 py-6 rounded-2xl shadow-xl w-full max-w-2xl text-blue-900 max-h-[72vh] mt-24 mb-12 overflow-y-auto">
@@ -53,7 +51,7 @@ function Register() {
           Crea un nuovo profilo per fornire i tuoi servizi
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleRegister} className="space-y-4">
           {/* Nome + Cognome */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input

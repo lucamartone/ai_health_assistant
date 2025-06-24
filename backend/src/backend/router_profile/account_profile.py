@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, Response, Depends, Query
-from typing import Optional
 from datetime import datetime, timedelta
 from backend.connection import execute_query
-from pydantic import EmailStr, constr
-from backend.router_profile.pydantic.profile_requests import LoginRequest, RegisterRequest
+from pydantic import EmailStr
+from backend.router_profile.pydantic.profile_requests import LoginRequest
 from backend.router_profile.cookies_login import create_access_token, get_current_account
 from passlib.context import CryptContext
 import re
@@ -30,7 +29,7 @@ async def login(data: LoginRequest, response: Response):
         # Check for too many failed attempts (implement rate limiting)
         query = """
         SELECT id, name, surname, email, password, last_login_attempt, failed_attempts 
-        FROM "account"
+        FROM account
         WHERE email = %s
         """
         results = execute_query(query, (data.email,))
@@ -103,46 +102,6 @@ async def login(data: LoginRequest, response: Response):
         raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore server: {str(e)}")
-
-@router_account_profile.post("/register") 
-async def register(data: RegisterRequest):
-    """Endpoint per registrare un nuovo utente."""
-    try:
-        # Validate password strength
-        if not validate_password(data.password):
-            raise HTTPException(
-                status_code=400,
-                detail="La password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero"
-            )
-
-        # Check if email already exists
-        check_email = """SELECT id FROM "account" WHERE email = %s"""
-        if execute_query(check_email, (data.email,)):
-            raise HTTPException(status_code=400, detail="Email già registrata")
-
-        # Hash password
-        hashed_password = pwd_context.hash(data.password)
-
-        reg_query = """
-        INSERT INTO "account" (
-            name, surname, email, password, sex,
-            created_at, last_login_attempt, failed_attempts
-        ) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
-        RETURNING id
-        """
-        
-        params = (data.name, data.surname, data.email, hashed_password, data.sex)
-        result = execute_query(reg_query, params, commit=True)
-
-        return {
-            "message": "Registrazione completata con successo",
-            "account_id": result[0][0] if result else None
-        }
-
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Errore nella registrazione: {str(e)}")
 
 @router_account_profile.delete("/delete_account") 
 async def delete_account(

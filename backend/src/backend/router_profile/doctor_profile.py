@@ -84,13 +84,14 @@ async def register(data: RegisterDoctorRequest):
 
         reg_query = """
         INSERT INTO location (
-            doctor_id, address
-        ) VALUES (%s, %s)
+            doctor_id, address, latitude, longitude
+        ) VALUES (%s, %s, %s, %s)
         """
 
-        for i in range(len(data.location)):
-            params = (id_doctor, data.location[i])
+        for loc in data.location:
+            params = (id_doctor, loc.address, loc.latitude, loc.longitude)
             execute_query(reg_query, params, commit=True)
+
     
         return {
             "message": "Registrazione completata con successo",

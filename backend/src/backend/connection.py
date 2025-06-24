@@ -10,7 +10,6 @@ def connect_to_postgres():
         password="userpwd",   # POSTGRES_PASSWORD
         dbname="HealthDB"     # POSTGRES_DB
     )
-    print("Connesso a PostgreSQL")
     return conn
 
 
