@@ -40,8 +40,8 @@ async def set_cv(doctor_id: str, cv_data: str):
         raise HTTPException(status_code=400, detail="Invalid input")
 
 @router_doctor_profile.post("/register")
-async def register_doctor(data: RegisterDoctorRequest):
-    """Endpoint per registrare un nuovo utente."""
+async def register(data: RegisterDoctorRequest):
+    """Endpoint per registrare un nuovo dottore."""
     try:
         # Validate password strength
         if not validate_password(data.password):
@@ -67,8 +67,7 @@ async def register_doctor(data: RegisterDoctorRequest):
         """
         
         params = (data.name, data.surname, data.email, hashed_password, data.sex)
-        result = execute_query(reg_query, params, commit=False)
-        execute_query("SELECT 1", commit=True)  # forza un commit finto
+        result = execute_query(reg_query, params, commit=True)
 
         if not result or not result[0]:
             raise HTTPException(status_code=500, detail="Errore durante la creazione dell'utente")
@@ -76,7 +75,7 @@ async def register_doctor(data: RegisterDoctorRequest):
 
         reg_query = """
         INSERT INTO doctor (
-            id_doctor, specialization
+            id, specialization
         ) VALUES (%s, %s)
         """
 
@@ -85,7 +84,7 @@ async def register_doctor(data: RegisterDoctorRequest):
 
         reg_query = """
         INSERT INTO location (
-            id_doctor, address
+            doctor_id, address
         ) VALUES (%s, %s)
         """
 

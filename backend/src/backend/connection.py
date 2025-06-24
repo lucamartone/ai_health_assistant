@@ -14,23 +14,34 @@ def connect_to_postgres():
     return conn
 
 
-def execute_query(query: str, params: tuple = (), commit: bool = False):
-    conn = connect_to_postgres()
-    cursor: PgCursor = conn.cursor()
-    
+def execute_query(query: str, params: tuple = (), commit: bool = False, conn=None):
+    close_conn = False
+    if conn is None:
+        conn = connect_to_postgres()
+        close_conn = True
+
+    cursor = conn.cursor()
     try:
         cursor.execute(query, params)
+
+        # Prova a fare fetch, anche se commit è True
+        try:
+            results = cursor.fetchall()
+        except psycopg2.ProgrammingError:
+            results = None
+
         if commit:
             conn.commit()
-            results = None
-        else:
-            results = cursor.fetchall()
+
     except Exception as e:
         conn.rollback()
         raise e
+
     finally:
         cursor.close()
-        conn.close()
+        if close_conn:
+            conn.close()
 
     return results
+
 
