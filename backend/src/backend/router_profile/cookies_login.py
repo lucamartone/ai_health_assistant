@@ -34,7 +34,7 @@ def create_refresh_token(data: dict) -> str:
 
 router_cookies_login = APIRouter()
 
-def get_current_user(access_token: str = Cookie(None)) -> Optional[dict]:
+def get_current_account(access_token: str = Cookie(None)) -> Optional[dict]:
     """ Ottiene l'utente corrente dal token di accesso """
     if not access_token:
         raise HTTPException(status_code=401, detail="Token mancante")
@@ -53,11 +53,11 @@ def get_current_user(access_token: str = Cookie(None)) -> Optional[dict]:
         raise HTTPException(status_code=403, detail="Token non valido")
 
 @router_cookies_login.get("/me")
-async def get_me(user=Depends(get_current_user)):
+async def get_me(account=Depends(get_current_account)):
     """
     Ottiene i dati dell'utente corrente
     """
-    return {"user": user}
+    return {"account": account}
 
 @router_cookies_login.post("/refresh")
 async def refresh_token(refresh_token: str = Cookie(None)):

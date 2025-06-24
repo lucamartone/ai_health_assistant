@@ -4,11 +4,11 @@ from datetime import datetime, timedelta
 from backend.connection import execute_query
 from pydantic import EmailStr, constr
 from backend.router_profile.pydantic.profile_requests import LoginRequest, RegisterRequest
-from backend.router_profile.cookies_login import create_access_token, get_current_user
+from backend.router_profile.cookies_login import create_access_token, get_current_account
 from passlib.context import CryptContext
 import re
 
-router_user_profile = APIRouter()
+router_account_profile = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def validate_password(password: str) -> bool:
@@ -23,14 +23,14 @@ def validate_password(password: str) -> bool:
         return False
     return True
 
-@router_user_profile.post("/login")
+@router_account_profile.post("/login")
 async def login(data: LoginRequest, response: Response):
     """Endpoint per autenticare un utente e creare una sessione."""
     try:
         # Check for too many failed attempts (implement rate limiting)
         query = """
         SELECT id, name, surname, email, password, last_login_attempt, failed_attempts 
-        FROM "user"
+        FROM "account"
         WHERE email = %s
         """
         results = execute_query(query, (data.email,))
@@ -38,10 +38,10 @@ async def login(data: LoginRequest, response: Response):
         if not results:
             raise HTTPException(status_code=401, detail="Email non registrata")
 
-        user = results[0]
-        db_password = user[4]
-        last_attempt = user[5]
-        failed_attempts = user[6] or 0
+        account = results[0]
+        db_password = account[4]
+        last_attempt = account[5]
+        failed_attempts = account[6] or 0
 
         # Check if account is temporarily locked
         if failed_attempts >= 5 and last_attempt:
@@ -55,7 +55,7 @@ async def login(data: LoginRequest, response: Response):
         if not pwd_context.verify(data.password, db_password):
             # Update failed attempts
             update_attempts = """
-            UPDATE "user" 
+            UPDATE "account" 
             SET failed_attempts = failed_attempts + 1,
                 last_login_attempt = CURRENT_TIMESTAMP
             WHERE email = %s
@@ -65,7 +65,7 @@ async def login(data: LoginRequest, response: Response):
 
         # Reset failed attempts on successful login
         reset_attempts = """
-        UPDATE "user" 
+        UPDATE "account" 
         SET failed_attempts = 0,
             last_login_attempt = CURRENT_TIMESTAMP
         WHERE email = %s
@@ -73,10 +73,10 @@ async def login(data: LoginRequest, response: Response):
         execute_query(reset_attempts, (data.email,), commit=True)
         
         token = create_access_token({
-            "sub": user[3],
-            "id": user[0],
-            "name": user[1],
-            "surname": user[2]
+            "sub": account[3],
+            "id": account[0],
+            "name": account[1],
+            "surname": account[2]
         })
 
         response.set_cookie(
@@ -91,11 +91,11 @@ async def login(data: LoginRequest, response: Response):
 
         return {
             "message": "Login riuscito",
-            "user": {
-                "id": user[0],
-                "name": user[1],
-                "surname": user[2],
-                "email": user[3],
+            "account": {
+                "id": account[0],
+                "name": account[1],
+                "surname": account[2],
+                "email": account[3],
             }
         }
 
@@ -104,7 +104,7 @@ async def login(data: LoginRequest, response: Response):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore server: {str(e)}")
 
-@router_user_profile.post("/register") 
+@router_account_profile.post("/register") 
 async def register(data: RegisterRequest):
     """Endpoint per registrare un nuovo utente."""
     try:
@@ -116,7 +116,7 @@ async def register(data: RegisterRequest):
             )
 
         # Check if email already exists
-        check_email = """SELECT id FROM "user" WHERE email = %s"""
+        check_email = """SELECT id FROM "account" WHERE email = %s"""
         if execute_query(check_email, (data.email,)):
             raise HTTPException(status_code=400, detail="Email già registrata")
 
@@ -124,7 +124,7 @@ async def register(data: RegisterRequest):
         hashed_password = pwd_context.hash(data.password)
 
         reg_query = """
-        INSERT INTO "user" (
+        INSERT INTO "account" (
             name, surname, email, password, sex,
             created_at, last_login_attempt, failed_attempts
         ) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
@@ -136,7 +136,7 @@ async def register(data: RegisterRequest):
 
         return {
             "message": "Registrazione completata con successo",
-            "user_id": result[0][0] if result else None
+            "account_id": result[0][0] if result else None
         }
 
     except HTTPException as he:
@@ -144,20 +144,20 @@ async def register(data: RegisterRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nella registrazione: {str(e)}")
 
-@router_user_profile.delete("/delete_account") 
+@router_account_profile.delete("/delete_account") 
 async def delete_account(
     email: EmailStr = Query(..., description="Email dell'account da eliminare"),
     password: str = Query(..., description="Password attuale per la verifica"),
-    current_user: dict = Depends(get_current_user)
+    current_account: dict = Depends(get_current_account)
 ):
     """Endpoint per eliminare un account utente."""
     try:
-        # Verify user is deleting their own account
-        if current_user["email"] != email:
+        # Verify account is deleting their own account
+        if current_account["email"] != email:
             raise HTTPException(status_code=403, detail="Non autorizzato a eliminare questo account")
 
         # Verify password
-        query = """SELECT password FROM "user" WHERE email = %s"""
+        query = """SELECT password FROM "account" WHERE email = %s"""
         result = execute_query(query, (email,))
         
         if not result:
@@ -166,19 +166,19 @@ async def delete_account(
         if not pwd_context.verify(password, result[0][0]):
             raise HTTPException(status_code=401, detail="Password non valida")
 
-        # Get user ID
-        select_id_user = """SELECT id FROM "user"" WHERE email = %s"""
-        res = execute_query(select_id_user, (email,))
-        user_id = res[0][0]
+        # Get account ID
+        select_id_account = """SELECT id FROM "account"" WHERE email = %s"""
+        res = execute_query(select_id_account, (email,))
+        account_id = res[0][0]
 
         # Delete in correct order to maintain referential integrity
         delete_patient = "DELETE FROM patient WHERE id_patient = %s"
         delete_doctor = "DELETE FROM doctor WHERE id_doctor = %s"
-        delete_user = """DELETE FROM "user" WHERE id = %s"""
+        delete_account = """DELETE FROM "account" WHERE id = %s"""
 
-        execute_query(delete_patient, (user_id,), commit=True)
-        execute_query(delete_doctor, (user_id,), commit=True)
-        execute_query(delete_user, (user_id,), commit=True)
+        execute_query(delete_patient, (account_id,), commit=True)
+        execute_query(delete_doctor, (account_id,), commit=True)
+        execute_query(delete_account, (account_id,), commit=True)
 
         return {"message": "Account eliminato con successo"}
 
@@ -187,7 +187,7 @@ async def delete_account(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore durante l'eliminazione dell'account: {str(e)}")
 
-@router_user_profile.post("/logout")
+@router_account_profile.post("/logout")
 async def logout(response: Response):
     """Endpoint per effettuare il logout di un utente eliminando il cookie di accesso."""
     response.delete_cookie(
@@ -199,11 +199,11 @@ async def logout(response: Response):
     )
     return {"message": "Logout effettuato con successo"}
 
-@router_user_profile.post("/change_password")
+@router_account_profile.post("/change_password")
 async def change_password(
     current_password: str = Query(..., description="Password attuale"),
     new_password: str = Query(..., description="Nuova password"),
-    current_user: dict = Depends(get_current_user)
+    current_account: dict = Depends(get_current_account)
 ):
     """Endpoint per modificare la password di un utente."""
     try:
@@ -215,8 +215,8 @@ async def change_password(
             )
 
         # Verify current password
-        query = "SELECT password FROM user WHERE email = %s"
-        result = execute_query(query, (current_user["email"],))
+        query = "SELECT password FROM account WHERE email = %s"
+        result = execute_query(query, (current_account["email"],))
         
         if not result:
             raise HTTPException(status_code=404, detail="Utente non trovato")
@@ -227,12 +227,12 @@ async def change_password(
         # Hash and update new password
         hashed_password = pwd_context.hash(new_password)
         update_query = """
-        UPDATE user 
+        UPDATE account 
         SET password = %s,
             password_changed_at = CURRENT_TIMESTAMP
         WHERE email = %s
         """
-        execute_query(update_query, (hashed_password, current_user["email"]), commit=True)
+        execute_query(update_query, (hashed_password, current_account["email"]), commit=True)
 
         return {"message": "Password modificata con successo"}
 

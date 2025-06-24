@@ -18,7 +18,7 @@ async function fetchWithRefresh(url, options = {}, retry = true) {
 }
 
 export async function login(email, password) {
-  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/user/login`, {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/account/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 'email':email, 'password':password }),
@@ -30,12 +30,12 @@ export async function login(email, password) {
   }
 
   const data = await response.json();
-  return data.user;
+  return data.account;
 };
 
 export async function register(name, surname, email, password, sex) {
   const data = {name, surname, email, password, sex}
-  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/user/register`, {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/account/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -51,7 +51,7 @@ export async function register(name, surname, email, password, sex) {
 
 export async function logout(){
   try {
-    await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/user/logout`, {
+    await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/account/logout`, {
       method: 'POST',
     }, false);
   } catch (error) {
@@ -60,7 +60,7 @@ export async function logout(){
 };
 
 export async function getProfile() {
-  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/user/profile`, {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/account/profile`, {
     method: 'GET',
   });
 

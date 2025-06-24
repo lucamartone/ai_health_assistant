@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from backend.router_profile.pydantic.profile_requests import RegisterDoctorRequest
-from backend.router_profile.user_profile import validate_password
+from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
 from passlib.context import CryptContext
 
@@ -51,7 +51,7 @@ async def register_doctor(data: RegisterDoctorRequest):
             )
 
         # Check if email already exists
-        check_email = """SELECT id FROM "user"" WHERE email = %s"""
+        check_email = """SELECT id FROM account WHERE email = %s"""
         if execute_query(check_email, (data.email,)):
             raise HTTPException(status_code=400, detail="Email già registrata")
 
@@ -59,7 +59,7 @@ async def register_doctor(data: RegisterDoctorRequest):
         hashed_password = pwd_context.hash(data.password)
 
         reg_query = """
-        INSERT INTO "user" (
+        INSERT INTO account (
             name, surname, email, password, sex,
             created_at, last_login_attempt, failed_attempts
         ) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
@@ -95,7 +95,7 @@ async def register_doctor(data: RegisterDoctorRequest):
     
         return {
             "message": "Registrazione completata con successo",
-            "user_id": id_doctor
+            "account_id": id_doctor
         }
 
     except HTTPException as he:

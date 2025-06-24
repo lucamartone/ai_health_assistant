@@ -4,7 +4,7 @@ GRANT ALL PRIVILEGES ON DATABASE "HealthDB" TO "admin";
 
 -- Tables
 
-CREATE TABLE "user" (
+CREATE TABLE account (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     surname VARCHAR(50) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE "user" (
 
 CREATE TABLE patient (
     id SERIAL PRIMARY KEY,
-    id_patient INT NOT NULL REFERENCES "user"(id),
+    id_patient INT NOT NULL REFERENCES account(id),
     birth_date DATE NOT NULL,
     CHECK (birth_date < CURRENT_DATE)
 );
@@ -33,7 +33,7 @@ CREATE TABLE doctor (
     id SERIAL PRIMARY KEY,
     specialization VARCHAR(50) NOT NULL,
     rank REAL DEFAULT 0,
-    id_doctor INT NOT NULL REFERENCES "user"(id),
+    id_doctor INT NOT NULL REFERENCES account(id),
     CHECK (rank BETWEEN 0 AND 1)
 );
 
@@ -52,7 +52,7 @@ CREATE TABLE location (
 CREATE TABLE appointment (
     id SERIAL PRIMARY KEY,
     id_doctor INT NOT NULL REFERENCES doctor(id),
-    id_user INT REFERENCES "user"(id),
+    id_account INT REFERENCES account(id),
     id_loc INT REFERENCES location(id),
     date_time TIMESTAMP NOT NULL,
     price NUMERIC(10,2) DEFAULT 50,
@@ -82,7 +82,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_validate_email
-BEFORE INSERT ON "user"
+BEFORE INSERT ON account
 FOR EACH ROW EXECUTE FUNCTION validate_email_format();
 
 -- Trigger: stato appuntamento
@@ -102,17 +102,17 @@ BEFORE UPDATE ON appointment
 FOR EACH ROW EXECUTE FUNCTION check_appointment_state();
 
 -- Indici
-DROP INDEX IF EXISTS idx_user_email;
-CREATE INDEX idx_user_email ON "user"(email);
+DROP INDEX IF EXISTS idx_account_email;
+CREATE INDEX idx_account_email ON account(email);
 
-DROP INDEX IF EXISTS idx_user_login_attempts;
-CREATE INDEX idx_user_login_attempts ON "user"(failed_attempts, last_login_attempt);
+DROP INDEX IF EXISTS idx_account_login_attempts;
+CREATE INDEX idx_account_login_attempts ON account(failed_attempts, last_login_attempt);
 
 DROP INDEX IF EXISTS idx_appointment_doctor;
 CREATE INDEX idx_appointment_doctor ON appointment(id_doctor);
 
-DROP INDEX IF EXISTS idx_appointment_user;
-CREATE INDEX idx_appointment_user ON appointment(id_user);
+DROP INDEX IF EXISTS idx_appointment_account;
+CREATE INDEX idx_appointment_account ON appointment(id_account);
 
 DROP INDEX IF EXISTS idx_appointment_state;
 CREATE INDEX idx_appointment_state ON appointment(state);
@@ -136,9 +136,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trg_update_password_changed_at ON "user";
+DROP TRIGGER IF EXISTS trg_update_password_changed_at ON account;
 CREATE TRIGGER trg_update_password_changed_at
-BEFORE UPDATE ON "user"
+BEFORE UPDATE ON account
 FOR EACH ROW
 EXECUTE FUNCTION update_password_changed_at();
 
@@ -161,9 +161,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trg_validate_password ON "user";
+DROP TRIGGER IF EXISTS trg_validate_password ON account;
 CREATE TRIGGER trg_validate_password
-BEFORE INSERT ON "user"
+BEFORE INSERT ON account
 FOR EACH ROW
 EXECUTE FUNCTION validate_password_strength();
 
@@ -186,7 +186,7 @@ EXECUTE FUNCTION check_future_appointment_date();
 
 -- Dati iniziali
 
-INSERT INTO "user" (name, surname, email, password, sex) VALUES
+INSERT INTO account (name, surname, email, password, sex) VALUES
 ('Giulia', 'Verdi', 'giulia.verdi@medico.it', 'Psjdhfbsjdhfshdjfwd123', 'F'),
 ('Luca', 'Bianchi', 'luca.bianchi@medico.it', 'Psjdhfbsjdhfshdjfwd123', 'M'),
 ('Francesca', 'Neri', 'francesca.neri@medico.it', 'Psjdhfbsjdhfshdjfwd123', 'F'),
@@ -210,7 +210,7 @@ INSERT INTO location (id_doctor, address, city, province, latitude, longitude) V
 (3, 'Piazza Duomo', 'Firenze', 'FI', 43.7696, 11.2558),
 (4, 'Via Napoli 45', 'Napoli', 'NA', 40.8518, 14.2681);
 
-INSERT INTO appointment (id_doctor, id_user, id_loc, date_time, price, state) VALUES
+INSERT INTO appointment (id_doctor, id_account, id_loc, date_time, price, state) VALUES
 (1, NULL, 1, '2025-06-30 10:00:00', 80.00, 'waiting'),
 (1, NULL, 1, '2025-06-30 11:00:00', 85.00, 'waiting'),
 (2, NULL, 2, '2025-06-30 14:30:00', 60.00, 'waiting'),
