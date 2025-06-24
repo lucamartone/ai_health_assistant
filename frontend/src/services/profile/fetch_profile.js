@@ -49,8 +49,8 @@ export async function register_patient(name, surname, email, password, sex) {
   return await response.json();
 };
 
-export async function register_doctor(name, surname, email, password, sex, addresses, specialization) {
-  const data = {name, surname, email, password, sex, addresses, specialization}
+export async function register_doctor(name, surname, email, password, sex, locations, specialization) {
+  const data = {name, surname, email, password, sex, locations, specialization}
   const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/doctor/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -21,7 +21,7 @@ class RegisterDoctorRequest(BaseModel):
     password: str
     sex: Literal['M', 'F']
     specialization: str
-    location: List[LocationData]
+    locations: List[LocationData]
 
 class LoginRequest(BaseModel):
     email: str

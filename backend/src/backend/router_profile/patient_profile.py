@@ -27,7 +27,7 @@ async def register(data: RegisterRequest):
         hashed_password = pwd_context.hash(data.password)
 
         reg_query = """
-        INSERT INTO "account" (
+        INSERT INTO account (
             name, surname, email, password, sex,
             created_at, last_login_attempt, failed_attempts
         ) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
@@ -42,7 +42,7 @@ async def register(data: RegisterRequest):
         id_patient = result[0][0]
 
         reg_query = """
-        INSERT INTO "patient" (account_id)
+        INSERT INTO patient (id)
         VALUES (%s)
         """
         params = (id_patient,)

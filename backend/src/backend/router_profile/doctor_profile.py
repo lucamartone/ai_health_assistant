@@ -88,7 +88,7 @@ async def register(data: RegisterDoctorRequest):
         ) VALUES (%s, %s, %s, %s)
         """
 
-        for loc in data.location:
+        for loc in data.locations:
             params = (id_doctor, loc.address, loc.latitude, loc.longitude)
             execute_query(reg_query, params, commit=True)
 

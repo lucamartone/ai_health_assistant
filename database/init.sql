@@ -27,7 +27,7 @@ CREATE TABLE doctor (
 -- Tabella patient (deriva da account)
 CREATE TABLE patient (
     id INT PRIMARY KEY REFERENCES account(id),
-    birth_date DATE NOT NULL CHECK (birth_date < CURRENT_DATE)
+    birth_date DATE CHECK (birth_date < CURRENT_DATE)
 );
 
 -- Tabella location

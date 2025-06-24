@@ -11,7 +11,7 @@ function Register() {
   const [password, setPassword] = useState('');
   const [sex, setSex] = useState('');
   const [specialization, setSpecialization] = useState('');
-  const [addresses, setAddresses] = useState([
+  const [locations, setLocations] = useState([
     { address: '', latitude: null, longitude: null }
   ]);
 
@@ -20,27 +20,27 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const data = await register_doctor(name, surname, email, password, sex, addresses, specialization);
+      const data = await register_doctor(name, surname, email, password, sex, locations, specialization);
       console.log('Login riuscito:', data);
-      navigate('/login');
+      navigate('/doctor/login');
     } catch (err) {
       alert(err.message);
     }
   };
 
-  const handleAddressChange = (index, newVal) => {
-    const updated = [...addresses];
+  const handleLocationsChange = (index, newVal) => {
+    const updated = [...locations];
     updated[index] = newVal;
-    setAddresses(updated);
+    setLocations(updated);
   };
 
-  const addAddressField = () => {
-    setAddresses([...addresses, { address: '', latitude: null, longitude: null }]);
+  const addLocationsField = () => {
+    setAddresses([...locations, { address: '', latitude: null, longitude: null }]);
   };
 
-  const removeAddressField = (index) => {
-    const newAddresses = addresses.filter((_, i) => i !== index);
-    setAddresses(newAddresses);
+  const removeLocationsField = (index) => {
+    const newLocations = locations.filter((_, i) => i !== index);
+    setAddresses(newLocations);
   };
 
   return (
@@ -124,16 +124,16 @@ function Register() {
           </div>
 
           {/* Indirizzi */}
-          {addresses.map((address, index) => (
+          {locations.map((address, index) => (
             <div key={index} className="flex items-center gap-2">
               <AddressAutocomplete
                 value={address}
-                onChange={(val) => handleAddressChange(index, val)}
+                onChange={(val) => handleLocationsChange(index, val)}
               />
               {index > 0 && (
                 <button
                   type="button"
-                  onClick={() => removeAddressField(index)}
+                  onClick={() => removeLocationsField(index)}
                   className="text-blue-600 hover:text-red-500"
                   title="Rimuovi sede"
                 >
@@ -147,7 +147,7 @@ function Register() {
           <div className="text-right">
             <button
               type="button"
-              onClick={addAddressField}
+              onClick={addLocationsField}
               className="text-sm font-medium text-blue-600 hover:text-blue-800"
             >
               + Aggiungi sede
