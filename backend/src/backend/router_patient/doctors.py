@@ -21,10 +21,10 @@ async def get_free_doctors(
             l.latitude,
             l.longitude
         FROM doctor d
-        JOIN "user" u ON d.id_doctor = u.id
+        JOIN account u ON d.id_doctor = u.id
         JOIN appointment a ON a.id_doctor = d.id
         JOIN location l ON l.id = a.id_loc
-        WHERE a.id_user IS NULL
+        WHERE a.id_account IS NULL
         ORDER BY d.rank DESC
         LIMIT %s;
         """
@@ -57,7 +57,7 @@ async def get_doctors_by_specialization(
             l.latitude,
             l.longitude
         FROM doctor d
-        JOIN "user" u ON d.id_doctor = u.id
+        JOIN account u ON d.id_doctor = u.id
         JOIN appointment a ON a.id_doctor = d.id
         JOIN location l ON l.id = a.id_loc
         WHERE d.specialization = %s
@@ -95,7 +95,7 @@ async def get_doctors_by_priceASC(
             l.latitude,
             l.longitude
         FROM doctor d
-        JOIN "user" u ON d.id_doctor = u.id
+        JOIN account u ON d.id_doctor = u.id
         JOIN appointment a ON a.id_doctor = d.id
         JOIN location l ON l.id = a.id_loc
         WHERE d.specialization = %s
@@ -145,7 +145,7 @@ async def get_doctors_by_priceDESC(
             l.latitude,
             l.longitude
         FROM doctor d
-        JOIN "user" u ON d.id_doctor = u.id
+        JOIN account u ON d.id_doctor = u.id
         JOIN appointment a ON a.id_doctor = d.id
         JOIN location l ON l.id = a.id_loc
         WHERE d.specialization = %s
@@ -201,7 +201,7 @@ async def get_doctors_by_location(
                 )
             ) AS distance
         FROM doctor d
-        JOIN "user" u ON d.id_doctor = u.id
+        JOIN account u ON d.id_doctor = u.id
         JOIN appointment a ON a.id_doctor = d.id
         JOIN location l ON l.id = a.id_loc
         WHERE a.state = 'waiting'
