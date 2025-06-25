@@ -8,7 +8,7 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { setAccount } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault(); // blocca il reload della pagina
@@ -16,7 +16,7 @@ function Login() {
       const data = await login(email, password); // chiama la fetch
       console.log('Login riuscito:', data);
 
-      setUser(data);
+      setAccount(data);
       navigate('/'); // redirige se va a buon fine
     } catch (err) {
       alert(err.message); // gestisce l'errore

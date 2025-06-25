@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
-import { format, addDays, startOfToday, setHours, setMinutes, isSameDay, isEqual } from 'date-fns';
+import {
+  format,
+  addDays,
+  startOfToday,
+  setHours,
+  setMinutes,
+  isSameDay
+} from 'date-fns';
 import { getAppointments } from '../../services/appointments/fetch_appointments';
+import { me } from '../../services/profile/fetch_profile';
 
 const HOURS = [9, 10, 11, 14, 15, 16, 17];
 const DAYS_VISIBLE = 5;
@@ -13,13 +21,9 @@ function Appointments() {
     const fetchDoctorAndAppointments = async () => {
       setLoading(true);
       try {
-        // Recupera il dottore loggato
-        const meRes = await fetch('/profile/cookies/me');
-        if (!meRes.ok) throw new Error('Errore nel recupero dati utente');
-        const meData = await meRes.json();
+        const meData = await me();
         const doctorId = meData.account.id;
 
-        // Recupera gli appuntamenti (presumo restituisca direttamente un array o oggetto con appointments)
         const appData = await getAppointments(doctorId);
         const appointments = Array.isArray(appData) ? appData : appData.appointments;
 
@@ -32,13 +36,18 @@ function Appointments() {
             const dateTime = setMinutes(setHours(new Date(currentDate), hour), 0);
             const match = appointments.find((a) => {
               const slotDate = new Date(a.date_time);
-              return isEqual(slotDate, dateTime);
+              return (
+                slotDate.getFullYear() === dateTime.getFullYear() &&
+                slotDate.getMonth() === dateTime.getMonth() &&
+                slotDate.getDate() === dateTime.getDate() &&
+                slotDate.getHours() === dateTime.getHours()
+              );
             });
 
             generatedSlots.push({
               date: currentDate,
               time: format(dateTime, 'HH:mm'),
-              booked: !!match && match.state !== 'waiting',
+              state: match ? match.state : null
             });
           });
         }
@@ -74,21 +83,32 @@ function Appointments() {
             {HOURS.map((hour) => (
               <div key={`row-${hour}`} className="contents">
                 <div className="font-medium text-gray-600 py-2">{hour}:00</div>
-                {days.map((day, idx) => {
+                {days.map((day) => {
                   const slot = schedule.find(
                     (s) => s.time.startsWith(hour.toString()) && isSameDay(s.date, day)
                   );
-                  const available = slot && !slot.booked;
+
+                  let cellClass = 'bg-gray-300 text-gray-500 opacity-60';
+                  let label = format(setMinutes(setHours(day, hour), 0), 'HH:mm');
+
+                  if (slot) {
+                    if (slot.state === 'waiting') {
+                      cellClass = 'bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer';
+                    } else if (slot.state === 'booked') {
+                      cellClass = 'bg-red-100 text-red-800 line-through';
+                    } else if (slot.state === 'completed') {
+                      cellClass = 'bg-yellow-100 text-yellow-800 line-through';
+                    } else if (slot.state === 'cancelled') {
+                      cellClass = 'bg-gray-100 text-gray-500 line-through';
+                    }
+                  }
+
                   return (
                     <div
                       key={day + '-' + hour}
-                      className={`rounded px-2 py-2 text-center text-xs font-semibold border shadow-sm ${
-                        available
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer'
-                          : 'bg-red-100 text-red-800 line-through'
-                      }`}
+                      className={`rounded px-2 py-2 text-center text-xs font-semibold border shadow-sm ${cellClass}`}
                     >
-                      {slot?.time}
+                      {label}
                     </div>
                   );
                 })}

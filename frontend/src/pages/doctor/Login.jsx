@@ -8,14 +8,14 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { setAccount } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const data = await login(email, password);
       console.log('Login riuscito:', data);
-      setUser(data);
+      setAccount(data);
       navigate('/doctor');
     } catch (err) {
       alert(err.message);

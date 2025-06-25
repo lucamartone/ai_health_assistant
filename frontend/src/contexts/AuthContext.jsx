@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,21 +19,21 @@ export function AuthProvider({ children }) {
       return res.json();
     })
     .then((data) => {
-      if (data?.user) {
-        console.log('Utente ricevuto:', data.user);
-        setUser(data.user);
+      if (data?.account) {
+        console.log('Utente ricevuto:', data.account);
+        setAccount(data.account);
       }
     })
     .catch((err) => {
       console.log('Errore:', err);
-      setUser(null);
+      setAccount(null);
     })
     .finally(() => setLoading(false));
   }, []);
 
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading }}>
+    <AuthContext.Provider value={{ account, setAccount, loading }}>
       {children}
     </AuthContext.Provider>
   );

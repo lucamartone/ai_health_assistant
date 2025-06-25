@@ -1,20 +1,20 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { UserCircle } from 'lucide-react';
+import { accountCircle } from 'lucide-react';
 import { logout } from '../services/profile/fetch_profile';
 
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isDoctorApp = location.pathname.startsWith('/doctor');
-  const { user, loading, setUser } = useAuth();
+  const { account, loading, setAccount } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
       await logout();
-      setUser(null);
+      setAccount(null);
       navigate('/');
     } catch (err) {
       console.error(err);
@@ -56,7 +56,7 @@ function Header() {
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-3">
-          {!loading && !user && (
+          {!loading && !account && (
             <div className="hidden sm:flex items-center space-x-3">
 
               {/* Aggiunta testuale dinamica */}
@@ -82,17 +82,17 @@ function Header() {
             </div>
           )}
 
-          {!loading && user && (
+          {!loading && account && (
             <div className="flex items-center space-x-3">
               <span className="text-sm sm:text-base font-medium text-white whitespace-nowrap">
-                Benvenuto, {user.name} {user.surname}
+                Benvenuto, {account.name} {account.surname}
               </span>
               <button
                 onClick={() => navigate('/profile')}
                 className="p-2 rounded-full hover:bg-white/20 transition-all active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 title="Profilo"
               >
-                <UserCircle className="w-7 h-7 text-white" />
+                <accountCircle className="w-7 h-7 text-white" />
               </button>
               <button
                 onClick={handleLogout}
@@ -149,7 +149,7 @@ function Header() {
               Contacts
             </button>
 
-            {!loading && !user && (
+            {!loading && !account && (
               <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
                 <button 
                   onClick={() => {
@@ -172,9 +172,9 @@ function Header() {
               </div>
             )}
 
-            {!loading && user && (
+            {!loading && account && (
               <div className="flex flex-col space-y-2 pt-2 border-t border-white/10">
-                <span className="text-white text-sm px-5">Benvenuto, {user.name} {user.surname}</span>
+                <span className="text-white text-sm px-5">Benvenuto, {account.name} {account.surname}</span>
                 <button
                   onClick={() => {
                     navigate('/profile');
@@ -182,7 +182,7 @@ function Header() {
                   }}
                   className="flex items-center px-5 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-lg active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 >
-                  <UserCircle className="w-5 h-5 mr-2" /> Profilo
+                  <accountCircle className="w-5 h-5 mr-2" /> Profilo
                 </button>
                 <button
                   onClick={() => {

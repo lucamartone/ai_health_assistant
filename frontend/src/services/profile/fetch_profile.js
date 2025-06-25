@@ -87,3 +87,18 @@ export async function getProfile() {
 
   return await response.json();
 }
+
+export async function me() {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/cookies/me`, {
+    credentials: 'include',
+    method: 'GET',
+  });
+
+  const data = await response.json();  // ✅ CONSUMA UNA SOLA VOLTA
+
+  if (!response.ok) {
+    throw new Error(data.detail || 'Errore recupero dati utente');
+  }
+
+  return data;
+}

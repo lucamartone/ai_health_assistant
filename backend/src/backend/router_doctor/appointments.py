@@ -5,11 +5,11 @@ from backend.connection import execute_query
 
 router_appointments = APIRouter()
 
-@router_appointments.post("/get_appointments")
+@router_appointments.get("/get_appointments")
 def get_appointments(doctor_id: int = Query(..., gt=0, description="ID of the patient booking the appointment")):
     try:
         query = """
-        SELECT id, doctor_id, patient_id, date_time, state
+        SELECT id, doctor_id, patient_id, location_id, date_time, price, state
         FROM appointment
         WHERE doctor_id = %s AND date_time >= NOW()
         ORDER BY date_time ASC
