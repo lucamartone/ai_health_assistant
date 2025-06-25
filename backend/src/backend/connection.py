@@ -8,7 +8,7 @@ def connect_to_postgres():
         port=5432,
         user="user",          # deve combaciare con POSTGRES_USER
         password="userpwd",   # POSTGRES_PASSWORD
-        dbname="HealthDB"     # POSTGRES_DB
+        dbname="HealthDB"    # POSTGRES_DB
     )
     return conn
 
