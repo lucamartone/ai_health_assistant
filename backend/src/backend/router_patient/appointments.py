@@ -10,32 +10,30 @@ async def book_appointment(
     appointment_id: int = Query(..., gt=0, description="ID of the appointment to book"),
     patient_id: int = Query(..., gt=0, description="ID of the patient booking the appointment")
 ):
-    """Endpoint to book an appointment."""
     try:
-        # First check if the appointment is still available
         check_query = """
-        SELECT state, id_user 
+        SELECT state, patient_id 
         FROM appointment 
         WHERE id = %s
         """
         check_result = execute_query(check_query, (appointment_id,))
-        
+
         if not check_result:
             raise HTTPException(status_code=404, detail="Appointment not found")
-            
+
         current_state, current_user = check_result[0]
-        
+
         if current_state != 'waiting' or current_user is not None:
             raise HTTPException(status_code=400, detail="Appointment is no longer available")
 
         update_query = """
         UPDATE appointment
-        SET id_user = %s, state = 'booked'
-        WHERE id = %s AND state = 'waiting' AND id_user IS NULL
+        SET patient_id = %s, state = 'booked'
+        WHERE id = %s AND state = 'waiting' AND patient_id IS NULL
         RETURNING id
         """
         result = execute_query(update_query, (patient_id, appointment_id), commit=True)
-        
+
         if not result:
             raise HTTPException(status_code=400, detail="Failed to book appointment - it may have been booked by someone else")
 
@@ -50,39 +48,38 @@ async def book_appointment(
         raise he
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error booking appointment: {str(e)}")
-    
+
+
 @router_appointments.post("/cancel_appointment")
 async def cancel_appointment(
     appointment_id: int = Query(..., gt=0, description="ID of the appointment to cancel"),
     patient_id: int = Query(..., gt=0, description="ID of the patient who booked the appointment"),
     reason: Optional[str] = Query(None, min_length=3, max_length=500, description="Optional reason for cancellation")
 ):
-    """Endpoint to cancel an existing booked appointment (reset to available)."""
     try:
-        # First verify the appointment exists and belongs to the patient
         check_query = """
-        SELECT state, id_user 
+        SELECT state, patient_id 
         FROM appointment 
         WHERE id = %s
         """
         check_result = execute_query(check_query, (appointment_id,))
-        
+
         if not check_result:
             raise HTTPException(status_code=404, detail="Appointment not found")
-            
+
         current_state, current_user = check_result[0]
-        
+
         if current_state != 'booked' or current_user != patient_id:
             raise HTTPException(status_code=400, detail="Cannot cancel this appointment - it may not exist or you may not have permission")
 
         update_query = """
         UPDATE appointment
-        SET id_user = NULL, state = 'waiting'
-        WHERE id = %s AND id_user = %s AND state = 'booked'
+        SET patient_id = NULL, state = 'waiting'
+        WHERE id = %s AND patient_id = %s AND state = 'booked'
         RETURNING id
         """
         result = execute_query(update_query, (appointment_id, patient_id), commit=True)
-        
+
         if not result:
             raise HTTPException(status_code=400, detail="Failed to cancel appointment")
 
@@ -99,6 +96,7 @@ async def cancel_appointment(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error canceling appointment: {str(e)}")
 
+
 @router_appointments.get("/get_free_slots")
 async def get_free_slots(
     doctor_id: int = Query(..., gt=0, description="ID of the doctor"),
@@ -108,7 +106,6 @@ async def get_free_slots(
     end_date: Optional[datetime] = Query(None, description="End date for filtering slots (inclusive)"),
     limit: Optional[int] = Query(50, ge=1, le=100, description="Maximum number of slots to return")
 ):
-    """Endpoint to view free (not yet booked) appointments for a specific doctor at a specific location."""
     try:
         query = """
         SELECT 
@@ -118,9 +115,9 @@ async def get_free_slots(
             l.address,
             l.city
         FROM appointment a
-        JOIN location l ON a.id_loc = l.id 
+        JOIN location l ON a.location_id = l.id 
         WHERE a.doctor_id = %s
-          AND a.id_user IS NULL
+          AND a.patient_id IS NULL
           AND a.state = 'waiting'
           AND l.latitude = %s
           AND l.longitude = %s
@@ -130,7 +127,7 @@ async def get_free_slots(
         if start_date:
             query += " AND a.date_time >= %s"
             params.append(start_date)
-        
+
         if end_date:
             query += " AND a.date_time <= %s"
             params.append(end_date)
@@ -144,10 +141,10 @@ async def get_free_slots(
         raw_result = execute_query(query, tuple(params))
         columns = ["appointment_id", "date_time", "price", "address", "city"]
         result = [dict(zip(columns, row)) for row in raw_result]
-        
+
         if not result:
             return {"message": "No free slots found for the specified criteria", "slots": []}
-            
+
         return {
             "message": "Free slots retrieved successfully",
             "slots": result,
@@ -157,9 +154,9 @@ async def get_free_slots(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error retrieving free appointments: {str(e)}")
 
+
 @router_appointments.get("/history")
 async def get_patient_history(patient_id: int = Query(..., gt=0, description="ID del paziente")):
-    """Restituisce la cronologia appuntamenti del paziente (passati e futuri)."""
     try:
         query = """
         SELECT
