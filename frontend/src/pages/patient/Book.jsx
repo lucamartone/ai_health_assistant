@@ -4,6 +4,14 @@ import { getCoordinatesFromAddress } from '../../services/maps/fetch_maps';
 import BookingCalendar from '../../components/BookingCalendar';
 import MapView from '../../components/MapView';
 
+const SPECIALIZATIONS = [
+  "Allergologia", "Anestesia e Rianimazione", "Cardiologia", "Chirurgia Generale",
+  "Dermatologia", "Endocrinologia", "Gastroenterologia", "Ginecologia",
+  "Medicina Generale", "Nefrologia", "Neurologia", "Oculistica", "Oncologia",
+  "Ortopedia", "Otorinolaringoiatria", "Pediatria", "Psichiatria", "Psicologia",
+  "Radiologia", "Urologia"
+];
+
 function Book() {
   const [doctors, setDoctors] = useState([]);
   const [search, setSearch] = useState('');
@@ -63,7 +71,6 @@ function Book() {
         <div className="flex-1 bg-blue-700 text-white rounded-2xl p-8 shadow-xl flex flex-col">
           <h2 className="text-3xl font-bold mb-4 text-center">PRENOTA UN APPUNTAMENTO</h2>
 
-          {/* Messaggio di errore */}
           {fetchError && (
             <div className="mb-4 p-2 bg-red-200 text-red-800 rounded text-center">
               {fetchError}
@@ -88,9 +95,9 @@ function Book() {
                 className="flex-1 min-w-[150px] px-4 py-2 rounded-md bg-blue-100 text-blue-900"
               >
                 <option value="">Specializzazioni</option>
-                <option value="Cardiologa">Cardiologa</option>
-                <option value="Dermatologo">Dermatologo</option>
-                <option value="Neurologo">Neurologo</option>
+                {SPECIALIZATIONS.map((spec) => (
+                  <option key={spec} value={spec}>{spec}</option>
+                ))}
               </select>
               <select
                 value={city}
@@ -146,7 +153,7 @@ function Book() {
           </div>
         </div>
 
-        {/* Colonna destra: mappa */}
+        {/* Mappa */}
         <div className="w-[35%] flex items-start">
           {Array.isArray(filteredDoctors) && filteredDoctors.length > 0 && (
             <MapView doctors={filteredDoctors} selectedDoctorId={selectedDoctorId} />

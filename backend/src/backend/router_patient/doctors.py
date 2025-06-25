@@ -36,9 +36,7 @@ async def get_free_doctors(
         return result
     
     except Exception as e:
-        return {"error": str(e)}
-
-    
+        return {"error": str(e)} 
     
 @router_show_doctors.get("/free_doctors_by_specialization")
 async def get_doctors_by_specialization(

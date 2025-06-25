@@ -10,6 +10,7 @@ CREATE TABLE account (
     email VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     sex CHAR(1) CHECK (sex IN ('M', 'F')),
+    birth_date DATE CHECK (birth_date < CURRENT_DATE),
     profile_img BYTEA,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login_attempt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -26,8 +27,7 @@ CREATE TABLE doctor (
 
 -- Tabella patient (deriva da account)
 CREATE TABLE patient (
-    id INT PRIMARY KEY REFERENCES account(id),
-    birth_date DATE CHECK (birth_date < CURRENT_DATE)
+    id INT PRIMARY KEY REFERENCES account(id)
 );
 
 -- Tabella location
@@ -46,7 +46,7 @@ CREATE TABLE appointment (
     id SERIAL PRIMARY KEY,
     doctor_id INT NOT NULL REFERENCES doctor(id),
     patient_id INT REFERENCES patient(id),
-    location_id INT REFERENCES location(id),
+    location_id INT NOT NULL REFERENCES location(id),
     date_time TIMESTAMP NOT NULL,
     price NUMERIC(10,2) DEFAULT 50 CHECK (price >= 0),
     state VARCHAR(20) DEFAULT 'waiting' CHECK (state IN ('waiting', 'booked', 'completed', 'cancelled')),

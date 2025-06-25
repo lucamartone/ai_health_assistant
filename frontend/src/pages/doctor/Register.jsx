@@ -4,6 +4,14 @@ import { Trash2 } from 'lucide-react';
 import { register_doctor } from '../../services/profile/fetch_profile';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
 
+const SPECIALIZATIONS = [
+  "Allergologia", "Anestesia e Rianimazione", "Cardiologia", "Chirurgia Generale",
+  "Dermatologia", "Endocrinologia", "Gastroenterologia", "Ginecologia",
+  "Medicina Generale", "Nefrologia", "Neurologia", "Oculistica", "Oncologia",
+  "Ortopedia", "Otorinolaringoiatria", "Pediatria", "Psichiatria", "Psicologia",
+  "Radiologia", "Urologia"
+];
+
 function Register() {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
@@ -90,13 +98,16 @@ function Register() {
 
           {/* Specializzazione + Sesso */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
+            <select
               value={specialization}
               onChange={(e) => setSpecialization(e.target.value)}
-              placeholder="Specializzazione"
-              className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+              className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Seleziona Specializzazione</option>
+              {SPECIALIZATIONS.map((spec) => (
+                <option key={spec} value={spec}>{spec}</option>
+              ))}
+            </select>
 
             <div className="flex justify-center items-center bg-blue-50 px-4 py-3 rounded-md text-blue-900">
               <span className="font-medium mr-4">Sesso:</span>
