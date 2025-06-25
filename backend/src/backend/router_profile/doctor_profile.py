@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from backend.router_profile.pydantic.profile_requests import RegisterDoctorRequest
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
@@ -102,3 +102,35 @@ async def register(data: RegisterDoctorRequest):
         raise he
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nella registrazione: {str(e)}")
+
+@router_doctor_profile.get("/appointments")
+async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description="ID del dottore")):
+    """Restituisce tutti gli appuntamenti del dottore (futuri e passati)."""
+    try:
+        query = """
+        SELECT
+          a.id AS appointment_id,
+          a.date_time,
+          a.price,
+          a.state,
+          l.address,
+          l.city,
+          p.id AS patient_id,
+          u.name AS patient_name,
+          u.surname AS patient_surname
+        FROM appointment a
+        JOIN location l ON a.location_id = l.id
+        LEFT JOIN patient p ON a.patient_id = p.id
+        LEFT JOIN account u ON p.id = u.id
+        WHERE a.doctor_id = %s
+        ORDER BY a.date_time DESC
+        """
+        raw_result = execute_query(query, (doctor_id,))
+        columns = [
+            "appointment_id", "date_time", "price", "state", "address", "city",
+            "patient_id", "patient_name", "patient_surname"
+        ]
+        result = [dict(zip(columns, row)) for row in raw_result]
+        return {"appointments": result}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore nel recupero appuntamenti: {str(e)}")

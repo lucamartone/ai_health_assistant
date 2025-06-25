@@ -119,7 +119,7 @@ async def get_free_slots(
             l.city
         FROM appointment a
         JOIN location l ON a.id_loc = l.id 
-        WHERE a.id_doctor = %s
+        WHERE a.doctor_id = %s
           AND a.id_user IS NULL
           AND a.state = 'waiting'
           AND l.latitude = %s
@@ -156,3 +156,38 @@ async def get_free_slots(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error retrieving free appointments: {str(e)}")
+
+@router_appointments.get("/history")
+async def get_patient_history(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    """Restituisce la cronologia appuntamenti del paziente (passati e futuri)."""
+    try:
+        query = """
+        SELECT
+          a.id AS appointment_id,
+          a.date_time,
+          a.price,
+          a.state,
+          l.address,
+          l.city,
+          d.id AS doctor_id,
+          u.name AS doctor_name,
+          u.surname AS doctor_surname,
+          h.report,
+          h.review
+        FROM history h
+        JOIN appointment a ON h.appointment_id = a.id
+        JOIN location l ON a.location_id = l.id
+        JOIN doctor d ON a.doctor_id = d.id
+        JOIN account u ON d.id = u.id
+        WHERE h.patient_id = %s
+        ORDER BY a.date_time DESC
+        """
+        raw_result = execute_query(query, (patient_id,))
+        columns = [
+            "appointment_id", "date_time", "price", "state", "address", "city",
+            "doctor_id", "doctor_name", "doctor_surname", "report", "review"
+        ]
+        result = [dict(zip(columns, row)) for row in raw_result]
+        return {"history": result}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore nel recupero della cronologia: {str(e)}")

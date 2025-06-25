@@ -11,6 +11,7 @@ function Book() {
   const [city, setCity] = useState('');
   const [price, setPrice] = useState('');
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
 
   const handleSlotSelect = (doctor, date, time) => {
     alert(`Prenotato con ${doctor.name} il ${date.toLocaleDateString()} alle ${time}`);
@@ -21,26 +22,32 @@ function Book() {
       try {
         const data = await getFreeDoctors();
         console.log('Dottori recuperati:', data);
-        setDoctors(data);
+        if (Array.isArray(data)) {
+          setDoctors(data);
+        } else {
+          setDoctors([]);
+          setFetchError('Errore: risposta inattesa dal server.');
+        }
       } catch (error) {
-        console.error('Errore durante il fetch dei dottori:', error);
+        setFetchError(error.message);
+        setDoctors([]);
       }
     };
 
     fetchDoctors();
   }, []);
 
-  const filteredDoctors = doctors.filter((doc) =>
-    doc.name.toLowerCase().includes(search.toLowerCase()) &&
-    (specialization === '' || doc.specialization === specialization) &&
-    (city === '' || doc.city === city) &&
-    (price === '' || doc.price <= parseInt(price))
-  );
+  const filteredDoctors = Array.isArray(doctors)
+    ? doctors.filter((doc) =>
+        doc.name.toLowerCase().includes(search.toLowerCase()) &&
+        (specialization === '' || doc.specialization === specialization) &&
+        (city === '' || doc.city === city) &&
+        (price === '' || doc.price <= parseInt(price))
+      )
+    : [];
 
   const handleDoctorClick = async (doctor) => {
     setSelectedDoctorId(doctor.id);
-
-    // (opzionale) geocoding per logging o altre funzioni
     if (doctor.address && doctor.city) {
       const coords = await getCoordinatesFromAddress(doctor.address, doctor.city);
       if (coords) {
@@ -55,6 +62,13 @@ function Book() {
         {/* Colonna sinistra */}
         <div className="flex-1 bg-blue-700 text-white rounded-2xl p-8 shadow-xl flex flex-col">
           <h2 className="text-3xl font-bold mb-4 text-center">PRENOTA UN APPUNTAMENTO</h2>
+
+          {/* Messaggio di errore */}
+          {fetchError && (
+            <div className="mb-4 p-2 bg-red-200 text-red-800 rounded text-center">
+              {fetchError}
+            </div>
+          )}
 
           {/* Filtri */}
           <div className="sticky top-0 bg-blue-700 z-10 pb-4">
@@ -102,7 +116,7 @@ function Book() {
 
           {/* Lista dottori */}
           <div className="mt-4 space-y-4 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 300px)' }}>
-            {filteredDoctors.length === 0 && (
+            {filteredDoctors.length === 0 && !fetchError && (
               <p className="text-blue-100 text-center">Nessun dottore trovato.</p>
             )}
             {filteredDoctors.map((doc) => (
@@ -134,7 +148,9 @@ function Book() {
 
         {/* Colonna destra: mappa */}
         <div className="w-[35%] flex items-start">
-          <MapView doctors={filteredDoctors} selectedDoctorId={selectedDoctorId} />
+          {Array.isArray(filteredDoctors) && filteredDoctors.length > 0 && (
+            <MapView doctors={filteredDoctors} selectedDoctorId={selectedDoctorId} />
+          )}
         </div>
       </div>
     </div>
