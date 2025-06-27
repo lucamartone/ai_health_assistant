@@ -90,7 +90,6 @@ export async function getProfile() {
 
 export async function me() {
   const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/cookies/me`, {
-    credentials: 'include',
     method: 'GET',
   });
 

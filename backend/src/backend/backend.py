@@ -1,11 +1,11 @@
 import os
+import time
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
-import time
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.router_profile.router_profile import router_profile
 from backend.router_patient.router_patient import router_patient
@@ -22,31 +22,23 @@ app = FastAPI(
     redoc_url="/redoc" if ENVIRONMENT == "development" else None,
 )
 
-# Middleware per aggiungere headers di sicurezza
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-        
-        # Headers di sicurezza moderni
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-        
-        # Content Security Policy
-        csp = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-            "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data: https:; "
-            "font-src 'self'; "
-            "connect-src 'self' http://localhost:8001; "
-            "frame-ancestors 'none';"
-        )
-        response.headers["Content-Security-Policy"] = csp
-        
-        return response
+# ✅ CORS - DEVE ESSERE L’ULTIMO middleware per funzionare correttamente
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",     # Vite dev
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",     # Vite default
+        "https://yourdomain.com",    # Produzione
+    ] if ENVIRONMENT == "development" else [
+        "https://yourdomain.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["Set-Cookie"],
+    max_age=3600,
+)
 
 # Middleware per logging delle richieste
 class LoggingMiddleware(BaseHTTPMiddleware):
@@ -54,52 +46,51 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         start_time = time.time()
         response = await call_next(request)
         process_time = time.time() - start_time
-        
         print(f"{request.method} {request.url.path} - {response.status_code} - {process_time:.3f}s")
         return response
 
-# Configurazione CORS moderna
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",     # Vite dev server
-        "http://127.0.0.1:3000",     # Alternative localhost
-        "http://localhost:5173",     # Vite default port
-        "https://yourdomain.com",    # Produzione (da configurare)
-    ] if ENVIRONMENT == "development" else [
-        "https://yourdomain.com",    # Solo dominio di produzione
-    ],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=[
-        "Accept",
-        "Accept-Language",
-        "Content-Language",
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With",
-    ],
-    expose_headers=["Set-Cookie"],
-    max_age=3600,  # Cache preflight per 1 ora
-)
+# Middleware per headers di sicurezza
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
 
-# Aggiungi middleware di sicurezza
-app.add_middleware(SecurityHeadersMiddleware)
+        # Headers di sicurezza
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
 
-# Aggiungi middleware di logging in development
+        # Content Security Policy
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: https:; "
+            "font-src 'self'; "
+            "connect-src *; "
+            "frame-ancestors 'none';"
+        )
+        response.headers["Content-Security-Policy"] = csp
+
+        return response
+
+# ✅ Middleware di logging (solo in dev)
 if ENVIRONMENT == "development":
     app.add_middleware(LoggingMiddleware)
 
-# Trusted Host middleware per produzione
+# ✅ Middleware per redirect HTTPS e host trust solo in prod
 if ENVIRONMENT == "production":
     app.add_middleware(
-        TrustedHostMiddleware, 
+        TrustedHostMiddleware,
         allowed_hosts=["yourdomain.com", "www.yourdomain.com"]
     )
-    # HTTPS redirect in produzione
     app.add_middleware(HTTPSRedirectMiddleware)
 
-# Health check endpoint
+# ✅ Middleware per headers di sicurezza
+app.add_middleware(SecurityHeadersMiddleware)
+
+# ✅ Health check semplice
 @app.get("/health")
 async def health_check():
     return {
@@ -108,7 +99,7 @@ async def health_check():
         "timestamp": time.time()
     }
 
-# Include routers
+# ✅ Include i router
 app.include_router(router_profile, prefix="/profile", tags=["generic"])
 app.include_router(router_patient, prefix="/patient", tags=["patient"])
 app.include_router(router_doctor, prefix="/doctor", tags=["doctor"])
