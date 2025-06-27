@@ -1,9 +1,6 @@
 import { useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 
 const useApi = () => {
-  const { refreshToken, isRefreshing } = useAuth();
-
   const apiCall = useCallback(async (url, options = {}) => {
     const defaultOptions = {
       credentials: 'include',
@@ -17,22 +14,12 @@ const useApi = () => {
 
     try {
       const response = await fetch(url, finalOptions);
-
-      // Se la risposta è 401 e non stiamo già facendo refresh
-      if (response.status === 401 && !isRefreshing) {
-        const refreshed = await refreshToken();
-        if (refreshed) {
-          // Riprova la chiamata originale
-          return await fetch(url, finalOptions);
-        }
-      }
-
       return response;
     } catch (error) {
       console.error('Errore nella chiamata API:', error);
       throw error;
     }
-  }, [refreshToken, isRefreshing]);
+  }, []);
 
   const get = useCallback((url, options = {}) => {
     return apiCall(url, { ...options, method: 'GET' });

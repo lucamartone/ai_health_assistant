@@ -1,9 +1,21 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import FeatureCard from '../../components/FeatureCard';
+import { useAuth } from '../../contexts/AuthContext';
 
 function Index() {
     const navigate = useNavigate();
+    const { account } = useAuth();
+
+    const handleProfileClick = () => {
+        if (account) {
+            // Se il dottore è autenticato, vai al profilo
+            navigate('/doctor/profile');
+        } else {
+            // Se il dottore non è autenticato, vai al login
+            navigate('/doctor/login');
+        }
+    };
 
     const features = [
         {
@@ -20,7 +32,7 @@ function Index() {
             description: "Gestisci le tue informazioni professionali, specializzazioni e sedi di lavoro.",
             buttonText: "Modifica profilo",
             gradient: "from-emerald-500 to-emerald-600 text-emerald-50",
-            onClick: () => navigate('/doctor/profile')
+            onClick: handleProfileClick
         },
         {
             icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />,

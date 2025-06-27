@@ -22,10 +22,11 @@ app = FastAPI(
     redoc_url="/redoc" if ENVIRONMENT == "development" else None,
 )
 
-# ✅ CORS - DEVE ESSERE L’ULTIMO middleware per funzionare correttamente
+# ✅ CORS - DEVE ESSERE L'ULTIMO middleware per funzionare correttamente
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost",          # Localhost porta 80
         "http://localhost:3000",     # Vite dev
         "http://127.0.0.1:3000",
         "http://localhost:5173",     # Vite default

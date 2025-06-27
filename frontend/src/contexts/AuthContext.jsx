@@ -6,6 +6,7 @@ export function AuthProvider({ children }) {
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasAttemptedRefresh, setHasAttemptedRefresh] = useState(false);
 
   // Funzione per chiamare l'endpoint /me con gestione automatica del refresh
   const fetchUserData = useCallback(async (isRefreshAttempt = false) => {
@@ -19,10 +20,12 @@ export function AuthProvider({ children }) {
         if (data?.account) {
           console.log('Utente ricevuto:', data.account);
           setAccount(data.account);
+          setHasAttemptedRefresh(false); // Reset del flag
           return true;
         }
-      } else if (response.status === 401 && !isRefreshAttempt) {
-        // Token scaduto, prova a fare refresh
+      } else if (response.status === 401 && !isRefreshAttempt && !hasAttemptedRefresh) {
+        // Token scaduto, prova a fare refresh solo una volta
+        console.log('Token scaduto, tentativo di refresh...');
         return await refreshToken();
       }
       
@@ -33,23 +36,31 @@ export function AuthProvider({ children }) {
       setAccount(null);
       return false;
     }
-  }, []);
+  }, [hasAttemptedRefresh]);
 
   // Funzione per refresh del token
   const refreshToken = useCallback(async () => {
-    if (isRefreshing) return false;
+    if (isRefreshing || hasAttemptedRefresh) {
+      console.log('Refresh già in corso o già tentato');
+      return false;
+    }
     
     setIsRefreshing(true);
+    setHasAttemptedRefresh(true);
+    
     try {
+      console.log('Tentativo di refresh del token...');
       const response = await fetch('http://localhost:8001/profile/cookies/refresh', {
         method: 'POST',
         credentials: 'include',
       });
 
       if (response.ok) {
+        console.log('Token refreshato con successo');
         // Token refreshato con successo, riprova a ottenere i dati utente
         return await fetchUserData(true);
       } else {
+        console.log('Refresh fallito, utente deve fare login');
         // Refresh fallito, utente deve fare login
         setAccount(null);
         return false;
@@ -61,7 +72,7 @@ export function AuthProvider({ children }) {
     } finally {
       setIsRefreshing(false);
     }
-  }, [fetchUserData, isRefreshing]);
+  }, [fetchUserData, isRefreshing, hasAttemptedRefresh]);
 
   // Funzione per logout
   const logout = useCallback(async () => {
@@ -74,47 +85,27 @@ export function AuthProvider({ children }) {
       console.error('Errore durante il logout:', error);
     } finally {
       setAccount(null);
+      setHasAttemptedRefresh(false); // Reset del flag
     }
   }, []);
 
-  // Inizializzazione e setup del refresh automatico
+  // Inizializzazione
   useEffect(() => {
-    console.log('Chiamo /me...');
+    console.log('Inizializzazione AuthContext...');
     fetchUserData().finally(() => setLoading(false));
+  }, [fetchUserData]);
 
-    // Setup refresh automatico ogni 50 minuti (prima che scada l'access token)
+  // Setup refresh automatico ogni 50 minuti (solo se l'utente è autenticato)
+  useEffect(() => {
+    if (!account) return;
+
     const refreshInterval = setInterval(() => {
-      if (account) {
-        refreshToken();
-      }
+      console.log('Refresh automatico del token...');
+      refreshToken();
     }, 50 * 60 * 1000); // 50 minuti
 
     return () => clearInterval(refreshInterval);
-  }, [fetchUserData, refreshToken, account]);
-
-  // Interceptor per gestire automaticamente i 401 nelle chiamate API
-  useEffect(() => {
-    const originalFetch = window.fetch;
-    
-    window.fetch = async (...args) => {
-      const response = await originalFetch(...args);
-      
-      // Se la risposta è 401 e non stiamo già facendo refresh
-      if (response.status === 401 && !isRefreshing && args[0].includes('localhost:8001')) {
-        const refreshed = await refreshToken();
-        if (refreshed) {
-          // Riprova la chiamata originale
-          return await originalFetch(...args);
-        }
-      }
-      
-      return response;
-    };
-
-    return () => {
-      window.fetch = originalFetch;
-    };
-  }, [refreshToken, isRefreshing]);
+  }, [account, refreshToken]);
 
   return (
     <AuthContext.Provider value={{ 
