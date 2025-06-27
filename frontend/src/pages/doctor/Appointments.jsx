@@ -36,7 +36,6 @@ function Appointments() {
             const dateTime = setMinutes(setHours(new Date(currentDate), hour), 0);
             const match = appointments.find((a) => {
               const slotDate = new Date(a.date_time);
-              console.log('Comparing slotDate:', slotDate, 'with generated:', dateTime);
               return slotDate.getTime() === dateTime.getTime();
             });
 
