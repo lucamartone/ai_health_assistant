@@ -57,12 +57,3 @@ async def register(data: RegisterRequest):
         raise he
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nella registrazione: {str(e)}")
-
-
-    """Endpoint to book an appointment with a doctor."""
-    # Implement logic to book the appointment
-    if doctor_id <= 0 or not date or not time:
-        raise HTTPException(status_code=400, detail="Invalid input for booking appointment")
-    
-    # Example response
-    return {"message": f"Appointment booked with doctor {doctor_id} on {date} at {time}."}

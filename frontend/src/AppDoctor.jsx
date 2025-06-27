@@ -4,6 +4,7 @@ import Index from './pages/doctor/Index';
 import Register from './pages/doctor/Register';
 import Login from './pages/doctor/Login';
 import Appointments from './pages/doctor/Appointments';
+import Profile from './pages/doctor/Profile';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -17,6 +18,7 @@ function AppDoctor() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/appointments" element={<Appointments />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
 
       <Footer />

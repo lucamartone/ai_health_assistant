@@ -10,6 +10,56 @@ import re
 router_account_profile = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
+@router_account_profile.get("/profile")
+async def get_profile(current_account: dict = Depends(get_current_account)):
+    """Restituisce i dati completi dell'account corrente."""
+    try:
+        query = """
+        SELECT id, name, surname, email, sex
+        FROM account
+        WHERE id = %s
+        """
+        account_res = execute_query(query, (current_account["id"],))
+        if not account_res:
+            raise HTTPException(status_code=404, detail="Utente non trovato")
+
+        acc = account_res[0]
+        profile = {
+            "id": acc[0],
+            "name": acc[1],
+            "surname": acc[2],
+            "email": acc[3],
+            "sex": acc[4],
+        }
+
+        doc_res = execute_query("SELECT specialization FROM doctor WHERE id = %s", (acc[0],))
+        if doc_res:
+            profile["role"] = "doctor"
+            profile["specialization"] = doc_res[0][0]
+            loc_res = execute_query(
+                "SELECT id, address, latitude, longitude FROM location WHERE doctor_id = %s",
+                (acc[0],),
+            )
+            profile["locations"] = [
+                {
+                    "id": l[0],
+                    "address": l[1],
+                    "latitude": float(l[2]) if l[2] is not None else None,
+                    "longitude": float(l[3]) if l[3] is not None else None,
+                }
+                for l in loc_res
+            ]
+        else:
+            profile["role"] = "patient"
+
+        return {"profile": profile}
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore recupero profilo: {str(e)}")
+
 def validate_password(password: str) -> bool:
     """Verifica la robustezza della password."""
     if len(password) < 8:
@@ -126,14 +176,14 @@ async def delete_account(
             raise HTTPException(status_code=401, detail="Password non valida")
 
         # Get account ID
-        select_id_account = """SELECT id FROM "account"" WHERE email = %s"""
+        select_id_account = "SELECT id FROM account WHERE email = %s"
         res = execute_query(select_id_account, (email,))
         account_id = res[0][0]
 
         # Delete in correct order to maintain referential integrity
-        delete_patient = "DELETE FROM patient WHERE id_patient = %s"
-        delete_doctor = "DELETE FROM doctor WHERE id_doctor = %s"
-        delete_account = """DELETE FROM "account" WHERE id = %s"""
+        delete_patient = "DELETE FROM patient WHERE id = %s"
+        delete_doctor = "DELETE FROM doctor WHERE id = %s"
+        delete_account = "DELETE FROM account WHERE id = %s"
 
         execute_query(delete_patient, (account_id,), commit=True)
         execute_query(delete_doctor, (account_id,), commit=True)
