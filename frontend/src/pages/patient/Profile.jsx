@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const TABS = [
@@ -11,15 +11,16 @@ const TABS = [
 
 function Profile() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const location = useLocation();
+  const { account, loading, setAccount } = useAuth();
   const fileInputRef = useRef(null);
 
   // Protezione: redirect se non autenticato
   useEffect(() => {
-    if (!loading && !user) {
-      navigate('/login');
+    if (!loading && !account) {
+      navigate('/login', { state: { from: location.pathname } });
     }
-  }, [user, loading, navigate]);
+  }, [account, loading, navigate, location]);
 
   const [successMsg, setSuccessMsg] = useState('');
   const [password, setPassword] = useState('');
@@ -38,7 +39,7 @@ function Profile() {
         setLoadingHistory(true);
         setHistoryError('');
         try {
-          const res = await fetch(`/profile/patient/appointments/history?patient_id=${user?.id}`);
+          const res = await fetch(`/profile/patient/appointments/history?patient_id=${account?.id}`);
           if (!res.ok) throw new Error('Errore nel recupero della cronologia');
           const data = await res.json();
           setHistory(data.history || []);
@@ -50,10 +51,10 @@ function Profile() {
       }
       fetchHistory();
     }
-  }, [user?.id, activeTab]);
+  }, [account?.id, activeTab]);
 
   const handleChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
+    setAccount({ ...account, [e.target.name]: e.target.value });
   };
 
   const handleAvatarChange = (e) => {
@@ -61,7 +62,7 @@ function Profile() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUser((prev) => ({ ...prev, avatar: reader.result }));
+        setAccount((prev) => ({ ...prev, avatar: reader.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -103,9 +104,9 @@ function Profile() {
       {/* Header profilo */}
       <div className="w-full max-w-3xl flex flex-col items-center gap-2 mb-8">
         <div className="flex flex-col items-center gap-2">
-          {user?.avatar ? (
+          {account?.avatar ? (
             <img
-              src={user?.avatar}
+              src={account?.avatar}
               alt="Foto profilo"
               className="w-24 h-24 rounded-full border-2 border-gray-200 object-cover cursor-pointer hover:opacity-80 transition"
               onClick={handleAvatarClick}
@@ -133,9 +134,9 @@ function Profile() {
           />
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">{user?.name}</div>
-          <div className="text-gray-500 text-sm">{user?.email}</div>
-          <div className="text-gray-400 text-xs mt-1">{user?.role} &middot; Registrato il {user?.joined}</div>
+          <div className="text-2xl font-bold text-gray-900">{account?.name}</div>
+          <div className="text-gray-500 text-sm">{account?.email}</div>
+          <div className="text-gray-400 text-xs mt-1">{account?.role} &middot; Registrato il {account?.joined}</div>
         </div>
         <button
           onClick={handleLogout}
@@ -169,7 +170,7 @@ function Profile() {
                   type="text"
                   name="name"
                   id="name"
-                  value={user?.name}
+                  value={account?.name}
                   onChange={handleChange}
                   className="w-full px-4 py-2 rounded-md bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   placeholder="Il tuo nome"
@@ -183,7 +184,7 @@ function Profile() {
                   type="email"
                   name="email"
                   id="email"
-                  value={user?.email}
+                  value={account?.email}
                   className="w-full px-4 py-2 rounded-md bg-gray-100 border border-gray-200 cursor-not-allowed"
                   aria-label="Email"
                   readOnly
@@ -196,7 +197,7 @@ function Profile() {
                   type="text"
                   name="role"
                   id="role"
-                  value={user?.role}
+                  value={account?.role}
                   className="w-full px-4 py-2 rounded-md bg-gray-100 border border-gray-200 cursor-not-allowed"
                   aria-label="Ruolo"
                   readOnly
@@ -209,7 +210,7 @@ function Profile() {
                   type="text"
                   name="joined"
                   id="joined"
-                  value={user?.joined}
+                  value={account?.joined}
                   className="w-full px-4 py-2 rounded-md bg-gray-100 border border-gray-200 cursor-not-allowed"
                   aria-label="Data registrazione"
                   readOnly
