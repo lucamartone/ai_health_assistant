@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 
 import { login } from '../../services/profile/fetch_profile';
@@ -8,6 +8,8 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
   const { setAccount } = useAuth();
 
   const handleLogin = async (e) => {
@@ -17,7 +19,7 @@ function Login() {
       console.log('Login riuscito:', data);
 
       setAccount(data);
-      navigate('/'); // redirige se va a buon fine
+      navigate(from); // redirige se va a buon fine
     } catch (err) {
       alert(err.message); // gestisce l'errore
     }
