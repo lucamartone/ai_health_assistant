@@ -4,13 +4,12 @@ import {
   addDays,
   startOfToday,
   setHours,
-  setMinutes,
-  isSameDay
+  setMinutes
 } from 'date-fns';
 import { getAppointments } from '../../services/appointments/fetch_appointments';
 import { me } from '../../services/profile/fetch_profile';
 
-const HOURS = [9, 10, 11, 14, 15, 16, 17];
+const HOURS = [9, 10, 11, 12, 14, 15, 16, 17];
 const DAYS_VISIBLE = 5;
 
 function Appointments() {
@@ -26,6 +25,7 @@ function Appointments() {
 
         const appData = await getAppointments(doctorId);
         const appointments = Array.isArray(appData) ? appData : appData.appointments;
+        console.log('Fetched Appointments:', appointments);
 
         const today = startOfToday();
         const generatedSlots = [];
@@ -36,22 +36,19 @@ function Appointments() {
             const dateTime = setMinutes(setHours(new Date(currentDate), hour), 0);
             const match = appointments.find((a) => {
               const slotDate = new Date(a.date_time);
-              return (
-                slotDate.getFullYear() === dateTime.getFullYear() &&
-                slotDate.getMonth() === dateTime.getMonth() &&
-                slotDate.getDate() === dateTime.getDate() &&
-                slotDate.getHours() === dateTime.getHours()
-              );
+              console.log('Comparing slotDate:', slotDate, 'with generated:', dateTime);
+              return slotDate.getTime() === dateTime.getTime();
             });
 
             generatedSlots.push({
-              date: currentDate,
+              dateTime,
               time: format(dateTime, 'HH:mm'),
               state: match ? match.state : null
             });
           });
         }
 
+        console.log('Generated schedule:', generatedSlots);
         setSchedule(generatedSlots);
       } catch (err) {
         console.error('Errore:', err);
@@ -84,13 +81,14 @@ function Appointments() {
               <div key={`row-${hour}`} className="contents">
                 <div className="font-medium text-gray-600 py-2">{hour}:00</div>
                 {days.map((day) => {
+                  const targetSlotTime = setMinutes(setHours(new Date(day), hour), 0);
                   const slot = schedule.find(
-                    (s) => s.time.startsWith(hour.toString()) && isSameDay(s.date, day)
+                    (s) => new Date(s.dateTime).getTime() === targetSlotTime.getTime()
                   );
 
-                  let cellClass = 'bg-gray-300 text-gray-500 opacity-60';
-                  let label = format(setMinutes(setHours(day, hour), 0), 'HH:mm');
+                  console.log('Rendering slot for:', targetSlotTime, 'Found slot:', slot);
 
+                  let cellClass = 'bg-gray-300 text-gray-500 opacity-60';
                   if (slot) {
                     if (slot.state === 'waiting') {
                       cellClass = 'bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer';
@@ -108,7 +106,7 @@ function Appointments() {
                       key={day + '-' + hour}
                       className={`rounded px-2 py-2 text-center text-xs font-semibold border shadow-sm ${cellClass}`}
                     >
-                      {label}
+                      {format(targetSlotTime, 'HH:mm')}
                     </div>
                   );
                 })}
