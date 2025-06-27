@@ -8,7 +8,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
   console.log('Chiamo /me...');
-  fetch('http://localhost:8001/profile/cookies/me', {
+  fetch(`${import.meta.env.VITE_BACKEND_URL}/profile/cookies/me`, {
     credentials: 'include', // 🔥 obbligatorio per inviare il cookie
   })
     .then((res) => {
