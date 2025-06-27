@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from backend.connection import execute_query
 from pydantic import EmailStr
 from backend.router_profile.pydantic.profile_requests import LoginRequest
-from backend.router_profile.cookies_login import create_access_token, get_current_account
+from backend.router_profile.cookies_login import create_access_token, create_refresh_token, get_current_account
 from passlib.context import CryptContext
 import re
 
@@ -24,7 +24,7 @@ def validate_password(password: str) -> bool:
 
 @router_account_profile.post("/login")
 async def login(data: LoginRequest, response: Response):
-    """Endpoint per autenticare un utente e creare una sessione."""
+    """Endpoint per autenticare un utente e creare una sessione con refresh token."""
     try:
         # Check for too many failed attempts (implement rate limiting)
         query = """
@@ -71,20 +71,40 @@ async def login(data: LoginRequest, response: Response):
         """
         execute_query(reset_attempts, (data.email,), commit=True)
         
-        token = create_access_token({
+        # Create tokens
+        access_token = create_access_token({
+            "sub": account[3],
+            "id": account[0],
+            "name": account[1],
+            "surname": account[2]
+        })
+        
+        refresh_token = create_refresh_token({
             "sub": account[3],
             "id": account[0],
             "name": account[1],
             "surname": account[2]
         })
 
+        # Set access token cookie (short-lived)
         response.set_cookie(
             key="access_token",
-            value=token,
+            value=access_token,
             httponly=True,
             max_age=60 * 60,  # 1 ora
-            samesite="Lax",
+            samesite="Strict",  # Più sicuro di Lax
             secure=True,  # True per HTTPS
+            path="/"
+        )
+
+        # Set refresh token cookie (long-lived)
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            max_age=7 * 24 * 60 * 60,  # 7 giorni
+            samesite="Strict",
+            secure=True,
             path="/"
         )
 
@@ -148,13 +168,22 @@ async def delete_account(
 
 @router_account_profile.post("/logout")
 async def logout(response: Response):
-    """Endpoint per effettuare il logout di un utente eliminando il cookie di accesso."""
+    """Endpoint per effettuare il logout di un utente eliminando i cookies di accesso."""
+    # Elimina access token cookie
     response.delete_cookie(
         key="access_token",
         path="/",
         secure=True,
         httponly=True,
-        samesite="Lax"
+        samesite="Strict"
+    )
+    # Elimina refresh token cookie
+    response.delete_cookie(
+        key="refresh_token",
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="Strict"
     )
     return {"message": "Logout effettuato con successo"}
 

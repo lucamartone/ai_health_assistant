@@ -8,6 +8,8 @@ import Book from './pages/patient/Book';
 import Register from './pages/patient/Register';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import CookieConsent from './components/CookieConsent';
+import SessionManager from './components/SessionManager';
 
 function AppPatient() {
     const location = useLocation();
@@ -27,6 +29,8 @@ function AppPatient() {
       </Routes>
 
       {!isChatPage && <Footer />}
+      <CookieConsent />
+      <SessionManager />
       </>
     );
 }

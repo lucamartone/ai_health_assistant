@@ -1,9 +1,21 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import FeatureCard from '../../components/FeatureCard';
+import { useAuth } from '../../contexts/AuthContext';
 
 function Index() {
     const navigate = useNavigate();
+    const { account } = useAuth();
+
+    const handleProfileClick = () => {
+        if (account) {
+            // Se l'utente è autenticato, vai al profilo
+            navigate('/profile');
+        } else {
+            // Se l'utente non è autenticato, vai al login
+            navigate('/login');
+        }
+    };
 
     const features = [
         {
@@ -28,7 +40,7 @@ function Index() {
             description: "Gestisci i tuoi dati e appuntamenti in un unico posto. Mantieni tutto sotto controllo.",
             buttonText: "Gestisci profilo",
             gradient: "from-amber-500 to-amber-600 text-amber-50",
-            onClick: () => navigate('/profile')
+            onClick: handleProfileClick
         }
     ];
 
