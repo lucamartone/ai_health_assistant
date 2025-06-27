@@ -56,7 +56,7 @@ def insert_appointment(data: AppointmentInsert):
         VALUES (%s, %s, %s, %s)
         """
         params = (data.doctor_id, data.location_id, data.date_time, data.state)
-        execute_query(query, params)
+        execute_query(query, params, commit=True)
         return {"message": "Appuntamento inserito con successo"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore inserimento: {str(e)}")

@@ -6,7 +6,7 @@ import {
   setHours,
   setMinutes
 } from 'date-fns';
-import { getAppointments, getLocations } from '../../services/appointments/fetch_appointments';
+import { getAppointments, getLocations, insertAppointment } from '../../services/appointments/fetch_appointments';
 import { me } from '../../services/profile/fetch_profile';
 import { Pencil, Check } from 'lucide-react';
 
@@ -25,6 +25,8 @@ function Appointments() {
   const [activeTab, setActiveTab] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [doctorId, setDoctorId] = useState(null);
+  const [addressToId, setAddressToId] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,6 +34,7 @@ function Appointments() {
       try {
         const meData = await me();
         const doctorId = meData.account.id;
+        setDoctorId(doctorId);
 
         const locData = await getLocations(doctorId);
         const locList = locData.locations || [];
@@ -39,19 +42,22 @@ function Appointments() {
         const appData = await getAppointments(doctorId);
         const appointments = Array.isArray(appData) ? appData : appData.appointments;
 
-        const locationMap = {};
+        const idToAddress = {};
+        const addressToIdMap = {};
         locList.forEach(loc => {
-          locationMap[loc.id] = `${loc.address}`;
+          idToAddress[loc.id] = loc.address;
+          addressToIdMap[loc.address] = loc.id;
         });
+        setAddressToId(addressToIdMap);
 
         const grouped = {};
         for (const loc of locList) {
-          const name = locationMap[loc.id];
+          const name = idToAddress[loc.id];
           grouped[name] = [];
         }
 
         for (const appointment of appointments) {
-          const locName = locationMap[appointment.location_id] || 'Sede sconosciuta';
+          const locName = idToAddress[appointment.location_id] || 'Sede sconosciuta';
           if (!grouped[locName]) grouped[locName] = [];
 
           grouped[locName].push({
@@ -83,7 +89,7 @@ function Appointments() {
 
         setAppointmentsByLocation(generated);
         setLocations(Object.keys(generated));
-        setActiveTab(Object.keys(generated)[0]); // Attiva la prima sede
+        setActiveTab(Object.keys(generated)[0]);
       } catch (err) {
         console.error('Errore nel caricamento:', err);
       } finally {
@@ -115,7 +121,6 @@ function Appointments() {
           <div className="text-blue-700 text-center">Caricamento calendario...</div>
         ) : (
           <>
-            {/* Tabs */}
             <div className="flex gap-3 mb-6">
               {locations.map((loc) => (
                 <button
@@ -132,7 +137,6 @@ function Appointments() {
               ))}
             </div>
 
-            {/* Calendario attivo */}
             {activeTab && (
               <div>
                 <h2 className="text-xl font-bold text-blue-700 mb-4">{activeTab}</h2>
@@ -175,16 +179,32 @@ function Appointments() {
                             {editing && slot ? (
                               <select
                                 value={slot.state || ''}
-                                onChange={(e) =>
-                                  setAppointmentsByLocation((prev) => {
-                                    const updated = [...prev[activeTab]];
-                                    updated[slotIndex] = {
-                                      ...updated[slotIndex],
-                                      state: e.target.value,
-                                    };
-                                    return { ...prev, [activeTab]: updated };
-                                  })
-                                }
+                                onChange={async (e) => {
+                                  const newState = e.target.value;
+                                  const updated = [...appointmentsByLocation[activeTab]];
+                                  updated[slotIndex] = {
+                                    ...updated[slotIndex],
+                                    state: newState,
+                                  };
+                                  setAppointmentsByLocation(prev => ({
+                                    ...prev,
+                                    [activeTab]: updated,
+                                  }));
+
+                                  if (newState === 'waiting') {
+                                    try {
+                                      await insertAppointment({
+                                        doctor_id: doctorId,
+                                        location_id: addressToId[activeTab],
+                                        date_time: slot.dateTime.toISOString(),
+                                        state: 'waiting',
+                                      });
+                                      console.log('Appuntamento inserito');
+                                    } catch (err) {
+                                      console.error('Errore inserimento:', err);
+                                    }
+                                  }
+                                }}
                                 className="bg-transparent text-sm text-center w-full"
                               >
                                 <option value="">---</option>

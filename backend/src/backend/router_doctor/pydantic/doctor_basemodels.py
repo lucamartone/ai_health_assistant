@@ -8,5 +8,5 @@ class AppointmentInsert(BaseModel):
     doctor_id: int
     location_id: int
     date_time: str  # ISO 8601 format
-    state: 'waiting'  # Default state for new appointments
+    state: str = 'waiting'  # Default state for new appointments
 
