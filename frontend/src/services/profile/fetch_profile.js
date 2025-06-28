@@ -30,7 +30,7 @@ export async function login_patient(email, password) {
   }
 
   const data = await response.json();
-  return data.account;
+  return data;
 };
 
 export async function login_doctor(email, password) {
@@ -46,7 +46,7 @@ export async function login_doctor(email, password) {
   }
 
   const data = await response.json();
-  return data.account;
+  return data;
 };
 
 export async function register_patient(name, surname, email, password, sex) {

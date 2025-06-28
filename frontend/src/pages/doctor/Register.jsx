@@ -55,7 +55,7 @@ function Register() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
       <div className="bg-white px-6 py-6 rounded-2xl shadow-xl w-full max-w-2xl text-blue-900 max-h-[72vh] mt-24 mb-12 overflow-y-auto">
-        <h2 className="text-3xl font-bold text-center mb-2">Registrazione Dottore</h2>
+        <h2 className="text-3xl font-bold text-center mb-2">Registrati come dottore</h2>
         <p className="text-center text-sm text-blue-600 mb-4">
           Crea un nuovo profilo per fornire i tuoi servizi
         </p>
@@ -125,28 +125,29 @@ function Register() {
               ))}
             </select>
 
-            <div className="flex justify-center items-center bg-blue-50 px-4 py-3 rounded-md text-blue-900">
-              <span className="font-medium mr-4">Sesso:</span>
-              <label className="flex items-center space-x-1 mr-4 cursor-pointer">
-                <input
-                  type="radio"
-                  name="sex"
-                  checked={sex === 'M'}
-                  onChange={() => setSex('M')}
-                  className="form-radio text-blue-600"
-                />
-                <span className="text-sm">M</span>
-              </label>
-              <label className="flex items-center space-x-1 cursor-pointer">
-                <input
-                  type="radio"
-                  name="sex"
-                  checked={sex === 'F'}
-                  onChange={() => setSex('F')}
-                  className="form-radio text-blue-600"
-                />
-                <span className="text-sm">F</span>
-              </label>
+            {/* Campo Sesso (stile paziente) */}
+            <div className="flex items-center justify-between bg-blue-50 px-4 py-3 rounded-md text-blue-900">
+              <span className="font-medium mr-4">Sesso</span>
+              <div className="flex items-center space-x-6">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sex === 'M'}
+                    onChange={() => setSex('M')}
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                  />
+                  <span className="text-sm font-medium">Maschio</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sex === 'F'}
+                    onChange={() => setSex('F')}
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                  />
+                  <span className="text-sm font-medium">Femmina</span>
+                </label>
+              </div>
             </div>
           </div>
 

@@ -67,14 +67,17 @@ async def login(data: LoginRequest, response: Response):
     try:
         # Check for too many failed attempts (implement rate limiting)
         query = """
-        SELECT id, name, surname, email, password, last_login_attempt, failed_attempts 
-        FROM account
+        SELECT account.id, name, surname, email, password, last_login_attempt, failed_attempts 
+        FROM account join patient ON account.id = patient.id
         WHERE email = %s
         """
         results = execute_query(query, (data.email,))
 
         if not results:
-            raise HTTPException(status_code=401, detail="Email non registrata")
+            return {
+                "message": "Account non registrato",
+                "account": None
+            }
 
         account = results[0]
         db_password = account[4]

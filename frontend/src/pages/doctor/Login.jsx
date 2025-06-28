@@ -3,10 +3,12 @@ import { useState } from 'react';
 
 import { login_doctor } from '../../services/profile/fetch_profile';
 import { useAuth } from '../../contexts/AuthContext';
+import LoginModal from '../../components/LoginModal';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { setAccount } = useAuth();
@@ -15,18 +17,28 @@ function Login() {
     e.preventDefault();
     try {
       const data = await login_doctor(email, password);
-      console.log('Login riuscito:', data);
-      setAccount(data);
+      if (!data.account) {
+        if (data.message === "Account non registrato") {
+          setModalMessage("Account non registrato. Verifica le credenziali o registrati.");
+          return;
+        }
+        if (data.message === "Password errata") {
+          setModalMessage("Password errata. Riprova.");
+          return;
+        }
+      }
+      setAccount(data.account);
       navigate('/doctor');
     } catch (err) {
-      alert(err.message);
+      setModalMessage("Errore durante il login. Riprova.");
     }
   };
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
       <div className="bg-white px-6 py-6 rounded-2xl shadow-xl w-full max-w-md md:max-w-lg text-blue-900 mt-24 mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-2">Accedi</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-2">Accedi come dottore</h2>
         <p className="text-center text-sm md:text-base text-blue-600 mb-4">
           Inserisci le tue credenziali per continuare
         </p>
@@ -79,6 +91,7 @@ function Login() {
           </span>
         </p>
       </div>
+      <LoginModal message={modalMessage} onClose={() => setModalMessage('')} />
     </div>
   );
 }
