@@ -53,6 +53,56 @@ CREATE TABLE appointment (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabella clinical_folder (cartella clinica)
+CREATE TABLE clinical_folder (
+    id SERIAL PRIMARY KEY,
+    patient_id INT NOT NULL REFERENCES patient(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabella medical_record (registro medico)
+CREATE TABLE medical_record (
+    id SERIAL PRIMARY KEY,
+    clinical_folder_id INT NOT NULL REFERENCES clinical_folder(id) ON DELETE CASCADE,
+    doctor_id INT NOT NULL REFERENCES doctor(id),
+    appointment_id INT REFERENCES appointment(id),
+    record_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    symptoms TEXT,
+    diagnosis TEXT,
+    treatment_plan TEXT,
+    notes TEXT,
+    vital_signs JSONB, -- Pressione, temperatura, frequenza cardiaca, etc.
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabella prescription (prescrizione)
+CREATE TABLE prescription (
+    id SERIAL PRIMARY KEY,
+    medical_record_id INT NOT NULL REFERENCES medical_record(id) ON DELETE CASCADE,
+    medication_name VARCHAR(255) NOT NULL,
+    dosage VARCHAR(100) NOT NULL,
+    frequency VARCHAR(100) NOT NULL,
+    duration VARCHAR(100),
+    instructions TEXT,
+    prescribed_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Tabella medical_document (documento medico)
+CREATE TABLE medical_document (
+    id SERIAL PRIMARY KEY,
+    clinical_folder_id INT NOT NULL REFERENCES clinical_folder(id) ON DELETE CASCADE,
+    doctor_id INT NOT NULL REFERENCES doctor(id),
+    document_type VARCHAR(50) NOT NULL, -- 'referto', 'esame', 'certificato', etc.
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    file_path VARCHAR(500),
+    file_size BIGINT,
+    mime_type VARCHAR(100),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Tabella history
 CREATE TABLE history (
     id SERIAL PRIMARY KEY,
@@ -157,3 +207,14 @@ CREATE INDEX idx_appointment_patient ON appointment(patient_id);
 CREATE INDEX idx_appointment_datetime ON appointment(date_time);
 CREATE INDEX idx_appointment_state ON appointment(state);
 CREATE INDEX idx_location_coordinates ON location(latitude, longitude);
+
+-- Indici per le cartelle cliniche
+CREATE INDEX idx_clinical_folder_patient ON clinical_folder(patient_id);
+CREATE INDEX idx_medical_record_folder ON medical_record(clinical_folder_id);
+CREATE INDEX idx_medical_record_doctor ON medical_record(doctor_id);
+CREATE INDEX idx_medical_record_date ON medical_record(record_date);
+CREATE INDEX idx_prescription_record ON prescription(medical_record_id);
+CREATE INDEX idx_prescription_active ON prescription(is_active);
+CREATE INDEX idx_medical_document_folder ON medical_document(clinical_folder_id);
+CREATE INDEX idx_medical_document_type ON medical_document(document_type);
+CREATE INDEX idx_medical_document_uploaded ON medical_document(uploaded_at);

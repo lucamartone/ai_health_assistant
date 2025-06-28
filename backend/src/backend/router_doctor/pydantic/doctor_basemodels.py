@@ -1,5 +1,6 @@
-from pydantic import BaseModel
-from typing import List, Literal, Optional
+from pydantic import BaseModel, Field
+from typing import List, Literal, Optional, Dict, Any
+from datetime import datetime
 
 class AppointmentsRequest(BaseModel):
     doctor_id: int
@@ -9,4 +10,108 @@ class AppointmentInsert(BaseModel):
     location_id: int
     date_time: str  # ISO 8601 format
     state: str = 'waiting'  # Default state for new appointments
+
+# Clinical Folder Models
+class VitalSigns(BaseModel):
+    blood_pressure: Optional[str] = None
+    temperature: Optional[float] = None
+    heart_rate: Optional[int] = None
+    respiratory_rate: Optional[int] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None
+
+class MedicalRecordCreate(BaseModel):
+    patient_id: int
+    appointment_id: Optional[int] = None
+    symptoms: Optional[str] = None
+    diagnosis: Optional[str] = None
+    treatment_plan: Optional[str] = None
+    notes: Optional[str] = None
+    vital_signs: Optional[VitalSigns] = None
+
+class MedicalRecordUpdate(BaseModel):
+    symptoms: Optional[str] = None
+    diagnosis: Optional[str] = None
+    treatment_plan: Optional[str] = None
+    notes: Optional[str] = None
+    vital_signs: Optional[VitalSigns] = None
+
+class PrescriptionCreate(BaseModel):
+    medical_record_id: int
+    medication_name: str = Field(..., min_length=1, max_length=255)
+    dosage: str = Field(..., min_length=1, max_length=100)
+    frequency: str = Field(..., min_length=1, max_length=100)
+    duration: Optional[str] = None
+    instructions: Optional[str] = None
+
+class PrescriptionUpdate(BaseModel):
+    medication_name: Optional[str] = Field(None, min_length=1, max_length=255)
+    dosage: Optional[str] = Field(None, min_length=1, max_length=100)
+    frequency: Optional[str] = Field(None, min_length=1, max_length=100)
+    duration: Optional[str] = None
+    instructions: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class MedicalDocumentCreate(BaseModel):
+    patient_id: int
+    document_type: str = Field(..., min_length=1, max_length=50)
+    title: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = None
+    file_path: Optional[str] = None
+    file_size: Optional[int] = None
+    mime_type: Optional[str] = None
+
+class MedicalDocumentUpdate(BaseModel):
+    document_type: Optional[str] = Field(None, min_length=1, max_length=50)
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+
+# Response Models
+class MedicalRecordResponse(BaseModel):
+    id: int
+    clinical_folder_id: int
+    doctor_id: int
+    appointment_id: Optional[int]
+    record_date: datetime
+    symptoms: Optional[str]
+    diagnosis: Optional[str]
+    treatment_plan: Optional[str]
+    notes: Optional[str]
+    vital_signs: Optional[Dict[str, Any]]
+    created_at: datetime
+    doctor_name: str
+    doctor_surname: str
+
+class PrescriptionResponse(BaseModel):
+    id: int
+    medical_record_id: int
+    medication_name: str
+    dosage: str
+    frequency: str
+    duration: Optional[str]
+    instructions: Optional[str]
+    prescribed_date: datetime
+    is_active: bool
+
+class MedicalDocumentResponse(BaseModel):
+    id: int
+    clinical_folder_id: int
+    doctor_id: int
+    document_type: str
+    title: str
+    description: Optional[str]
+    file_path: Optional[str]
+    file_size: Optional[int]
+    mime_type: Optional[str]
+    uploaded_at: datetime
+    doctor_name: str
+    doctor_surname: str
+
+class ClinicalFolderResponse(BaseModel):
+    id: int
+    patient_id: int
+    created_at: datetime
+    updated_at: datetime
+    medical_records: List[MedicalRecordResponse] = []
+    documents: List[MedicalDocumentResponse] = []
 

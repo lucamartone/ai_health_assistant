@@ -1,3 +1,16 @@
+export async function getAllDoctors() {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/patient/doctors/get_all_doctors`, {
+    method: 'GET'
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Errore recupero dottori');
+  }
+  const data = await response.json();
+  return data;
+}
+
 export async function getFreeDoctors() {
   const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/patient/doctors/get_free_doctors`, {
     method: 'GET'

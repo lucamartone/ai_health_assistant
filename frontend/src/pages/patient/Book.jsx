@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getFreeDoctors } from '../../services/book/fetch_book';
+import { getAllDoctors } from '../../services/book/fetch_book';
 import { getCoordinatesFromAddress } from '../../services/maps/fetch_maps';
 import BookingCalendar from '../../components/BookingCalendar';
 import MapView from '../../components/MapView';
@@ -28,7 +28,7 @@ function Book() {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const data = await getFreeDoctors();
+        const data = await getAllDoctors();
         console.log('Dottori recuperati:', data);
         if (Array.isArray(data)) {
           setDoctors(data);

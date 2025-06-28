@@ -6,6 +6,7 @@ import Profile from './pages/patient/Profile';
 import Chat from './pages/patient/Chat';
 import Book from './pages/patient/Book';
 import Register from './pages/patient/Register';
+import ClinicalFolder from './pages/patient/ClinicalFolder';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import CookieConsent from './components/CookieConsent';
@@ -26,6 +27,7 @@ function AppPatient() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/book" element={<Book />} />
+        <Route path="/profile/clinical-folder" element={<ClinicalFolder />} />
       </Routes>
 
       {!isChatPage && <Footer />}

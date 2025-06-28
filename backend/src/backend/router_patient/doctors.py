@@ -4,6 +4,43 @@ from backend.connection import execute_query
 
 router_show_doctors = APIRouter()
 
+@router_show_doctors.get("/get_all_doctors")
+async def get_all_doctors(
+    limit: Optional[int] = Query(default=50, ge=1, le=100, description="Maximum number of doctors to return")
+):
+    """Endpoint to get all available doctors"""
+    try:
+        query = """
+        SELECT DISTINCT 
+            d.id AS doctor_id,
+            u.name,
+            u.surname,
+            d.specialization,
+            d.rank,
+            u.profile_img,
+            l.latitude,
+            l.longitude,
+            l.address,
+            l.city,
+            COALESCE(MIN(a.price), 50) as price
+        FROM doctor d
+        JOIN account u ON d.id = u.id
+        LEFT JOIN location l ON l.doctor_id = d.id
+        LEFT JOIN appointment a ON a.doctor_id = d.id AND a.state = 'waiting'
+        GROUP BY d.id, u.name, u.surname, d.specialization, d.rank, u.profile_img, l.latitude, l.longitude, l.address, l.city
+        ORDER BY d.rank DESC
+        LIMIT %s;
+        """
+
+        raw_result = execute_query(query, (limit,))
+
+        columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude", "address", "city", "price"]
+        result = [dict(zip(columns, row)) for row in raw_result]
+        return result
+    
+    except Exception as e:
+        return {"error": str(e)}
+
 @router_show_doctors.get("/get_free_doctors")
 async def get_free_doctors(
     limit: Optional[int] = Query(default=50, ge=1, le=100, description="Maximum number of doctors to return")
