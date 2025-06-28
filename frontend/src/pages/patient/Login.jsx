@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import { login } from '../../services/profile/fetch_profile';
+import { login_patient } from '../../services/profile/fetch_profile';
 import { useAuth } from '../../contexts/AuthContext';
 
 function Login() {
@@ -14,7 +14,7 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault(); // blocca il reload della pagina
     try {
-      const data = await login(email, password); // chiama la fetch
+      const data = await login_patient(email, password); // chiama la fetch
       console.log('Login riuscito:', data);
 
       setAccount(data);

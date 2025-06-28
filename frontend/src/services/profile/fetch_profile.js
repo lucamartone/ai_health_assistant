@@ -17,8 +17,24 @@ async function fetchWithRefresh(url, options = {}, retry = true) {
   return response;
 }
 
-export async function login(email, password) {
-  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/account/login`, {
+export async function login_patient(email, password) {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 'email':email, 'password':password }),
+  }, false); // il login non deve mai tentare il refresh
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Errore login');
+  }
+
+  const data = await response.json();
+  return data.account;
+};
+
+export async function login_doctor(email, password) {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/doctor/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 'email':email, 'password':password }),

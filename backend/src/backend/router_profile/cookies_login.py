@@ -45,7 +45,8 @@ def get_current_account(access_token: str = Cookie(None)) -> Optional[dict]:
             "email": payload.get("sub"),
             "id": payload.get("id"),
             "name": payload.get("name"),
-            "surname": payload.get("surname")
+            "surname": payload.get("surname"),
+            "role": payload.get("role")
         }
     except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token scaduto")

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import { login } from '../../services/profile/fetch_profile';
+import { login_doctor } from '../../services/profile/fetch_profile';
 import { useAuth } from '../../contexts/AuthContext';
 
 function Login() {
@@ -14,7 +14,7 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const data = await login(email, password);
+      const data = await login_doctor(email, password);
       console.log('Login riuscito:', data);
       setAccount(data);
       navigate('/doctor');
