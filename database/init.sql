@@ -47,7 +47,7 @@ CREATE TABLE appointment (
     doctor_id INT NOT NULL REFERENCES doctor(id),
     patient_id INT REFERENCES patient(id),
     location_id INT NOT NULL REFERENCES location(id),
-    date_time TIMESTAMP NOT NULL,
+    date_time TIMESTAMP WITH TIME ZONE NOT NULL,
     price NUMERIC(10,2) DEFAULT 50 CHECK (price >= 0),
     state VARCHAR(20) DEFAULT 'waiting' CHECK (state IN ('waiting', 'booked', 'completed', 'cancelled')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
