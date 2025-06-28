@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { accountCircle } from 'lucide-react';
+import { User } from 'lucide-react';
 import { logout } from '../services/profile/fetch_profile';
 
 function Header() {
@@ -92,7 +92,7 @@ function Header() {
                 className="p-2 rounded-full hover:bg-white/20 transition-all active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 title="Profilo"
               >
-                <accountCircle className="w-7 h-7 text-white" />
+                <User className="w-7 h-7 text-white" />
               </button>
               <button
                 onClick={handleLogout}
@@ -182,7 +182,7 @@ function Header() {
                   }}
                   className="flex items-center px-5 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-lg active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 >
-                  <accountCircle className="w-5 h-5 mr-2" /> Profilo
+                  <User className="w-5 h-5 mr-2" /> Profilo
                 </button>
                 <button
                   onClick={() => {

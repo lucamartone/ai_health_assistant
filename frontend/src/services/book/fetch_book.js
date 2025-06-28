@@ -42,3 +42,18 @@ export async function getFreeSlots(doctor_id, lat, lng) {
   const data = await response.json();
   return data;
 }
+
+export async function bookAppointment(appointment_id, patient_id) {
+  const url = `${import.meta.env.VITE_BACKEND_URL}/patient/appointments/book_appointment?appointment_id=${appointment_id}&patient_id=${patient_id}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Errore prenotazione appuntamento');
+  }
+  return await response.json();
+}

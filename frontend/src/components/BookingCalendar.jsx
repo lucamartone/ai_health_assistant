@@ -26,11 +26,11 @@ function BookingCalendar({ onSlotSelect, doctor }) {
         ) : (
           currentSlots.map((slot) => (
             <button
-              key={slot}
-              onClick={() => onSlotSelect(doctor, currentDate, slot)}
+              key={slot.time}
+              onClick={() => onSlotSelect(doctor, currentDate, slot.time, slot.appointment_id)}
               className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
             >
-              {slot}
+              {slot.time}
             </button>
           ))
         )}

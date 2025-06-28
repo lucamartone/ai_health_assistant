@@ -25,7 +25,7 @@ function AppDoctor() {
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/appointments" element={<Appointments />} />
-        <Route path="/records" element={<PatientList />} />
+        <Route path="/patients" element={<PatientList />} />
         <Route path="/records/:patientId" element={<ClinicalFolder />} />
       </Routes>
 

@@ -29,7 +29,10 @@ export function formatSlots(data) {
         if (!slotsMap[datePart]) {
         slotsMap[datePart] = [];
         }
-        slotsMap[datePart].push(time);
+        slotsMap[datePart].push({
+          time,
+          appointment_id: item.appointment_id
+        });
     });
     return slotsMap;
 };

@@ -40,7 +40,7 @@ function Index() {
             description: "Accedi e gestisci le cartelle cliniche dei tuoi pazienti in modo sicuro e organizzato.",
             buttonText: "Visualizza cartelle",
             gradient: "from-violet-500 to-violet-600 text-violet-50",
-            onClick: () => navigate('/doctor/records')
+            onClick: () => navigate('/doctor/patients')
         }
     ];
 

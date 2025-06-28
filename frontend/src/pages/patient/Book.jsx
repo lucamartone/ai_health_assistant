@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getAllDoctors } from '../../services/book/fetch_book';
+import { getAllDoctors, bookAppointment } from '../../services/book/fetch_book';
 import { getCoordinatesFromAddress } from '../../services/maps/fetch_maps';
 import BookingCalendar from '../../components/BookingCalendar';
 import MapView from '../../components/MapView';
+import { useAuth } from '../../contexts/AuthContext';
 
 const SPECIALIZATIONS = [
   "Allergologia", "Anestesia e Rianimazione", "Cardiologia", "Chirurgia Generale",
@@ -20,9 +21,19 @@ function Book() {
   const [price, setPrice] = useState('');
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [fetchError, setFetchError] = useState(null);
+  const { account } = useAuth();
 
-  const handleSlotSelect = (doctor, date, time) => {
-    alert(`Prenotato con ${doctor.name} il ${date.toLocaleDateString()} alle ${time}`);
+  const handleSlotSelect = async (doctor, date, time, appointment_id) => {
+    if (!account?.id) {
+      alert('Devi essere autenticato come paziente per prenotare.');
+      return;
+    }
+    try {
+      await bookAppointment(appointment_id, account.id);
+      alert(`Prenotazione confermata con ${doctor.name} il ${date.toLocaleDateString()} alle ${time}`);
+    } catch (err) {
+      alert('Errore durante la prenotazione: ' + (err.message || '')); 
+    }
   };
 
   useEffect(() => {
@@ -146,7 +157,7 @@ function Book() {
                   </button>
                 </div>
                 <div className="min-w-[320px]">
-                  <BookingCalendar onSlotSelect={(date, time) => handleSlotSelect(doc, date, time)} doctor={doc} />
+                  <BookingCalendar onSlotSelect={handleSlotSelect} doctor={doc} />
                 </div>
               </div>
             ))}

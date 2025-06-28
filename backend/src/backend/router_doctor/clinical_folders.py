@@ -28,7 +28,7 @@ async def get_doctor_patients(doctor_id: int, db: psycopg2.extensions.connection
     """Get all patients for a specific doctor"""
     try:
         with db.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Get patients from appointments and clinical folders
+            # Query semplificata: prendi pazienti dagli appuntamenti
             cursor.execute("""
                 SELECT DISTINCT 
                     p.id,
@@ -43,17 +43,9 @@ async def get_doctor_patients(doctor_id: int, db: psycopg2.extensions.connection
                     SELECT DISTINCT patient_id 
                     FROM appointment 
                     WHERE doctor_id = %s AND patient_id IS NOT NULL
-                    UNION
-                    SELECT DISTINCT patient_id 
-                    FROM clinical_folder 
-                    WHERE id IN (
-                        SELECT DISTINCT clinical_folder_id 
-                        FROM medical_record 
-                        WHERE doctor_id = %s
-                    )
                 )
                 ORDER BY a.surname, a.name
-            """, (doctor_id, doctor_id))
+            """, (doctor_id,))
             
             patients = cursor.fetchall()
             
@@ -72,7 +64,11 @@ async def get_doctor_patients(doctor_id: int, db: psycopg2.extensions.connection
             }
             
     except psycopg2.Error as e:
+        print(f"Database error in get_doctor_patients: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        print(f"Unexpected error in get_doctor_patients: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 @router.get("/patient/{patient_id}", response_model=ClinicalFolderResponse)
 async def get_patient_clinical_folder(patient_id: int, db: psycopg2.extensions.connection = Depends(connect_to_postgres)):
