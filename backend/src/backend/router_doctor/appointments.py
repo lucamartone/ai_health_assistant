@@ -50,6 +50,7 @@ def get_appointments(data: AppointmentsRequest = Query(..., description="ID of t
 @router_appointments.post("/insert_appointment")
 def insert_appointment(data: AppointmentInsert):
     """Inserisce un nuovo appuntamento per un dottore specifico."""
+    print("inserisco")
     try:
         query = """
         INSERT INTO appointment (doctor_id, location_id, date_time, state)
