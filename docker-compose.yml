@@ -33,6 +33,43 @@ services:
       - ./database/:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
 
+  ai_service:
+    build:
+      context: ./ai_service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      # AI Provider Configuration
+      - AI_PROVIDER=${AI_PROVIDER:-google}
+      
+      # Google AI Studio Configuration
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_MODEL=${GOOGLE_MODEL:-gemini-pro}
+      - GOOGLE_MAX_TOKENS=${GOOGLE_MAX_TOKENS:-1000}
+      - GOOGLE_TEMPERATURE=${GOOGLE_TEMPERATURE:-0.7}
+      
+     
+      # Server Configuration
+      - HOST=0.0.0.0
+      - PORT=8002
+      - DEBUG=${DEBUG:-false}
+      
+      # Database Configuration
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=HealthDB
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=userpwd
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    env_file:
+      - .env
+    depends_on:
+      - database
+    restart: unless-stopped
+
 volumes:
   postgres_data:
-  ollama_data:
+ 

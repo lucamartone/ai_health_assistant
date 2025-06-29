@@ -69,15 +69,6 @@ const PatientList = () => {
     return age;
   };
 
-  const getAgeGroup = (age) => {
-    if (!age) return 'N/A';
-    if (age < 18) return 'Minorenne';
-    if (age < 30) return '18-29';
-    if (age < 50) return '30-49';
-    if (age < 65) return '50-64';
-    return '65+';
-  };
-
   console.log('DEBUG: Stato componente - loading:', loading, 'error:', error, 'patients:', patients.length);
 
   if (loading) {
@@ -242,13 +233,7 @@ const PatientList = () => {
                   </h3>
                   <div className="flex items-center gap-2 text-sm opacity-90">
                     {patient.birth_date ? (
-                      <>
-                        <span>{calculateAge(patient.birth_date)} anni</span>
-                        <span>•</span>
-                        <span className="bg-white/20 px-2 py-1 rounded text-xs">
-                          {getAgeGroup(calculateAge(patient.birth_date))}
-                        </span>
-                      </>
+                      <span>{calculateAge(patient.birth_date)} anni</span>
                     ) : (
                       <span>Età non disponibile</span>
                     )}
@@ -258,13 +243,6 @@ const PatientList = () => {
                 {/* Contenuto */}
                 <div className="p-6">
                   <div className="space-y-3">
-                    {patient.birth_date && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <span className="font-medium w-16">Età:</span>
-                        <span>{calculateAge(patient.birth_date)} anni ({getAgeGroup(calculateAge(patient.birth_date))})</span>
-                      </div>
-                    )}
-                    
                     {patient.email && (
                       <div className="flex items-center text-sm text-gray-600">
                         <span className="font-medium w-16">Email:</span>

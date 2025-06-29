@@ -405,11 +405,6 @@ const ClinicalFolder = () => {
                 {folder.patient_name} {folder.patient_surname}
               </p>
               <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                {folder.patient_age && (
-                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                    {folder.patient_age} anni
-                  </span>
-                )}
                 {folder.patient_sex && (
                   <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
                     {folder.patient_sex === 'M' ? 'Maschio' : 'Femmina'}

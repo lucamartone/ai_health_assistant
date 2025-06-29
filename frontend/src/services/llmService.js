@@ -1,15 +1,16 @@
-const LLM_API_URL = 'http://localhost:5001/api';
+const LLM_API_URL = 'http://localhost:8002/ai';
 
 export const llmService = {
-    async askHealthQuestion(query, context = '') {
+    async askHealthQuestion(message, conversationId = null, context = null) {
         try {
-            const response = await fetch(`${LLM_API_URL}/health-query`, {
+            const response = await fetch(`${LLM_API_URL}/chat/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    query,
+                    message,
+                    conversation_id: conversationId,
                     context
                 })
             });
@@ -19,7 +20,8 @@ export const llmService = {
             }
 
             const data = await response.json();
-            return data;
+            // The backend returns { message, ... } so we adapt for the frontend
+            return { response: data.message };
         } catch (error) {
             console.error('Errore nella chiamata al servizio LLM:', error);
             throw error;
