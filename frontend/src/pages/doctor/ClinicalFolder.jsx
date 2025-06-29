@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { fetchClinicalFolder, createMedicalRecord, createMedicalDocument, uploadMedicalDocument, downloadMedicalDocument } from '../../services/profile/fetch_clinical_folders';
+import { fetchClinicalFolder, createMedicalRecord, createMedicalDocument, uploadMedicalDocument, downloadMedicalDocument, createPrescription, getPrescriptionsForRecord } from '../../services/profile/fetch_clinical_folders';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { FolderOpen, User, FileText, Upload, ArrowLeft, Plus, Stethoscope, Download } from 'lucide-react';
+import { FolderOpen, User, FileText, Upload, ArrowLeft, Plus, Stethoscope, Download, Pill, ChevronDown } from 'lucide-react';
 
 const ClinicalFolder = () => {
   const { patientId } = useParams();
@@ -39,6 +39,34 @@ const ClinicalFolder = () => {
   const [docFormLoading, setDocFormLoading] = useState(false);
   const [docFormError, setDocFormError] = useState(null);
   const [downloadingDoc, setDownloadingDoc] = useState(null);
+
+  // Form prescrizione
+  const [prescriptionForm, setPrescriptionForm] = useState({
+    medical_record_id: '',
+    medication_name: '',
+    dosage: '',
+    frequency: '',
+    duration: '',
+    instructions: ''
+  });
+  const [prescriptionFormLoading, setPrescriptionFormLoading] = useState(false);
+  const [prescriptionFormError, setPrescriptionFormError] = useState(null);
+  const [prescriptions, setPrescriptions] = useState({}); // { record_id: [prescriptions] }
+
+  // Gestione tab e form collassabili
+  const [activeTab, setActiveTab] = useState('records'); // 'records', 'documents', 'prescriptions'
+  const [collapsedForms, setCollapsedForms] = useState({
+    medicalRecord: false,
+    document: false,
+    prescription: false
+  });
+
+  const toggleForm = (formName) => {
+    setCollapsedForms(prev => ({
+      ...prev,
+      [formName]: !prev[formName]
+    }));
+  };
 
   const loadFolder = async () => {
     setLoading(true);
@@ -236,6 +264,66 @@ const ClinicalFolder = () => {
     }
   };
 
+  // Gestione prescrizioni
+  const handlePrescriptionFormChange = e => {
+    setPrescriptionForm({ ...prescriptionForm, [e.target.name]: e.target.value });
+  };
+
+  const handlePrescriptionFormSubmit = async e => {
+    e.preventDefault();
+    setPrescriptionFormLoading(true);
+    setPrescriptionFormError(null);
+    try {
+      console.log('DEBUG: Invio prescrizione:', prescriptionForm);
+      
+      const prescriptionData = {
+        medical_record_id: parseInt(prescriptionForm.medical_record_id),
+        medication_name: prescriptionForm.medication_name,
+        dosage: prescriptionForm.dosage,
+        frequency: prescriptionForm.frequency,
+        duration: prescriptionForm.duration || undefined,
+        instructions: prescriptionForm.instructions || undefined
+      };
+      
+      console.log('DEBUG: Dati prescrizione da inviare:', prescriptionData);
+      
+      const result = await createPrescription(prescriptionData);
+      console.log('DEBUG: Prescrizione creata:', result);
+      
+      // Reset form
+      setPrescriptionForm({
+        medical_record_id: '',
+        medication_name: '',
+        dosage: '',
+        frequency: '',
+        duration: '',
+        instructions: ''
+      });
+      
+      // Ricarica le prescrizioni per questo record
+      await loadPrescriptionsForRecord(parseInt(prescriptionForm.medical_record_id));
+      
+    } catch (err) {
+      console.error('DEBUG: Errore creazione prescrizione:', err);
+      console.error('DEBUG: Response error:', err.response?.data);
+      setPrescriptionFormError('Errore durante il salvataggio. Controlla i dati inseriti.');
+    } finally {
+      setPrescriptionFormLoading(false);
+    }
+  };
+
+  const loadPrescriptionsForRecord = async (recordId) => {
+    try {
+      const res = await getPrescriptionsForRecord(recordId);
+      setPrescriptions(prev => ({
+        ...prev,
+        [recordId]: res.prescriptions || []
+      }));
+    } catch (err) {
+      console.error('DEBUG: Errore caricamento prescrizioni per record', recordId, ':', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 pt-20">
@@ -310,11 +398,27 @@ const ClinicalFolder = () => {
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
             <div className="flex flex-col items-center text-center lg:text-left">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-4">
-                <FolderOpen className="h-10 w-10 text-white" />
+                <User className="h-10 w-10 text-white" />
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Cartella Clinica</h1>
-              <p className="text-lg text-blue-600 font-medium">Gestione Dati Paziente</p>
-              <p className="text-gray-500 mt-2">Paziente ID: {folder.patient_id}</p>
+              <p className="text-lg text-blue-600 font-medium">
+                {folder.patient_name} {folder.patient_surname}
+              </p>
+              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                {folder.patient_age && (
+                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                    {folder.patient_age} anni
+                  </span>
+                )}
+                {folder.patient_sex && (
+                  <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
+                    {folder.patient_sex === 'M' ? 'Maschio' : 'Femmina'}
+                  </span>
+                )}
+                <span className="text-gray-500">
+                  ID: {folder.patient_id}
+                </span>
+              </div>
             </div>
 
             {/* Statistiche rapide */}
@@ -363,266 +467,449 @@ const ClinicalFolder = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="grid gap-8 xl:grid-cols-2"
+          className="grid gap-8 lg:grid-cols-3"
         >
-          {/* Colonna sinistra - Form */}
-          <div className="space-y-6">
-            {/* Form nuovo record medico */}
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white rounded-2xl shadow-xl p-6"
-            >
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Stethoscope className="w-5 h-5 text-blue-600" />
-                Nuovo Record Medico
-              </h3>
-              
-              {formError && (
-                <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                  {formError}
-                </div>
-              )}
+          {/* Colonna sinistra - Form e Controlli */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* Tab Navigation */}
+            <div className="bg-white rounded-2xl shadow-xl p-4">
+              <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab('records')}
+                  className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'records'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Stethoscope className="w-4 h-4 inline mr-2" />
+                  Record
+                </button>
+                <button
+                  onClick={() => setActiveTab('documents')}
+                  className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'documents'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Upload className="w-4 h-4 inline mr-2" />
+                  Documenti
+                </button>
+                <button
+                  onClick={() => setActiveTab('prescriptions')}
+                  className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'prescriptions'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Pill className="w-4 h-4 inline mr-2" />
+                  Prescrizioni
+                </button>
+              </div>
+            </div>
 
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Sintomi</label>
-                  <textarea
-                    name="symptoms"
-                    value={form.symptoms}
-                    onChange={handleFormChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="3"
-                    placeholder="Descrivi i sintomi del paziente"
-                  />
-                </div>
+            {/* Form Record Medico */}
+            {activeTab === 'records' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-xl overflow-hidden"
+              >
+                <button
+                  onClick={() => toggleForm('medicalRecord')}
+                  className="w-full px-6 py-4 bg-blue-600 text-white flex items-center justify-between hover:bg-blue-700 transition-colors"
+                >
+                  <span className="font-semibold flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5" />
+                    Nuovo Record Medico
+                  </span>
+                  <ChevronDown className={`w-5 h-5 transition-transform ${collapsedForms.medicalRecord ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {!collapsedForms.medicalRecord && (
+                  <div className="p-6">
+                    {formError && (
+                      <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                        {formError}
+                      </div>
+                    )}
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Diagnosi</label>
-                  <textarea
-                    name="diagnosis"
-                    value={form.diagnosis}
-                    onChange={handleFormChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="3"
-                    placeholder="Inserisci la diagnosi"
-                  />
-                </div>
+                    <form onSubmit={handleFormSubmit} className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Sintomi</label>
+                        <textarea
+                          name="symptoms"
+                          value={form.symptoms}
+                          onChange={handleFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          rows="2"
+                          placeholder="Descrivi i sintomi"
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Piano di Trattamento</label>
-                  <textarea
-                    name="treatment_plan"
-                    value={form.treatment_plan}
-                    onChange={handleFormChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="3"
-                    placeholder="Descrivi il piano di trattamento"
-                  />
-                </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Diagnosi</label>
+                        <textarea
+                          name="diagnosis"
+                          value={form.diagnosis}
+                          onChange={handleFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          rows="2"
+                          placeholder="Inserisci la diagnosi"
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Note</label>
-                  <textarea
-                    name="notes"
-                    value={form.notes}
-                    onChange={handleFormChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="2"
-                    placeholder="Note aggiuntive"
-                  />
-                </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Trattamento</label>
+                        <textarea
+                          name="treatment_plan"
+                          value={form.treatment_plan}
+                          onChange={handleFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          rows="2"
+                          placeholder="Piano di trattamento"
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Segni Vitali</label>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Pressione</label>
-                      <input
-                        type="text"
-                        name="blood_pressure"
-                        value={form.vital_signs.blood_pressure}
-                        onChange={handleFormChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="es. 120/80 mmHg"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Temperatura</label>
-                      <input
-                        type="text"
-                        name="temperature"
-                        value={form.vital_signs.temperature}
-                        onChange={handleFormChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="es. 36.5°C"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Frequenza Cardiaca</label>
-                      <input
-                        type="text"
-                        name="heart_rate"
-                        value={form.vital_signs.heart_rate}
-                        onChange={handleFormChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="es. 72 bpm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Frequenza Respiratoria</label>
-                      <input
-                        type="text"
-                        name="respiratory_rate"
-                        value={form.vital_signs.respiratory_rate}
-                        onChange={handleFormChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="es. 16 resp/min"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Peso</label>
-                      <input
-                        type="text"
-                        name="weight"
-                        value={form.vital_signs.weight}
-                        onChange={handleFormChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="es. 70 kg"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Altezza</label>
-                      <input
-                        type="text"
-                        name="height"
-                        value={form.vital_signs.height}
-                        onChange={handleFormChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="es. 175 cm"
-                      />
-                    </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Note</label>
+                        <textarea
+                          name="notes"
+                          value={form.notes}
+                          onChange={handleFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          rows="2"
+                          placeholder="Note aggiuntive"
+                        />
+                      </div>
+
+                      {/* Segni Vitali in griglia compatta */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Segni Vitali</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <input
+                              type="text"
+                              name="blood_pressure"
+                              value={form.vital_signs.blood_pressure}
+                              onChange={handleFormChange}
+                              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              placeholder="Pressione"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="temperature"
+                              value={form.vital_signs.temperature}
+                              onChange={handleFormChange}
+                              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              placeholder="Temperatura"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="heart_rate"
+                              value={form.vital_signs.heart_rate}
+                              onChange={handleFormChange}
+                              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              placeholder="Freq. Cardiaca"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="respiratory_rate"
+                              value={form.vital_signs.respiratory_rate}
+                              onChange={handleFormChange}
+                              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              placeholder="Freq. Respiratoria"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="weight"
+                              value={form.vital_signs.weight}
+                              onChange={handleFormChange}
+                              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              placeholder="Peso"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              name="height"
+                              value={form.vital_signs.height}
+                              onChange={handleFormChange}
+                              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              placeholder="Altezza"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={formLoading}
+                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                      >
+                        {formLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            Salvataggio...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4" />
+                            Aggiungi Record
+                          </>
+                        )}
+                      </button>
+                    </form>
                   </div>
-                </div>
+                )}
+              </motion.div>
+            )}
 
+            {/* Form Documento */}
+            {activeTab === 'documents' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-xl overflow-hidden"
+              >
                 <button
-                  type="submit"
-                  disabled={formLoading}
-                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  onClick={() => toggleForm('document')}
+                  className="w-full px-6 py-4 bg-green-600 text-white flex items-center justify-between hover:bg-green-700 transition-colors"
                 >
-                  {formLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                      Salvataggio...
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="w-4 h-4" />
-                      Aggiungi Record
-                    </>
-                  )}
+                  <span className="font-semibold flex items-center gap-2">
+                    <Upload className="w-5 h-5" />
+                    Carica Documento
+                  </span>
+                  <ChevronDown className={`w-5 h-5 transition-transform ${collapsedForms.document ? 'rotate-180' : ''}`} />
                 </button>
-              </form>
-            </motion.div>
+                
+                {!collapsedForms.document && (
+                  <div className="p-6">
+                    {docFormError && (
+                      <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                        {docFormError}
+                      </div>
+                    )}
 
-            {/* Form upload documento */}
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-white rounded-2xl shadow-xl p-6"
-            >
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Upload className="w-5 h-5 text-blue-600" />
-                Carica Documento
-              </h3>
-              
-              {docFormError && (
-                <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                  {docFormError}
-                </div>
-              )}
+                    <form onSubmit={handleDocFormSubmit} className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo Documento</label>
+                        <select
+                          name="document_type"
+                          value={docForm.document_type}
+                          onChange={handleDocFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                        >
+                          <option value="">Seleziona tipo</option>
+                          <option value="referto">Referto</option>
+                          <option value="esame">Esame</option>
+                          <option value="certificato">Certificato</option>
+                          <option value="altro">Altro</option>
+                        </select>
+                      </div>
 
-              <form onSubmit={handleDocFormSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Tipo Documento</label>
-                  <select
-                    name="document_type"
-                    value={docForm.document_type}
-                    onChange={handleDocFormChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Seleziona tipo</option>
-                    <option value="referto">Referto</option>
-                    <option value="esame">Esame</option>
-                    <option value="certificato">Certificato</option>
-                    <option value="altro">Altro</option>
-                  </select>
-                </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Titolo</label>
+                        <input
+                          type="text"
+                          name="title"
+                          value={docForm.title}
+                          onChange={handleDocFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                          placeholder="Titolo del documento"
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Titolo</label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={docForm.title}
-                    onChange={handleDocFormChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Titolo del documento"
-                  />
-                </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Descrizione</label>
+                        <textarea
+                          name="description"
+                          value={docForm.description}
+                          onChange={handleDocFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                          rows="2"
+                          placeholder="Descrizione del documento"
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Descrizione</label>
-                  <textarea
-                    name="description"
-                    value={docForm.description}
-                    onChange={handleDocFormChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="2"
-                    placeholder="Descrizione del documento"
-                  />
-                </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">File</label>
+                        <input
+                          type="file"
+                          onChange={handleDocFileChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">File</label>
-                  <input
-                    type="file"
-                    onChange={handleDocFileChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  />
-                </div>
+                      <button
+                        type="submit"
+                        disabled={docFormLoading}
+                        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                      >
+                        {docFormLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            Caricamento...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4" />
+                            Carica Documento
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </motion.div>
+            )}
 
+            {/* Form Prescrizione */}
+            {activeTab === 'prescriptions' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-xl overflow-hidden"
+              >
                 <button
-                  type="submit"
-                  disabled={docFormLoading}
-                  className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  onClick={() => toggleForm('prescription')}
+                  className="w-full px-6 py-4 bg-purple-600 text-white flex items-center justify-between hover:bg-purple-700 transition-colors"
                 >
-                  {docFormLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                      Caricamento...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      Carica Documento
-                    </>
-                  )}
+                  <span className="font-semibold flex items-center gap-2">
+                    <Pill className="w-5 h-5" />
+                    Nuova Prescrizione
+                  </span>
+                  <ChevronDown className={`w-5 h-5 transition-transform ${collapsedForms.prescription ? 'rotate-180' : ''}`} />
                 </button>
-              </form>
-            </motion.div>
+                
+                {!collapsedForms.prescription && (
+                  <div className="p-6">
+                    {prescriptionFormError && (
+                      <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                        {prescriptionFormError}
+                      </div>
+                    )}
+
+                    <form onSubmit={handlePrescriptionFormSubmit} className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Record Medico</label>
+                        <select
+                          name="medical_record_id"
+                          value={prescriptionForm.medical_record_id}
+                          onChange={handlePrescriptionFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                          required
+                        >
+                          <option value="">Seleziona record medico</option>
+                          {folder?.medical_records?.map(record => (
+                            <option key={record.id} value={record.id}>
+                              {new Date(record.record_date).toLocaleDateString('it-IT')} - {record.diagnosis || 'Nessuna diagnosi'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Nome Farmaco</label>
+                        <input
+                          type="text"
+                          name="medication_name"
+                          value={prescriptionForm.medication_name}
+                          onChange={handlePrescriptionFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                          placeholder="Nome del farmaco"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Dosaggio</label>
+                          <input
+                            type="text"
+                            name="dosage"
+                            value={prescriptionForm.dosage}
+                            onChange={handlePrescriptionFormChange}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                            placeholder="es. 500mg"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Frequenza</label>
+                          <input
+                            type="text"
+                            name="frequency"
+                            value={prescriptionForm.frequency}
+                            onChange={handlePrescriptionFormChange}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                            placeholder="es. 2x/giorno"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Durata</label>
+                        <input
+                          type="text"
+                          name="duration"
+                          value={prescriptionForm.duration}
+                          onChange={handlePrescriptionFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                          placeholder="es. 7 giorni"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Istruzioni</label>
+                        <textarea
+                          name="instructions"
+                          value={prescriptionForm.instructions}
+                          onChange={handlePrescriptionFormChange}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                          rows="2"
+                          placeholder="Istruzioni per l'assunzione"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={prescriptionFormLoading}
+                        className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                      >
+                        {prescriptionFormLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            Salvataggio...
+                          </>
+                        ) : (
+                          <>
+                            <Pill className="w-4 h-4" />
+                            Aggiungi Prescrizione
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </motion.div>
+            )}
           </div>
 
           {/* Colonna destra - Visualizzazione dati */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            className="space-y-6"
-          >
+          <div className="lg:col-span-2 space-y-6">
             {/* Record medici */}
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -630,57 +917,66 @@ const ClinicalFolder = () => {
                 Record Medici ({folder.medical_records?.length || 0})
               </h3>
               
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+              <div className="space-y-4 max-h-[calc(100vh-400px)] overflow-y-auto">
                 {folder.medical_records?.length > 0 ? (
                   folder.medical_records.map((record, index) => {
                     console.log('DEBUG: Rendering record:', record);
                     return (
-                      <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-gray-900">Record #{index + 1}</h4>
-                          <span className="text-sm text-gray-500">
-                            {new Date(record.record_date).toLocaleDateString('it-IT')}
-                          </span>
+                      <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <span className="text-blue-600 font-semibold text-sm">#{index + 1}</span>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900">Record Medico</h4>
+                              <p className="text-sm text-gray-500">
+                                {new Date(record.record_date).toLocaleDateString('it-IT')} • Dr. {record.doctor_name} {record.doctor_surname}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                         
-                        {record.symptoms && (
-                          <div className="mb-2">
-                            <span className="text-sm font-medium text-gray-700">Sintomi:</span>
-                            <p className="text-sm text-gray-600">{record.symptoms}</p>
-                          </div>
-                        )}
-                        
-                        {record.diagnosis && (
-                          <div className="mb-2">
-                            <span className="text-sm font-medium text-gray-700">Diagnosi:</span>
-                            <p className="text-sm text-gray-600">{record.diagnosis}</p>
-                          </div>
-                        )}
-                        
-                        {record.treatment_plan && (
-                          <div className="mb-2">
-                            <span className="text-sm font-medium text-gray-700">Trattamento:</span>
-                            <p className="text-sm text-gray-600">{record.treatment_plan}</p>
-                          </div>
-                        )}
-                        
-                        {record.notes && (
-                          <div>
-                            <span className="text-sm font-medium text-gray-700">Note:</span>
-                            <p className="text-sm text-gray-600">{record.notes}</p>
-                          </div>
-                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {record.symptoms && (
+                            <div>
+                              <span className="text-sm font-medium text-gray-700">Sintomi:</span>
+                              <p className="text-sm text-gray-600 mt-1">{record.symptoms}</p>
+                            </div>
+                          )}
+                          
+                          {record.diagnosis && (
+                            <div>
+                              <span className="text-sm font-medium text-gray-700">Diagnosi:</span>
+                              <p className="text-sm text-gray-600 mt-1">{record.diagnosis}</p>
+                            </div>
+                          )}
+                          
+                          {record.treatment_plan && (
+                            <div>
+                              <span className="text-sm font-medium text-gray-700">Trattamento:</span>
+                              <p className="text-sm text-gray-600 mt-1">{record.treatment_plan}</p>
+                            </div>
+                          )}
+                          
+                          {record.notes && (
+                            <div>
+                              <span className="text-sm font-medium text-gray-700">Note:</span>
+                              <p className="text-sm text-gray-600 mt-1">{record.notes}</p>
+                            </div>
+                          )}
+                        </div>
                         
                         {record.vital_signs && Object.keys(record.vital_signs).length > 0 && (
-                          <div>
-                            <span className="text-sm font-medium text-gray-700">Segni Vitali:</span>
-                            <div className="mt-1 space-y-1">
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <span className="text-sm font-medium text-gray-700 mb-2 block">Segni Vitali:</span>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                               {Object.entries(record.vital_signs).map(([key, value]) => (
-                                <div key={key} className="flex justify-between text-sm">
+                                <div key={key} className="flex justify-between text-sm bg-white px-2 py-1 rounded border">
                                   <span className="text-gray-600 capitalize">
                                     {key === 'blood_pressure' ? 'Pressione' :
-                                     key === 'heart_rate' ? 'Frequenza Cardiaca' :
-                                     key === 'respiratory_rate' ? 'Frequenza Respiratoria' :
+                                     key === 'heart_rate' ? 'Freq. Cardiaca' :
+                                     key === 'respiratory_rate' ? 'Freq. Respiratoria' :
                                      key === 'temperature' ? 'Temperatura' :
                                      key === 'weight' ? 'Peso' :
                                      key === 'height' ? 'Altezza' : key}:
@@ -691,6 +987,59 @@ const ClinicalFolder = () => {
                             </div>
                           </div>
                         )}
+
+                        {/* Prescrizioni */}
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                              <Pill className="w-4 h-4" />
+                              Prescrizioni
+                            </span>
+                            <button
+                              onClick={() => loadPrescriptionsForRecord(record.id)}
+                              className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 transition-colors"
+                            >
+                              Carica Prescrizioni
+                            </button>
+                          </div>
+                          
+                          {prescriptions[record.id] ? (
+                            prescriptions[record.id].length > 0 ? (
+                              <div className="space-y-2">
+                                {prescriptions[record.id].map((prescription, pIndex) => (
+                                  <div key={pIndex} className="bg-green-50 rounded p-2 border border-green-200">
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex-1">
+                                        <h5 className="font-medium text-green-800 text-sm">{prescription.medication_name}</h5>
+                                        <p className="text-xs text-green-600">
+                                          {prescription.dosage} - {prescription.frequency}
+                                          {prescription.duration && ` - ${prescription.duration}`}
+                                        </p>
+                                        {prescription.instructions && (
+                                          <p className="text-xs text-green-600 mt-1">{prescription.instructions}</p>
+                                        )}
+                                        <p className="text-xs text-green-500 mt-1">
+                                          Prescritta: {new Date(prescription.prescribed_date).toLocaleDateString('it-IT')}
+                                        </p>
+                                      </div>
+                                      <span className={`text-xs px-2 py-1 rounded ${
+                                        prescription.is_active 
+                                          ? 'bg-green-100 text-green-700' 
+                                          : 'bg-gray-100 text-gray-600'
+                                      }`}>
+                                        {prescription.is_active ? 'Attiva' : 'Non attiva'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-gray-500">Nessuna prescrizione</p>
+                            )
+                          ) : (
+                            <p className="text-xs text-gray-500">Clicca per caricare le prescrizioni</p>
+                          )}
+                        </div>
                       </div>
                     );
                   })
@@ -711,30 +1060,35 @@ const ClinicalFolder = () => {
                 Documenti ({folder.documents?.length || 0})
               </h3>
               
-              <div className="space-y-3 max-h-64 overflow-y-auto">
+              <div className="space-y-3 max-h-[calc(100vh-400px)] overflow-y-auto">
                 {folder.documents?.length > 0 ? (
                   folder.documents.map((doc, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:shadow-md transition-shadow">
                       <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{doc.title}</h4>
-                          <p className="text-sm text-gray-600">{doc.document_type}</p>
-                          {doc.description && (
-                            <p className="text-sm text-gray-500">{doc.description}</p>
-                          )}
-                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                              <FileText className="w-3 h-3 text-blue-600" />
+                            </div>
+                            <h4 className="font-medium text-gray-900 truncate">{doc.title}</h4>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
+                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">{doc.document_type}</span>
                             <span>Caricato: {new Date(doc.uploaded_at).toLocaleDateString('it-IT')}</span>
                             {doc.file_size && (
-                              <span>Dimensione: {(doc.file_size / 1024).toFixed(1)} KB</span>
+                              <span>{(doc.file_size / 1024).toFixed(1)} KB</span>
                             )}
                           </div>
+                          {doc.description && (
+                            <p className="text-sm text-gray-600 line-clamp-2">{doc.description}</p>
+                          )}
                         </div>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 ml-3">
                           {doc.download_url && (
                             <button 
                               onClick={() => handleDownloadDocument(doc.id, doc.title)}
                               disabled={downloadingDoc === doc.id}
-                              className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                             >
                               {downloadingDoc === doc.id ? (
                                 <>
@@ -754,14 +1108,14 @@ const ClinicalFolder = () => {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-6 text-gray-500">
-                    <Upload className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-                    <p>Nessun documento caricato</p>
+                  <div className="text-center py-8 text-gray-500">
+                    <Upload className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>Nessun documento presente</p>
                   </div>
                 )}
               </div>
             </div>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     </div>

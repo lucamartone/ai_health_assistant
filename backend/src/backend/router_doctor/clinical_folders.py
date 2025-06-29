@@ -76,6 +76,25 @@ async def get_patient_clinical_folder(patient_id: int, db: psycopg2.extensions.c
     """Get complete clinical folder for a patient"""
     try:
         with db.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Get patient information
+            cursor.execute("""
+                SELECT a.name, a.surname, a.birth_date, a.sex
+                FROM account a
+                JOIN patient p ON a.id = p.id
+                WHERE p.id = %s
+            """, (patient_id,))
+            
+            patient_info = cursor.fetchone()
+            if not patient_info:
+                raise HTTPException(status_code=404, detail="Patient not found")
+            
+            # Calculate age
+            age = None
+            if patient_info['birth_date']:
+                from datetime import date
+                today = date.today()
+                age = today.year - patient_info['birth_date'].year - ((today.month, today.day) < (patient_info['birth_date'].month, patient_info['birth_date'].day))
+            
             # Get or create clinical folder
             cursor.execute("""
                 INSERT INTO clinical_folder (patient_id)
@@ -92,9 +111,6 @@ async def get_patient_clinical_folder(patient_id: int, db: psycopg2.extensions.c
                     WHERE patient_id = %s
                 """, (patient_id,))
                 folder_result = cursor.fetchone()
-            
-            if not folder_result:
-                raise HTTPException(status_code=404, detail="Patient not found")
             
             folder_id = folder_result['id']
             
@@ -142,6 +158,10 @@ async def get_patient_clinical_folder(patient_id: int, db: psycopg2.extensions.c
             return ClinicalFolderResponse(
                 id=folder_result['id'],
                 patient_id=folder_result['patient_id'],
+                patient_name=patient_info['name'],
+                patient_surname=patient_info['surname'],
+                patient_age=age,
+                patient_sex=patient_info['sex'],
                 created_at=folder_result['created_at'],
                 updated_at=folder_result['updated_at'],
                 medical_records=[MedicalRecordResponse(**record) for record in medical_records],
@@ -373,6 +393,23 @@ async def get_prescription(prescription_id: int, db: psycopg2.extensions.connect
                 raise HTTPException(status_code=404, detail="Prescription not found")
             
             return PrescriptionResponse(**prescription)
+            
+    except psycopg2.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+@router.get("/medical-records/{record_id}/prescriptions")
+async def get_prescriptions_for_record(record_id: int, db: psycopg2.extensions.connection = Depends(connect_to_postgres)):
+    """Get all prescriptions for a specific medical record"""
+    try:
+        with db.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT * FROM prescription 
+                WHERE medical_record_id = %s 
+                ORDER BY prescribed_date DESC
+            """, (record_id,))
+            
+            prescriptions = cursor.fetchall()
+            return {"prescriptions": [PrescriptionResponse(**prescription) for prescription in prescriptions]}
             
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

@@ -116,6 +116,10 @@ class MedicalDocumentResponse(BaseModel):
 class ClinicalFolderResponse(BaseModel):
     id: int
     patient_id: int
+    patient_name: str
+    patient_surname: str
+    patient_age: Optional[int] = None
+    patient_sex: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     medical_records: List[MedicalRecordResponse] = []

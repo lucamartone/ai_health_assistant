@@ -30,6 +30,11 @@ export const updatePrescription = async (prescriptionId, data) => {
   return api.put(`/doctor/clinical_folders/prescriptions/${prescriptionId}`, data);
 };
 
+// Ottieni prescrizioni per un record medico
+export const getPrescriptionsForRecord = async (recordId) => {
+  return api.get(`/doctor/clinical_folders/medical-records/${recordId}/prescriptions`);
+};
+
 // Aggiungi un documento medico (solo metadati)
 export const createMedicalDocument = async (data, doctorId) => {
   return api.post(`/doctor/clinical_folders/documents?doctor_id=${doctorId}`, data);
