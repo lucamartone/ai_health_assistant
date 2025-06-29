@@ -56,7 +56,7 @@ CREATE TABLE appointment (
 -- Tabella clinical_folder (cartella clinica)
 CREATE TABLE clinical_folder (
     id SERIAL PRIMARY KEY,
-    patient_id INT NOT NULL REFERENCES patient(id),
+    patient_id INT NOT NULL REFERENCES patient(id) UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

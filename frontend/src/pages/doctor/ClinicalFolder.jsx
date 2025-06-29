@@ -62,7 +62,10 @@ const ClinicalFolder = () => {
   };
 
   useEffect(() => {
-    if (patientId) loadFolder();
+    if (patientId) {
+      console.log('DEBUG: useEffect triggered with patientId:', patientId);
+      loadFolder();
+    }
     // eslint-disable-next-line
   }, [patientId]);
 
@@ -126,7 +129,9 @@ const ClinicalFolder = () => {
       console.log('DEBUG: Record medico creato:', result);
       
       setForm({ symptoms: '', diagnosis: '', treatment_plan: '', notes: '', vital_signs: { blood_pressure: '', temperature: '', heart_rate: '', respiratory_rate: '', weight: '', height: '' } });
+      console.log('DEBUG: Form resettato, ora ricarico la cartella...');
       await loadFolder();
+      console.log('DEBUG: Cartella ricaricata dopo creazione record');
     } catch (err) {
       console.error('DEBUG: Errore creazione record:', err);
       console.error('DEBUG: Response error:', err.response?.data);
@@ -627,70 +632,73 @@ const ClinicalFolder = () => {
               
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {folder.medical_records?.length > 0 ? (
-                  folder.medical_records.map((record, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-gray-900">Record #{index + 1}</h4>
-                        <span className="text-sm text-gray-500">
-                          {new Date(record.record_date).toLocaleDateString('it-IT')}
-                        </span>
-                      </div>
-                      
-                      {record.symptoms && (
-                        <div className="mb-2">
-                          <span className="text-sm font-medium text-gray-700">Sintomi:</span>
-                          <p className="text-sm text-gray-600">{record.symptoms}</p>
+                  folder.medical_records.map((record, index) => {
+                    console.log('DEBUG: Rendering record:', record);
+                    return (
+                      <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-semibold text-gray-900">Record #{index + 1}</h4>
+                          <span className="text-sm text-gray-500">
+                            {new Date(record.record_date).toLocaleDateString('it-IT')}
+                          </span>
                         </div>
-                      )}
-                      
-                      {record.diagnosis && (
-                        <div className="mb-2">
-                          <span className="text-sm font-medium text-gray-700">Diagnosi:</span>
-                          <p className="text-sm text-gray-600">{record.diagnosis}</p>
-                        </div>
-                      )}
-                      
-                      {record.treatment_plan && (
-                        <div className="mb-2">
-                          <span className="text-sm font-medium text-gray-700">Trattamento:</span>
-                          <p className="text-sm text-gray-600">{record.treatment_plan}</p>
-                        </div>
-                      )}
-                      
-                      {record.notes && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-700">Note:</span>
-                          <p className="text-sm text-gray-600">{record.notes}</p>
-                        </div>
-                      )}
-                      
-                      {record.vital_signs && Object.keys(record.vital_signs).length > 0 && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-700">Segni Vitali:</span>
-                          <div className="mt-1 space-y-1">
-                            {Object.entries(record.vital_signs).map(([key, value]) => (
-                              <div key={key} className="flex justify-between text-sm">
-                                <span className="text-gray-600 capitalize">
-                                  {key === 'blood_pressure' ? 'Pressione' :
-                                   key === 'heart_rate' ? 'Frequenza Cardiaca' :
-                                   key === 'respiratory_rate' ? 'Frequenza Respiratoria' :
-                                   key === 'temperature' ? 'Temperatura' :
-                                   key === 'weight' ? 'Peso' :
-                                   key === 'height' ? 'Altezza' : key}:
-                                </span>
-                                <span className="text-gray-800 font-medium">{value}</span>
-                              </div>
-                            ))}
+                        
+                        {record.symptoms && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-gray-700">Sintomi:</span>
+                            <p className="text-sm text-gray-600">{record.symptoms}</p>
                           </div>
-                        </div>
-                      )}
-                      
-                    </div>
-                  ))
+                        )}
+                        
+                        {record.diagnosis && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-gray-700">Diagnosi:</span>
+                            <p className="text-sm text-gray-600">{record.diagnosis}</p>
+                          </div>
+                        )}
+                        
+                        {record.treatment_plan && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-gray-700">Trattamento:</span>
+                            <p className="text-sm text-gray-600">{record.treatment_plan}</p>
+                          </div>
+                        )}
+                        
+                        {record.notes && (
+                          <div>
+                            <span className="text-sm font-medium text-gray-700">Note:</span>
+                            <p className="text-sm text-gray-600">{record.notes}</p>
+                          </div>
+                        )}
+                        
+                        {record.vital_signs && Object.keys(record.vital_signs).length > 0 && (
+                          <div>
+                            <span className="text-sm font-medium text-gray-700">Segni Vitali:</span>
+                            <div className="mt-1 space-y-1">
+                              {Object.entries(record.vital_signs).map(([key, value]) => (
+                                <div key={key} className="flex justify-between text-sm">
+                                  <span className="text-gray-600 capitalize">
+                                    {key === 'blood_pressure' ? 'Pressione' :
+                                     key === 'heart_rate' ? 'Frequenza Cardiaca' :
+                                     key === 'respiratory_rate' ? 'Frequenza Respiratoria' :
+                                     key === 'temperature' ? 'Temperatura' :
+                                     key === 'weight' ? 'Peso' :
+                                     key === 'height' ? 'Altezza' : key}:
+                                  </span>
+                                  <span className="text-gray-800 font-medium">{value}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p>Nessun record medico presente</p>
+                    <p className="text-sm mt-2">DEBUG: folder.medical_records = {JSON.stringify(folder.medical_records)}</p>
                   </div>
                 )}
               </div>

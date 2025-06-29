@@ -99,6 +99,7 @@ async def get_patient_clinical_folder(patient_id: int, db: psycopg2.extensions.c
             folder_id = folder_result['id']
             
             # Get medical records
+            print(f"DEBUG: Querying medical records for folder_id: {folder_id}")
             cursor.execute("""
                 SELECT mr.*, a.name as doctor_name, a.surname as doctor_surname
                 FROM medical_record mr
@@ -108,6 +109,18 @@ async def get_patient_clinical_folder(patient_id: int, db: psycopg2.extensions.c
             """, (folder_id,))
             medical_records = cursor.fetchall()
             print(f"DEBUG: Found {len(medical_records)} medical records for folder {folder_id}")
+            
+            # Debug: stampa i primi record se ce ne sono
+            if medical_records:
+                print(f"DEBUG: First record: {medical_records[0]}")
+            else:
+                print(f"DEBUG: No medical records found for folder {folder_id}")
+                # Verifica se esistono record senza JOIN
+                cursor.execute("""
+                    SELECT COUNT(*) as count FROM medical_record WHERE clinical_folder_id = %s
+                """, (folder_id,))
+                count_result = cursor.fetchone()
+                print(f"DEBUG: Medical records without JOIN: {count_result['count']}")
             
             # Get medical documents
             cursor.execute("""
@@ -151,22 +164,24 @@ async def create_medical_record(
     """Create a new medical record for a patient"""
     try:
         with db.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Get or create clinical folder
+            # First check if clinical folder exists
             cursor.execute("""
-                INSERT INTO clinical_folder (patient_id)
-                VALUES (%s)
-                ON CONFLICT DO NOTHING
-                RETURNING id
+                SELECT id FROM clinical_folder WHERE patient_id = %s
             """, (record.patient_id,))
             
             folder_result = cursor.fetchone()
+            
+            # If folder doesn't exist, create it
             if not folder_result:
                 cursor.execute("""
-                    SELECT id FROM clinical_folder WHERE patient_id = %s
+                    INSERT INTO clinical_folder (patient_id)
+                    VALUES (%s)
+                    RETURNING id
                 """, (record.patient_id,))
                 folder_result = cursor.fetchone()
             
             folder_id = folder_result['id']
+            print(f"DEBUG: Using clinical folder ID: {folder_id} for patient {record.patient_id}")
             
             # Create medical record
             print(f"DEBUG: Creating medical record with vital_signs: {record.vital_signs}")
@@ -196,6 +211,7 @@ async def create_medical_record(
             ))
             
             record_result = cursor.fetchone()
+            print(f"DEBUG: Record created with ID: {record_result['id']}")
             
             # Get doctor info
             cursor.execute("""
@@ -204,6 +220,14 @@ async def create_medical_record(
             doctor_info = cursor.fetchone()
             
             db.commit()
+            print(f"DEBUG: Database committed successfully")
+            
+            # Verifica che il record sia stato salvato
+            cursor.execute("""
+                SELECT COUNT(*) as count FROM medical_record WHERE clinical_folder_id = %s
+            """, (folder_id,))
+            count_result = cursor.fetchone()
+            print(f"DEBUG: Total medical records in folder {folder_id}: {count_result['count']}")
             
             return MedicalRecordResponse(
                 **record_result,
@@ -423,22 +447,24 @@ async def create_medical_document(
     """Create a new medical document"""
     try:
         with db.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Get or create clinical folder
+            # First check if clinical folder exists
             cursor.execute("""
-                INSERT INTO clinical_folder (patient_id)
-                VALUES (%s)
-                ON CONFLICT DO NOTHING
-                RETURNING id
+                SELECT id FROM clinical_folder WHERE patient_id = %s
             """, (document.patient_id,))
             
             folder_result = cursor.fetchone()
+            
+            # If folder doesn't exist, create it
             if not folder_result:
                 cursor.execute("""
-                    SELECT id FROM clinical_folder WHERE patient_id = %s
+                    INSERT INTO clinical_folder (patient_id)
+                    VALUES (%s)
+                    RETURNING id
                 """, (document.patient_id,))
                 folder_result = cursor.fetchone()
             
             folder_id = folder_result['id']
+            print(f"DEBUG: Using clinical folder ID: {folder_id} for patient {document.patient_id}")
             
             # Create medical document
             cursor.execute("""
@@ -533,18 +559,25 @@ async def upload_medical_document(
         rel_path = file_path.replace('./', '/', 1) if file_path.startswith('./') else file_path
         # Create document record
         with db.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Get or create clinical folder
+            # First check if clinical folder exists
             cursor.execute("""
-                INSERT INTO clinical_folder (patient_id)
-                VALUES (%s)
-                ON CONFLICT DO NOTHING
-                RETURNING id
+                SELECT id FROM clinical_folder WHERE patient_id = %s
             """, (patient_id,))
+            
             folder_result = cursor.fetchone()
+            
+            # If folder doesn't exist, create it
             if not folder_result:
-                cursor.execute("SELECT id FROM clinical_folder WHERE patient_id = %s", (patient_id,))
+                cursor.execute("""
+                    INSERT INTO clinical_folder (patient_id)
+                    VALUES (%s)
+                    RETURNING id
+                """, (patient_id,))
                 folder_result = cursor.fetchone()
+            
             folder_id = folder_result['id']
+            print(f"DEBUG: Using clinical folder ID: {folder_id} for patient {patient_id}")
+            
             cursor.execute("""
                 INSERT INTO medical_document (
                     clinical_folder_id, doctor_id, document_type, title,
