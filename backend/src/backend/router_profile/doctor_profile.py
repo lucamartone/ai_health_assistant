@@ -118,11 +118,8 @@ async def login(data: LoginRequest, response: Response):
         results = execute_query(query, (data.email,))
 
         if not results:
-            return{
-                "message": "Account non registrato",
-                "account": None
-            }
-
+            raise HTTPException(status_code=404, detail="Account non registrato")
+        
         account = results[0]
         db_password = account[4]
         last_attempt = account[5]

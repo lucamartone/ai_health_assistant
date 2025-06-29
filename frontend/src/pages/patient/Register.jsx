@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { register_patient } from '../../services/profile/fetch_profile';
+import LoginModal from '../../components/LoginModal';
 
 function Register() {
   const [name, setName] = useState('');
@@ -10,6 +11,7 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [sex, setSex] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -35,7 +37,14 @@ function Register() {
       console.log('Registrazione riuscita:', data);
       navigate('/login');
     } catch (err) {
-      alert(err.message);
+      if (err.message === "Email già registrata") {
+        setModalMessage("Email già registrata. Prova con un'altra email.");
+      }
+      else if (err.message === "Errore durante la creazione dell'utente") {
+        setModalMessage("Si è verificato un errore durante la creazione dell'utente. Riprova più tardi.");
+      } else {
+        setModalMessage("Fornisci tutti i campi.");
+      }
     }
   };
 
@@ -155,6 +164,7 @@ function Register() {
           </span>
         </p>
       </div>
+      <LoginModal message={modalMessage} onClose={() => setModalMessage('')} />
     </div>
   );
 }

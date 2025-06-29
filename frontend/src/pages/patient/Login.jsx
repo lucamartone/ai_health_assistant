@@ -17,20 +17,17 @@ function Login() {
     e.preventDefault();
     try {
       const data = await login_patient(email, password);
-      if (!data.account) {
-        if (data.message === "Account non registrato") {
-          setModalMessage("Account non registrato. Verifica le credenziali o registrati.");
-          return;
-        }
-        if (data.message === "Password errata") {
-          setModalMessage("Password errata. Riprova.");
-          return;
-        }
-      }
       setAccount(data.account);
       navigate('/');
     } catch (err) {
-      setModalMessage("Errore durante il login. Riprova.");
+      if (err.message === 'Account non registrato') {
+        setModalMessage('Nessun account trovato con questa email. Per favore, registrati.');
+      }
+      else if (err.message === 'Password errata') {
+        setModalMessage('La password inserita è errata. Riprova.');
+      } else {
+        setModalMessage('Si è verificato un errore durante il login. Riprova più tardi.');
+      }
     }
   };
 

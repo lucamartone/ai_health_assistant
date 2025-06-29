@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { register_doctor } from '../../services/profile/fetch_profile';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
+import LoginModal from '../../components/LoginModal';
 
 const SPECIALIZATIONS = [
   "Allergologia", "Anestesia e Rianimazione", "Cardiologia", "Chirurgia Generale",
@@ -22,6 +23,8 @@ function Register() {
   const [specialization, setSpecialization] = useState('');
   const [locations, setLocations] = useState([{ address: '', latitude: null, longitude: null }]);
   const [passwordError, setPasswordError] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+
 
   const navigate = useNavigate();
 
@@ -46,7 +49,14 @@ function Register() {
       console.log('Registrazione riuscita:', data);
       navigate('/doctor/login');
     } catch (err) {
-      alert(err.message);
+      if (err.message === "Email già registrata") {
+        setModalMessage("Email già registrata. Prova con un'altra email.");
+      }
+      else if (err.message === "Errore durante la creazione dell'utente") {
+        setModalMessage("Si è verificato un errore durante la creazione dell'utente. Riprova più tardi.");
+      } else {
+        setModalMessage("Fornisci tutti i campi.");
+      }
     }
   };
 
@@ -231,6 +241,7 @@ function Register() {
           </span>
         </p>
       </div>
+      <LoginModal message={modalMessage} onClose={() => setModalMessage('')} />
     </div>
   );
 }
