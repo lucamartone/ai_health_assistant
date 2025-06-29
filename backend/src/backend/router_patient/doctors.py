@@ -217,10 +217,11 @@ async def get_doctors_by_location(
     radius_km: Optional[float] = Query(default=10.0, ge=0.1, le=100.0, description="Search radius in kilometers"),
     limit: Optional[int] = Query(default=50, ge=1, le=100, description="Maximum number of doctors to return")
 ) -> list:
-    """Endpoint to get doctors ordered by location."""
+    """Get doctors within a specified radius from given coordinates."""
     try:
+        # Haversine formula to calculate distance
         query = """
-        SELECT 
+        SELECT DISTINCT 
             d.id AS doctor_id,
             u.name,
             u.surname,
@@ -229,28 +230,72 @@ async def get_doctors_by_location(
             u.profile_img,
             l.latitude,
             l.longitude,
-            (
-                6371 * acos(
-                    cos(radians(%s)) * cos(radians(l.latitude)) * 
-                    cos(radians(l.longitude) - radians(%s)) + 
-                    sin(radians(%s)) * sin(radians(l.latitude))
-                )
-            ) AS distance
+            l.address,
+            l.city,
+            (6371 * acos(cos(radians(%s)) * cos(radians(l.latitude)) * cos(radians(l.longitude) - radians(%s)) + sin(radians(%s)) * sin(radians(l.latitude)))) AS distance_km
         FROM doctor d
         JOIN account u ON d.id = u.id
         JOIN appointment a ON a.doctor_id = d.id
         JOIN location l ON l.id = a.location_id
         WHERE a.state = 'waiting'
-        HAVING distance <= %s
-        ORDER BY distance ASC
+        HAVING distance_km <= %s
+        ORDER BY distance_km ASC
         LIMIT %s;
         """
+        
         raw_result = execute_query(query, (latitude, longitude, latitude, radius_km, limit))
         
-        columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude", "distance"]
+        columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude", "address", "city", "distance_km"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
-        
+
     except Exception as e:
         raise HTTPException(status_code=400, detail="Error retrieving doctors by location")
+
+@router_show_doctors.get("/patient_doctors")
+async def get_patient_doctors(
+    patient_id: int = Query(..., description="ID of the patient")
+):
+    """Endpoint to get doctors associated with a specific patient through appointments or medical records"""
+    try:
+        query = """
+        SELECT DISTINCT 
+            d.id,
+            u.name,
+            u.surname,
+            d.specialization,
+            u.email,
+            GROUP_CONCAT(DISTINCT l.address) as locations
+        FROM doctor d
+        JOIN account u ON d.id = u.id
+        LEFT JOIN location l ON l.doctor_id = d.id
+        WHERE d.id IN (
+            -- Dottori con cui il paziente ha avuto appuntamenti
+            SELECT DISTINCT doctor_id 
+            FROM appointment 
+            WHERE patient_id = %s
+            UNION
+            -- Dottori che hanno cartelle cliniche del paziente
+            SELECT DISTINCT doctor_id 
+            FROM clinical_folder 
+            WHERE patient_id = %s
+        )
+        GROUP BY d.id, u.name, u.surname, d.specialization, u.email
+        ORDER BY u.name, u.surname;
+        """
+
+        raw_result = execute_query(query, (patient_id, patient_id))
+
+        columns = ["id", "name", "surname", "specialization", "email", "locations"]
+        result = []
+        for row in raw_result:
+            doctor = dict(zip(columns, row))
+            # Converti la stringa delle locations in array
+            doctor["locations"] = doctor["locations"].split(",") if doctor["locations"] else []
+            result.append(doctor)
+        
+        return {"doctors": result}
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error retrieving patient doctors: {str(e)}")
 

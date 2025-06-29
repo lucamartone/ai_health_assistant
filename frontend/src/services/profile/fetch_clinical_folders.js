@@ -10,6 +10,11 @@ export const fetchClinicalFolder = async (patientId) => {
   return api.get(`/doctor/clinical_folders/patient/${patientId}`);
 };
 
+// Ottieni la cartella clinica di un paziente filtrata per dottore specifico
+export const fetchClinicalFolderByDoctor = async (patientId, doctorId) => {
+  return api.get(`/doctor/clinical_folders/patient/${patientId}/doctor/${doctorId}`);
+};
+
 // Crea un nuovo record medico
 export const createMedicalRecord = async (data, doctorId) => {
   return api.post(`/doctor/clinical_folders/medical-records?doctor_id=${doctorId}`, data);

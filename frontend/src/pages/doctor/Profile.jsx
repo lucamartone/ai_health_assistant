@@ -2,14 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import { BarChart3, User, Calendar, Clock, Lock, Settings } from 'lucide-react';
 
 const TABS = [
-  { key: 'overview', label: 'Panoramica', icon: '📊' },
-  { key: 'profile', label: 'Profilo', icon: '👤' },
-  { key: 'appointments', label: 'Appuntamenti', icon: '📅' },
-  { key: 'schedule', label: 'Orari', icon: '⏰' },
-  { key: 'security', label: 'Sicurezza', icon: '🔒' },
-  { key: 'preferences', label: 'Preferenze', icon: '⚙️' },
+  { key: 'overview', label: 'Panoramica', icon: BarChart3 },
+  { key: 'profile', label: 'Profilo', icon: User },
+  { key: 'appointments', label: 'Appuntamenti', icon: Calendar },
+  { key: 'schedule', label: 'Orari', icon: Clock },
+  { key: 'security', label: 'Sicurezza', icon: Lock },
+  { key: 'preferences', label: 'Preferenze', icon: Settings },
 ];
 
 function Profile() {
@@ -23,6 +24,11 @@ function Profile() {
       navigate('/doctor/login');
     }
   }, [account, loading, navigate]);
+
+  // Scroll automatico all'inizio quando si carica la pagina
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -274,21 +280,24 @@ function Profile() {
 
         {/* Tab navigation */}
         <div className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden">
-          <div className="flex overflow-x-auto">
-            {TABS.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                  activeTab === tab.key 
-                    ? 'bg-blue-600 text-white border-b-2 border-blue-600' 
-                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                }`}
-              >
-                <span>{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex overflow-x-auto justify-center">
+            {TABS.map(tab => {
+              const IconComponent = tab.icon;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                    activeTab === tab.key 
+                      ? 'bg-blue-600 text-white border-b-2 border-blue-600' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
+                >
+                  <IconComponent className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -298,13 +307,13 @@ function Profile() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-white rounded-2xl shadow-xl p-8"
+          className="bg-white rounded-2xl shadow-xl p-8 text-center"
         >
           {activeTab === 'overview' && (
             <div className="space-y-8">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Panoramica Attività</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
                     <h3 className="text-lg font-semibold text-blue-900 mb-4">Prossimi Appuntamenti</h3>
                     <div className="space-y-3">
@@ -347,7 +356,7 @@ function Profile() {
           )}
 
           {activeTab === 'profile' && (
-            <div className="max-w-2xl">
+            <div className="max-w-2xl mx-auto">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Informazioni Profilo</h2>
                 <button
@@ -431,7 +440,7 @@ function Profile() {
           )}
 
           {activeTab === 'appointments' && (
-            <div>
+            <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Cronologia Appuntamenti</h2>
               {loadingAppointments ? (
                 <div className="text-center py-8">
@@ -471,7 +480,7 @@ function Profile() {
           )}
 
           {activeTab === 'schedule' && (
-            <div>
+            <div className="max-w-2xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Gestione Orari</h2>
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
                 <p className="text-gray-700 mb-4">Configura i tuoi orari di disponibilità per le visite.</p>
@@ -483,7 +492,7 @@ function Profile() {
           )}
 
           {activeTab === 'security' && (
-            <div className="max-w-2xl">
+            <div className="max-w-2xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Sicurezza Account</h2>
               
               <form onSubmit={handlePasswordSubmit} className="space-y-6">
@@ -530,7 +539,7 @@ function Profile() {
           )}
 
           {activeTab === 'preferences' && (
-            <div>
+            <div className="max-w-3xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Preferenze</h2>
               <div className="space-y-6">
                 <div className="bg-gray-50 rounded-lg p-6">

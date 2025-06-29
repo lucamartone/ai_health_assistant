@@ -171,6 +171,93 @@ async def get_patient_clinical_folder(patient_id: int, db: psycopg2.extensions.c
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
+@router.get("/patient/{patient_id}/doctor/{doctor_id}", response_model=ClinicalFolderResponse)
+async def get_patient_clinical_folder_by_doctor(
+    patient_id: int, 
+    doctor_id: int, 
+    db: psycopg2.extensions.connection = Depends(connect_to_postgres)
+):
+    """Get clinical folder for a patient filtered by specific doctor"""
+    try:
+        with db.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Get patient information
+            cursor.execute("""
+                SELECT a.name, a.surname, a.birth_date, a.sex
+                FROM account a
+                JOIN patient p ON a.id = p.id
+                WHERE p.id = %s
+            """, (patient_id,))
+            
+            patient_info = cursor.fetchone()
+            if not patient_info:
+                raise HTTPException(status_code=404, detail="Patient not found")
+            
+            # Calculate age
+            age = None
+            if patient_info['birth_date']:
+                from datetime import date
+                today = date.today()
+                age = today.year - patient_info['birth_date'].year - ((today.month, today.day) < (patient_info['birth_date'].month, patient_info['birth_date'].day))
+            
+            # Get or create clinical folder
+            cursor.execute("""
+                INSERT INTO clinical_folder (patient_id)
+                VALUES (%s)
+                ON CONFLICT DO NOTHING
+                RETURNING id, patient_id, created_at, updated_at
+            """, (patient_id,))
+            
+            folder_result = cursor.fetchone()
+            if not folder_result:
+                cursor.execute("""
+                    SELECT id, patient_id, created_at, updated_at
+                    FROM clinical_folder
+                    WHERE patient_id = %s
+                """, (patient_id,))
+                folder_result = cursor.fetchone()
+            
+            folder_id = folder_result['id']
+            
+            # Get medical records for specific doctor
+            cursor.execute("""
+                SELECT mr.*, a.name as doctor_name, a.surname as doctor_surname
+                FROM medical_record mr
+                JOIN account a ON mr.doctor_id = a.id
+                WHERE mr.clinical_folder_id = %s AND mr.doctor_id = %s
+                ORDER BY mr.record_date DESC
+            """, (folder_id, doctor_id))
+            medical_records = cursor.fetchall()
+            
+            # Get medical documents for specific doctor
+            cursor.execute("""
+                SELECT md.*, a.name as doctor_name, a.surname as doctor_surname
+                FROM medical_document md
+                JOIN account a ON md.doctor_id = a.id
+                WHERE md.clinical_folder_id = %s AND md.doctor_id = %s
+                ORDER BY md.uploaded_at DESC
+            """, (folder_id, doctor_id))
+            documents = cursor.fetchall()
+            
+            # Add download URLs to documents
+            for doc in documents:
+                doc['download_url'] = f"/doctor/clinical_folders/download-document/{doc['id']}"
+            
+            return ClinicalFolderResponse(
+                id=folder_result['id'],
+                patient_id=folder_result['patient_id'],
+                patient_name=patient_info['name'],
+                patient_surname=patient_info['surname'],
+                patient_age=age,
+                patient_sex=patient_info['sex'],
+                created_at=folder_result['created_at'],
+                updated_at=folder_result['updated_at'],
+                medical_records=[MedicalRecordResponse(**record) for record in medical_records],
+                documents=[MedicalDocumentResponse(**doc) for doc in documents]
+            )
+            
+    except psycopg2.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
 # =========================================
 # Medical Records Management
 # =========================================

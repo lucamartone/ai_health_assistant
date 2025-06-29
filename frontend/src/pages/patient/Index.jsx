@@ -1,11 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
 import FeatureCard from '../../components/FeatureCard';
 import { useAuth } from '../../contexts/AuthContext';
 
 function Index() {
     const navigate = useNavigate();
-    const { account } = useAuth();
+    const { account, loading } = useAuth();
+
+    // Reindirizza al profilo se l'utente è già autenticato
+    useEffect(() => {
+        if (!loading && account) {
+            navigate('/profile');
+        }
+    }, [account, loading, navigate]);
 
     const handleProfileClick = () => {
         if (account) {

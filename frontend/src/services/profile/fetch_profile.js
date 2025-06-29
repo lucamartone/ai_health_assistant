@@ -117,3 +117,16 @@ export async function me() {
 
   return data;
 }
+
+export async function getPatientDoctors(patientId) {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/doctors/patient_doctors?patient_id=${patientId}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Errore recupero dottori');
+  }
+
+  return await response.json();
+}

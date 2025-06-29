@@ -2,14 +2,31 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
+import { getPatientDoctors } from '../../services/profile/fetch_profile';
+import { 
+  BarChart3, 
+  User, 
+  Calendar, 
+  Stethoscope, 
+  MessageCircle, 
+  Heart, 
+  Shield, 
+  Settings,
+  MapPin,
+  Mail,
+  Plus,
+  FileText
+} from 'lucide-react';
 
 const TABS = [
-  { key: 'overview', label: 'Panoramica', icon: '📊' },
-  { key: 'profile', label: 'Profilo', icon: '👤' },
-  { key: 'appointments', label: 'Appuntamenti', icon: '📅' },
-  { key: 'health', label: 'Salute', icon: '❤️' },
-  { key: 'security', label: 'Sicurezza', icon: '🔒' },
-  { key: 'preferences', label: 'Preferenze', icon: '⚙️' },
+  { key: 'overview', label: 'Panoramica', icon: <BarChart3 className="h-5 w-5" /> },
+  { key: 'profile', label: 'Profilo', icon: <User className="h-5 w-5" /> },
+  { key: 'appointments', label: 'Appuntamenti', icon: <Calendar className="h-5 w-5" /> },
+  { key: 'doctors', label: 'I Miei Dottori', icon: <Stethoscope className="h-5 w-5" /> },
+  { key: 'chat', label: 'Chat AI', icon: <MessageCircle className="h-5 w-5" /> },
+  { key: 'health', label: 'Salute', icon: <Heart className="h-5 w-5" /> },
+  { key: 'security', label: 'Sicurezza', icon: <Shield className="h-5 w-5" /> },
+  { key: 'preferences', label: 'Preferenze', icon: <Settings className="h-5 w-5" /> },
 ];
 
 function Profile() {
@@ -24,6 +41,11 @@ function Profile() {
     }
   }, [account, loading, navigate]);
 
+  // Scroll automatico all'inizio quando si carica la pagina
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [password, setPassword] = useState('');
@@ -37,6 +59,11 @@ function Profile() {
   const [appointments, setAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(false);
   const [appointmentsError, setAppointmentsError] = useState('');
+
+  // Stato per i dottori
+  const [doctors, setDoctors] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
+  const [doctorsError, setDoctorsError] = useState('');
 
   // Statistiche
   const [stats, setStats] = useState({
@@ -64,6 +91,9 @@ function Profile() {
     if (activeTab === 'appointments') {
       fetchAppointments();
     }
+    if (activeTab === 'doctors') {
+      fetchDoctors();
+    }
     if (activeTab === 'overview') {
       fetchStats();
     }
@@ -81,6 +111,19 @@ function Profile() {
       setAppointmentsError(err.message);
     } finally {
       setLoadingAppointments(false);
+    }
+  };
+
+  const fetchDoctors = async () => {
+    setLoadingDoctors(true);
+    setDoctorsError('');
+    try {
+      const data = await getPatientDoctors(account?.id);
+      setDoctors(data.doctors || []);
+    } catch (err) {
+      setDoctorsError(err.message);
+    } finally {
+      setLoadingDoctors(false);
     }
   };
 
@@ -294,7 +337,7 @@ function Profile() {
 
         {/* Tab navigation */}
         <div className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden">
-          <div className="flex overflow-x-auto">
+          <div className="flex overflow-x-auto justify-center">
             {TABS.map(tab => (
               <button
                 key={tab.key}
@@ -318,13 +361,13 @@ function Profile() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-white rounded-2xl shadow-xl p-8"
+          className="bg-white rounded-2xl shadow-xl p-8 text-center"
         >
           {activeTab === 'overview' && (
             <div className="space-y-8">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Panoramica Salute</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
                     <h3 className="text-lg font-semibold text-blue-900 mb-4">Prossimi Appuntamenti</h3>
                     <div className="space-y-3">
@@ -362,12 +405,42 @@ function Profile() {
                     </div>
                   </div>
                 </div>
+
+                {/* Sezione Azioni Rapide */}
+                <div>
+                  <div className="h-10"></div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 text-center hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/chat')}>
+                      <div className="flex justify-center mb-3">
+                        <MessageCircle className="h-12 w-12 text-green-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-green-900 mb-2">Chat AI</h3>
+                      <p className="text-sm text-green-700">Assistenza sanitaria immediata</p>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 text-center hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/book')}>
+                      <div className="flex justify-center mb-3">
+                        <Calendar className="h-12 w-12 text-purple-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-purple-900 mb-2">Prenota Visita</h3>
+                      <p className="text-sm text-purple-700">Nuovo appuntamento medico</p>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 text-center hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/profile/clinical-folder')}>
+                      <div className="flex justify-center mb-3">
+                        <FileText className="h-12 w-12 text-orange-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-orange-900 mb-2">Cartella Clinica</h3>
+                      <p className="text-sm text-orange-700">Storico medico completo</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
           {activeTab === 'profile' && (
-            <div className="max-w-2xl">
+            <div className="max-w-2xl mx-auto">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Informazioni Personali</h2>
                 <button
@@ -451,7 +524,7 @@ function Profile() {
           )}
 
           {activeTab === 'appointments' && (
-            <div>
+            <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Cronologia Appuntamenti</h2>
               {loadingAppointments ? (
                 <div className="text-center py-8">
@@ -490,8 +563,111 @@ function Profile() {
             </div>
           )}
 
+          {activeTab === 'doctors' && (
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">I Miei Dottori</h2>
+              <p className="text-gray-600 mb-6">Dottori con cui hai avuto appuntamenti o di cui sei paziente</p>
+              
+              {loadingDoctors ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+                  <p className="text-gray-600">Caricamento dottori...</p>
+                </div>
+              ) : doctorsError ? (
+                <div className="text-center py-8">
+                  <p className="text-red-600">{doctorsError}</p>
+                </div>
+              ) : doctors.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="bg-blue-50 rounded-xl p-8 max-w-md mx-auto">
+                    <div className="flex justify-center mb-4">
+                      <Stethoscope className="h-16 w-16 text-blue-600" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Nessun dottore trovato</h3>
+                    <p className="text-gray-600 mb-4">Non hai ancora dottori associati. Prenota la tua prima visita!</p>
+                    <button
+                      onClick={() => navigate('/book')}
+                      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Prenota Visita
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {doctors.map((doctor, index) => (
+                    <div key={index} className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center mb-4">
+                        <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold mr-4">
+                          {doctor.name?.charAt(0)}{doctor.surname?.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Dr. {doctor.name} {doctor.surname}</h3>
+                          <p className="text-sm text-blue-600">{doctor.specialization}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          <span>{doctor.locations?.join(', ') || 'N/A'}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Mail className="h-4 w-4 mr-2" />
+                          <span>{doctor.email}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate('/book')}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Prenota Visita
+                        </button>
+                        <button
+                          onClick={() => navigate('/profile/clinical-folder')}
+                          className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          Cartella
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'chat' && (
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Chat AI - Assistente Sanitario</h2>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-8 text-center">
+                <div className="flex justify-center mb-4">
+                  <MessageCircle className="h-16 w-16 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Assistenza Sanitaria Intelligente</h3>
+                <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                  Chatta con il nostro assistente AI per ricevere consigli sanitari, 
+                  informazioni sui sintomi, o semplicemente per fare domande sulla tua salute.
+                </p>
+                <div className="space-y-4">
+                  <button
+                    onClick={() => navigate('/chat')}
+                    className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                  >
+                    Inizia Chat
+                  </button>
+                  <div className="text-sm text-gray-500">
+                    La chat è disponibile 24/7 per assistenza immediata
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'health' && (
-            <div className="max-w-4xl">
+            <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Informazioni Salute</h2>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -636,7 +812,7 @@ function Profile() {
           )}
 
           {activeTab === 'security' && (
-            <div className="max-w-2xl">
+            <div className="max-w-2xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Sicurezza Account</h2>
               
               <form onSubmit={handlePasswordSubmit} className="space-y-6">
@@ -683,7 +859,7 @@ function Profile() {
           )}
 
           {activeTab === 'preferences' && (
-            <div>
+            <div className="max-w-3xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Preferenze</h2>
               <div className="space-y-6">
                 <div className="bg-gray-50 rounded-lg p-6">
