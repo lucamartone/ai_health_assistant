@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { fetchClinicalFolder, createMedicalRecord, createMedicalDocument, uploadMedicalDocument } from '../../services/profile/fetch_clinical_folders';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { motion } from 'framer-motion';
+import { FolderOpen, User, FileText, Upload, ArrowLeft, Plus, Stethoscope } from 'lucide-react';
 
 const ClinicalFolder = () => {
   const { patientId } = useParams();
@@ -172,325 +174,358 @@ const ClinicalFolder = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-2">Cartella Clinica</h1>
-              <p className="text-lg text-blue-700">Paziente ID: {folder.patient_id}</p>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-xl p-8 mb-8"
+        >
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+            <div className="flex flex-col items-center text-center lg:text-left">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-4">
+                <FolderOpen className="h-10 w-10 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Cartella Clinica</h1>
+              <p className="text-lg text-blue-600 font-medium">Gestione Dati Paziente</p>
+              <p className="text-gray-500 mt-2">Paziente ID: {folder.patient_id}</p>
             </div>
-            <div className="mt-4 sm:mt-0">
-              <button 
-                onClick={() => navigate('/doctor/patients')}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center mx-auto sm:mx-0"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Torna ai Pazienti
-              </button>
+
+            {/* Statistiche rapide */}
+            <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold">
+                  {folder.medical_records?.length || 0}
+                </div>
+                <div className="text-sm opacity-90">Record Medici</div>
+              </div>
+              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold">
+                  {folder.prescriptions?.length || 0}
+                </div>
+                <div className="text-sm opacity-90">Prescrizioni</div>
+              </div>
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold">
+                  {folder.medical_documents?.length || 0}
+                </div>
+                <div className="text-sm opacity-90">Documenti</div>
+              </div>
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold">
+                  {new Date(folder.created_at).toLocaleDateString('it-IT')}
+                </div>
+                <div className="text-sm opacity-90">Data Creazione</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="grid gap-8 xl:grid-cols-2">
+          {/* Pulsante torna indietro */}
+          <div className="mt-6 flex justify-center lg:justify-start">
+            <button 
+              onClick={() => navigate('/doctor/patients')}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Torna ai Pazienti
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Contenuto principale */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid gap-8 xl:grid-cols-2"
+        >
           {/* Colonna sinistra - Form */}
           <div className="space-y-6">
             {/* Form nuovo record medico */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white rounded-2xl shadow-xl p-6"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Stethoscope className="w-5 h-5 text-blue-600" />
                 Nuovo Record Medico
               </h3>
+              
+              {formError && (
+                <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                  {formError}
+                </div>
+              )}
+
               <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Sintomi</label>
-                  <textarea 
-                    name="symptoms" 
-                    value={form.symptoms} 
-                    onChange={handleFormChange} 
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Sintomi</label>
+                  <textarea
+                    name="symptoms"
+                    value={form.symptoms}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="3"
-                    placeholder="Descrivi i sintomi del paziente..."
+                    placeholder="Descrivi i sintomi del paziente"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosi</label>
-                  <input 
-                    name="diagnosis" 
-                    value={form.diagnosis} 
-                    onChange={handleFormChange} 
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Inserisci la diagnosi..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Piano Terapeutico</label>
-                  <textarea 
-                    name="treatment_plan" 
-                    value={form.treatment_plan} 
-                    onChange={handleFormChange} 
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Diagnosi</label>
+                  <textarea
+                    name="diagnosis"
+                    value={form.diagnosis}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="3"
-                    placeholder="Descrivi il piano terapeutico..."
+                    placeholder="Inserisci la diagnosi"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Note</label>
-                  <textarea 
-                    name="notes" 
-                    value={form.notes} 
-                    onChange={handleFormChange} 
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Piano di Trattamento</label>
+                  <textarea
+                    name="treatment_plan"
+                    value={form.treatment_plan}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows="3"
+                    placeholder="Descrivi il piano di trattamento"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Note</label>
+                  <textarea
+                    name="notes"
+                    value={form.notes}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="2"
-                    placeholder="Note aggiuntive..."
+                    placeholder="Note aggiuntive"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Segni Vitali (JSON)</label>
-                  <input 
-                    name="vital_signs" 
-                    value={form.vital_signs} 
-                    onChange={handleFormChange} 
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder='{"blood_pressure":"120/80","temperature":36.5}'
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Segni Vitali (JSON)</label>
+                  <textarea
+                    name="vital_signs"
+                    value={form.vital_signs}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows="2"
+                    placeholder='{"pressione": "120/80", "temperatura": "36.5", "frequenza": "72"}'
                   />
                 </div>
-                {formError && (
-                  <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
-                    {formError}
-                  </div>
-                )}
-                <button 
-                  type="submit" 
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+
+                <button
+                  type="submit"
                   disabled={formLoading}
+                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {formLoading ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                       Salvataggio...
-                    </span>
+                    </>
                   ) : (
-                    'Aggiungi Record'
+                    <>
+                      <Plus className="w-4 h-4" />
+                      Aggiungi Record
+                    </>
                   )}
                 </button>
               </form>
-            </div>
+            </motion.div>
 
-            {/* Form nuovo documento medico */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-                Nuovo Documento Medico
+            {/* Form upload documento */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white rounded-2xl shadow-xl p-6"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Upload className="w-5 h-5 text-blue-600" />
+                Carica Documento
               </h3>
+              
+              {docFormError && (
+                <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                  {docFormError}
+                </div>
+              )}
+
               <form onSubmit={handleDocFormSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo Documento</label>
-                  <select 
-                    name="document_type" 
-                    value={docForm.document_type} 
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Tipo Documento</label>
+                  <select
+                    name="document_type"
+                    value={docForm.document_type}
                     onChange={handleDocFormChange}
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="">Seleziona tipo...</option>
+                    <option value="">Seleziona tipo</option>
                     <option value="referto">Referto</option>
                     <option value="esame">Esame</option>
                     <option value="certificato">Certificato</option>
-                    <option value="prescrizione">Prescrizione</option>
                     <option value="altro">Altro</option>
                   </select>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Titolo</label>
-                  <input 
-                    name="title" 
-                    value={docForm.title} 
-                    onChange={handleDocFormChange} 
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Titolo del documento..."
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Titolo</label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={docForm.title}
+                    onChange={handleDocFormChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Titolo del documento"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Descrizione</label>
-                  <textarea 
-                    name="description" 
-                    value={docForm.description} 
-                    onChange={handleDocFormChange} 
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Descrizione</label>
+                  <textarea
+                    name="description"
+                    value={docForm.description}
+                    onChange={handleDocFormChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="2"
-                    placeholder="Descrizione del documento..."
+                    placeholder="Descrizione del documento"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">File</label>
-                  <input 
-                    type="file" 
-                    name="file" 
-                    onChange={handleDocFileChange} 
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">File</label>
+                  <input
+                    type="file"
+                    onChange={handleDocFileChange}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                   />
                 </div>
-                {docFormError && (
-                  <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
-                    {docFormError}
-                  </div>
-                )}
-                <button 
-                  type="submit" 
-                  className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+
+                <button
+                  type="submit"
                   disabled={docFormLoading}
+                  className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {docFormLoading ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                       Caricamento...
-                    </span>
+                    </>
                   ) : (
-                    'Carica Documento'
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Carica Documento
+                    </>
                   )}
                 </button>
               </form>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Colonna destra - Contenuto */}
-          <div className="space-y-6">
-            {/* Record Medici */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+          {/* Colonna destra - Visualizzazione dati */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            className="space-y-6"
+          >
+            {/* Record medici */}
+            <div className="bg-white rounded-2xl shadow-xl p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
                 Record Medici ({folder.medical_records?.length || 0})
               </h3>
-              {!folder.medical_records || folder.medical_records.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p className="text-lg">Nessun record medico presente.</p>
-                  <p className="text-sm mt-2">Aggiungi il primo record usando il form a sinistra.</p>
-                </div>
-              ) : (
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {folder.medical_records.map(record => (
-                    <div key={record.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="text-sm text-gray-500 mb-1">
-                            {new Date(record.record_date).toLocaleString('it-IT')}
-                          </div>
-                          <div className="text-sm text-blue-600 font-medium">
-                            Dr. {record.doctor_name} {record.doctor_surname}
-                          </div>
-                        </div>
+              
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {folder.medical_records?.length > 0 ? (
+                  folder.medical_records.map((record, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold text-gray-900">Record #{index + 1}</h4>
+                        <span className="text-sm text-gray-500">
+                          {new Date(record.record_date).toLocaleDateString('it-IT')}
+                        </span>
                       </div>
-                      {record.diagnosis && (
-                        <div className="mb-2">
-                          <span className="text-sm font-medium text-gray-700">Diagnosi:</span>
-                          <p className="text-sm text-gray-600 ml-2">{record.diagnosis}</p>
-                        </div>
-                      )}
+                      
                       {record.symptoms && (
                         <div className="mb-2">
                           <span className="text-sm font-medium text-gray-700">Sintomi:</span>
-                          <p className="text-sm text-gray-600 ml-2">{record.symptoms}</p>
+                          <p className="text-sm text-gray-600">{record.symptoms}</p>
                         </div>
                       )}
+                      
+                      {record.diagnosis && (
+                        <div className="mb-2">
+                          <span className="text-sm font-medium text-gray-700">Diagnosi:</span>
+                          <p className="text-sm text-gray-600">{record.diagnosis}</p>
+                        </div>
+                      )}
+                      
                       {record.treatment_plan && (
                         <div className="mb-2">
-                          <span className="text-sm font-medium text-gray-700">Piano Terapeutico:</span>
-                          <p className="text-sm text-gray-600 ml-2">{record.treatment_plan}</p>
+                          <span className="text-sm font-medium text-gray-700">Trattamento:</span>
+                          <p className="text-sm text-gray-600">{record.treatment_plan}</p>
                         </div>
                       )}
+                      
                       {record.notes && (
-                        <div className="mb-2">
-                          <span className="text-sm font-medium text-gray-700">Note:</span>
-                          <p className="text-sm text-gray-600 ml-2">{record.notes}</p>
-                        </div>
-                      )}
-                      {record.vital_signs && (
                         <div>
-                          <span className="text-sm font-medium text-gray-700">Segni Vitali:</span>
-                          <pre className="text-xs text-gray-600 ml-2 mt-1 bg-gray-100 p-2 rounded overflow-x-auto">
-                            {JSON.stringify(record.vital_signs, null, 2)}
-                          </pre>
+                          <span className="text-sm font-medium text-gray-700">Note:</span>
+                          <p className="text-sm text-gray-600">{record.notes}</p>
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>Nessun record medico presente</p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Documenti Medici */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-                Documenti Medici ({folder.documents?.length || 0})
+            {/* Documenti medici */}
+            <div className="bg-white rounded-2xl shadow-xl p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Upload className="w-5 h-5 text-blue-600" />
+                Documenti ({folder.medical_documents?.length || 0})
               </h3>
-              {!folder.documents || folder.documents.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  <p className="text-lg">Nessun documento presente.</p>
-                  <p className="text-sm mt-2">Carica il primo documento usando il form a sinistra.</p>
-                </div>
-              ) : (
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {folder.documents.map(doc => (
-                    <div key={doc.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="text-sm text-gray-500 mb-1">
-                            {new Date(doc.uploaded_at).toLocaleString('it-IT')}
-                          </div>
-                          <div className="text-sm text-purple-600 font-medium">
-                            Dr. {doc.doctor_name} {doc.doctor_surname}
-                          </div>
+              
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {folder.medical_documents?.length > 0 ? (
+                  folder.medical_documents.map((doc, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{doc.title}</h4>
+                          <p className="text-sm text-gray-600">{doc.document_type}</p>
+                          {doc.description && (
+                            <p className="text-sm text-gray-500">{doc.description}</p>
+                          )}
                         </div>
-                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                          {doc.document_type}
+                        <span className="text-xs text-gray-500">
+                          {new Date(doc.uploaded_at).toLocaleDateString('it-IT')}
                         </span>
                       </div>
-                      <h4 className="font-medium text-gray-900 mb-1">{doc.title}</h4>
-                      {doc.description && (
-                        <p className="text-sm text-gray-600 mb-2">{doc.description}</p>
-                      )}
-                      {doc.file_path && (
-                        <a 
-                          href={doc.file_path} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-                        >
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                          Visualizza documento
-                        </a>
-                      )}
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-gray-500">
+                    <Upload className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                    <p>Nessun documento caricato</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

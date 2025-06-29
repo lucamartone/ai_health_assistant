@@ -184,10 +184,10 @@ function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-green-800 font-medium">Caricamento profilo...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-blue-800 font-medium">Caricamento profilo...</p>
         </div>
       </div>
     );
@@ -198,7 +198,7 @@ function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header profilo */}
         <motion.div 
@@ -214,12 +214,12 @@ function Profile() {
                   <img
                     src={account?.avatar}
                     alt="Foto profilo"
-                    className="w-32 h-32 rounded-full border-4 border-green-200 object-cover cursor-pointer hover:opacity-80 transition-all duration-300 shadow-lg"
+                    className="w-32 h-32 rounded-full border-4 border-blue-200 object-cover cursor-pointer hover:opacity-80 transition-all duration-300 shadow-lg"
                     onClick={handleAvatarClick}
                   />
                 ) : (
                   <div
-                    className="w-32 h-32 rounded-full border-4 border-green-200 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center cursor-pointer hover:opacity-80 transition-all duration-300 shadow-lg"
+                    className="w-32 h-32 rounded-full border-4 border-blue-200 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center cursor-pointer hover:opacity-80 transition-all duration-300 shadow-lg"
                     onClick={handleAvatarClick}
                   >
                     <svg className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -244,7 +244,7 @@ function Profile() {
               
               <div className="mt-4">
                 <h1 className="text-3xl font-bold text-gray-900">{account?.name} {account?.surname}</h1>
-                <p className="text-lg text-green-600 font-medium mt-1">Paziente</p>
+                <p className="text-lg text-blue-600 font-medium mt-1">Paziente</p>
                 <p className="text-gray-500 mt-2">{account?.email}</p>
                 <p className="text-sm text-gray-400 mt-1">Registrato il {formatDate(account?.joined || new Date())}</p>
               </div>
@@ -252,11 +252,11 @@ function Profile() {
 
             {/* Statistiche rapide */}
             <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-4 text-center">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
                 <div className="text-2xl font-bold">{stats.totalAppointments}</div>
                 <div className="text-sm opacity-90">Appuntamenti</div>
               </div>
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-4 text-center">
                 <div className="text-2xl font-bold">{stats.completedAppointments}</div>
                 <div className="text-sm opacity-90">Completati</div>
               </div>
@@ -301,8 +301,8 @@ function Profile() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.key 
-                    ? 'bg-green-600 text-white border-b-2 border-green-600' 
-                    : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
+                    ? 'bg-blue-600 text-white border-b-2 border-blue-600' 
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -325,8 +325,8 @@ function Profile() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Panoramica Salute</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-green-900 mb-4">Prossimi Appuntamenti</h3>
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-4">Prossimi Appuntamenti</h3>
                     <div className="space-y-3">
                       {appointments.slice(0, 3).map((apt, index) => (
                         <div key={index} className="bg-white rounded-lg p-4 shadow-sm">
@@ -335,7 +335,7 @@ function Profile() {
                               <p className="font-medium text-gray-900">Dr. {apt.doctor_name || 'N/A'}</p>
                               <p className="text-sm text-gray-500">{formatDate(apt.date)} - {apt.time}</p>
                             </div>
-                            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                            <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                               {apt.status}
                             </span>
                           </div>
@@ -372,7 +372,7 @@ function Profile() {
                 <h2 className="text-2xl font-bold text-gray-900">Informazioni Personali</h2>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   {isEditing ? 'Annulla' : 'Modifica'}
                 </button>
@@ -388,7 +388,7 @@ function Profile() {
                       value={account?.name || ''}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                       placeholder="Il tuo nome"
                     />
                   </div>
@@ -400,7 +400,7 @@ function Profile() {
                       value={account?.surname || ''}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                       placeholder="Il tuo cognome"
                     />
                   </div>
@@ -422,7 +422,7 @@ function Profile() {
                       value={account?.phone || ''}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                       placeholder="Il tuo numero di telefono"
                     />
                   </div>
@@ -433,7 +433,7 @@ function Profile() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isLoading ? 'Salvando...' : 'Salva Modifiche'}
                     </button>
@@ -455,7 +455,7 @@ function Profile() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Cronologia Appuntamenti</h2>
               {loadingAppointments ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-600 border-t-transparent mx-auto mb-4"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
                   <p className="text-gray-600">Caricamento appuntamenti...</p>
                 </div>
               ) : appointmentsError ? (
@@ -497,15 +497,15 @@ function Profile() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Informazioni base */}
                 <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-green-900 mb-4">Informazioni Base</h3>
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-4">Informazioni Base</h3>
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Gruppo Sanguigno</label>
                         <select
                           value={healthData.bloodType}
                           onChange={(e) => handleHealthDataChange('bloodType', e.target.value)}
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           <option value="A+">A+</option>
                           <option value="A-">A-</option>
@@ -646,7 +646,7 @@ function Profile() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Inserisci la nuova password"
                     minLength={8}
                   />
@@ -657,7 +657,7 @@ function Profile() {
                     type="password"
                     value={password2}
                     onChange={(e) => setPassword2(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Conferma la nuova password"
                     minLength={8}
                   />
@@ -674,7 +674,7 @@ function Profile() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? 'Aggiornando...' : 'Aggiorna Password'}
                 </button>
