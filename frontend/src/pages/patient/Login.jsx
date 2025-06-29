@@ -28,7 +28,7 @@ function Login() {
         }
       }
       setAccount(data.account);
-      navigate('/doctor');
+      navigate('/');
     } catch (err) {
       setModalMessage("Errore durante il login. Riprova.");
     }
