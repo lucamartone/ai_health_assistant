@@ -68,11 +68,11 @@ def remove_appointment(data: AppointmentRemotion = Body(...)):
     try:
         query = """
         DELETE FROM appointment
-        WHERE doctor_id = %s AND location_id = %s AND date_time::timestamp = %s::timestamp
+        WHERE doctor_id = %s AND location_id = %s AND date_time = %s
         """
 
         params = (data.doctor_id, data.location_id, data.date_time)
-        execute_query(query, params)
+        execute_query(query, params, commit=True)
         return {"message": "Appuntamento rimosso con successo"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore rimozione: {str(e)}")
