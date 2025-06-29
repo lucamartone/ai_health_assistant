@@ -1,5 +1,6 @@
 import os
 import time
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
@@ -18,8 +19,8 @@ app = FastAPI(
     title="AI Health Assistant API",
     description="API per l'assistente sanitario AI",
     version="1.0.0",
-    docs_url="/docs" if ENVIRONMENT == "development" else None,
-    redoc_url="/redoc" if ENVIRONMENT == "development" else None,
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
 # ✅ CORS - DEVE ESSERE L'ULTIMO middleware per funzionare correttamente
