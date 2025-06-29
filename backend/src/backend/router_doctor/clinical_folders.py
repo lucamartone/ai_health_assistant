@@ -377,6 +377,23 @@ async def get_prescription(prescription_id: int, db: psycopg2.extensions.connect
     except psycopg2.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
+@router.get("/medical-records/{record_id}/prescriptions")
+async def get_prescriptions_for_record(record_id: int, db: psycopg2.extensions.connection = Depends(connect_to_postgres)):
+    """Get all prescriptions for a specific medical record"""
+    try:
+        with db.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT * FROM prescription 
+                WHERE medical_record_id = %s 
+                ORDER BY prescribed_date DESC
+            """, (record_id,))
+            
+            prescriptions = cursor.fetchall()
+            return {"prescriptions": [PrescriptionResponse(**prescription) for prescription in prescriptions]}
+            
+    except psycopg2.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
 @router.put("/prescriptions/{prescription_id}", response_model=PrescriptionResponse)
 async def update_prescription(
     prescription_id: int,
