@@ -398,11 +398,27 @@ const ClinicalFolder = () => {
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
             <div className="flex flex-col items-center text-center lg:text-left">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-4">
-                <FolderOpen className="h-10 w-10 text-white" />
+                <User className="h-10 w-10 text-white" />
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Cartella Clinica</h1>
-              <p className="text-lg text-blue-600 font-medium">Gestione Dati Paziente</p>
-              <p className="text-gray-500 mt-2">Paziente ID: {folder.patient_id}</p>
+              <p className="text-lg text-blue-600 font-medium">
+                {folder.patient_name} {folder.patient_surname}
+              </p>
+              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                {folder.patient_age && (
+                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                    {folder.patient_age} anni
+                  </span>
+                )}
+                {folder.patient_sex && (
+                  <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
+                    {folder.patient_sex === 'M' ? 'Maschio' : 'Femmina'}
+                  </span>
+                )}
+                <span className="text-gray-500">
+                  ID: {folder.patient_id}
+                </span>
+              </div>
             </div>
 
             {/* Statistiche rapide */}

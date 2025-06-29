@@ -55,6 +55,29 @@ const PatientList = () => {
     return new Date(dateString).toLocaleDateString('it-IT');
   };
 
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return null;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  const getAgeGroup = (age) => {
+    if (!age) return 'N/A';
+    if (age < 18) return 'Minorenne';
+    if (age < 30) return '18-29';
+    if (age < 50) return '30-49';
+    if (age < 65) return '50-64';
+    return '65+';
+  };
+
   console.log('DEBUG: Stato componente - loading:', loading, 'error:', error, 'patients:', patients.length);
 
   if (loading) {
@@ -134,9 +157,9 @@ const PatientList = () => {
               </div>
               <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-4 text-center">
                 <div className="text-2xl font-bold">
-                  {patients.filter(p => p.birth_date).length}
+                  {patients.filter(p => p.email).length}
                 </div>
-                <div className="text-sm opacity-90">Con Data Nascita</div>
+                <div className="text-sm opacity-90">Con Email</div>
               </div>
             </div>
           </div>
@@ -217,14 +240,31 @@ const PatientList = () => {
                   <h3 className="text-xl font-bold mb-1">
                     {patient.name} {patient.surname}
                   </h3>
-                  <p className="text-sm opacity-90">
-                    {patient.birth_date ? formatDate(patient.birth_date) : 'Data nascita non disponibile'}
-                  </p>
+                  <div className="flex items-center gap-2 text-sm opacity-90">
+                    {patient.birth_date ? (
+                      <>
+                        <span>{calculateAge(patient.birth_date)} anni</span>
+                        <span>•</span>
+                        <span className="bg-white/20 px-2 py-1 rounded text-xs">
+                          {getAgeGroup(calculateAge(patient.birth_date))}
+                        </span>
+                      </>
+                    ) : (
+                      <span>Età non disponibile</span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Contenuto */}
                 <div className="p-6">
                   <div className="space-y-3">
+                    {patient.birth_date && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <span className="font-medium w-16">Età:</span>
+                        <span>{calculateAge(patient.birth_date)} anni ({getAgeGroup(calculateAge(patient.birth_date))})</span>
+                      </div>
+                    )}
+                    
                     {patient.email && (
                       <div className="flex items-center text-sm text-gray-600">
                         <span className="font-medium w-16">Email:</span>
