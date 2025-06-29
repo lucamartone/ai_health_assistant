@@ -14,11 +14,11 @@ class AppointmentInsert(BaseModel):
 # Clinical Folder Models
 class VitalSigns(BaseModel):
     blood_pressure: Optional[str] = None
-    temperature: Optional[float] = None
-    heart_rate: Optional[int] = None
-    respiratory_rate: Optional[int] = None
-    weight: Optional[float] = None
-    height: Optional[float] = None
+    temperature: Optional[str] = None  # Cambiato da float a str per maggiore flessibilità
+    heart_rate: Optional[str] = None   # Cambiato da int a str per maggiore flessibilità
+    respiratory_rate: Optional[str] = None  # Cambiato da int a str per maggiore flessibilità
+    weight: Optional[str] = None       # Cambiato da float a str per maggiore flessibilità
+    height: Optional[str] = None       # Cambiato da float a str per maggiore flessibilità
 
 class MedicalRecordCreate(BaseModel):
     patient_id: int
@@ -106,6 +106,7 @@ class MedicalDocumentResponse(BaseModel):
     uploaded_at: datetime
     doctor_name: str
     doctor_surname: str
+    download_url: Optional[str] = None
 
 class ClinicalFolderResponse(BaseModel):
     id: int

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from typing import List, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -106,6 +107,7 @@ async def get_patient_clinical_folder(patient_id: int, db: psycopg2.extensions.c
                 ORDER BY mr.record_date DESC
             """, (folder_id,))
             medical_records = cursor.fetchall()
+            print(f"DEBUG: Found {len(medical_records)} medical records for folder {folder_id}")
             
             # Get medical documents
             cursor.execute("""
@@ -116,6 +118,13 @@ async def get_patient_clinical_folder(patient_id: int, db: psycopg2.extensions.c
                 ORDER BY md.uploaded_at DESC
             """, (folder_id,))
             documents = cursor.fetchall()
+            print(f"DEBUG: Found {len(documents)} documents for folder {folder_id}")
+            
+            # Add download URLs to documents
+            for doc in documents:
+                doc['download_url'] = f"/doctor/clinical_folders/download-document/{doc['id']}"
+            
+            print(f"DEBUG: Returning {len(medical_records)} medical records and {len(documents)} documents")
             
             return ClinicalFolderResponse(
                 id=folder_result['id'],
@@ -160,6 +169,18 @@ async def create_medical_record(
             folder_id = folder_result['id']
             
             # Create medical record
+            print(f"DEBUG: Creating medical record with vital_signs: {record.vital_signs}")
+            
+            # Gestione vital signs - converti in JSON se presente
+            vital_signs_json = None
+            if record.vital_signs:
+                try:
+                    vital_signs_json = json.dumps(record.vital_signs.dict())
+                    print(f"DEBUG: Vital signs JSON: {vital_signs_json}")
+                except Exception as e:
+                    print(f"DEBUG: Error serializing vital signs: {e}")
+                    vital_signs_json = json.dumps(record.vital_signs)
+            
             cursor.execute("""
                 INSERT INTO medical_record (
                     clinical_folder_id, doctor_id, appointment_id, symptoms,
@@ -171,7 +192,7 @@ async def create_medical_record(
             """, (
                 folder_id, doctor_id, record.appointment_id, record.symptoms,
                 record.diagnosis, record.treatment_plan, record.notes,
-                json.dumps(record.vital_signs.dict()) if record.vital_signs else None
+                vital_signs_json
             ))
             
             record_result = cursor.fetchone()
@@ -546,4 +567,23 @@ async def upload_medical_document(
             }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Errore upload documento: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Errore upload documento: {str(e)}")
+
+@router.get("/download-document/{document_id}")
+async def download_medical_document(document_id: int, db: psycopg2.extensions.connection = Depends(connect_to_postgres)):
+    """Download a specific medical document"""
+    try:
+        with db.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT md.file_path FROM medical_document md WHERE md.id = %s
+            """, (document_id,))
+            
+            document_path = cursor.fetchone()
+            if not document_path:
+                raise HTTPException(status_code=404, detail="Medical document not found")
+            
+            file_path = document_path['file_path']
+            return FileResponse(file_path)
+            
+    except psycopg2.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}") 

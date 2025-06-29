@@ -37,12 +37,24 @@ export const createMedicalDocument = async (data, doctorId) => {
 
 // Upload reale di un documento medico
 export const uploadMedicalDocument = async (formData) => {
-  return api.post(`/doctor/clinical_folders/upload-document`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  return api.post(`/doctor/clinical_folders/upload-document`, formData);
 };
 
 // Elimina un documento medico
 export const deleteMedicalDocument = async (documentId) => {
   return api.delete(`/doctor/clinical_folders/documents/${documentId}`);
+};
+
+// Scarica un documento medico
+export const downloadMedicalDocument = async (documentId) => {
+  const response = await fetch(`http://localhost:8001/doctor/clinical_folders/download-document/${documentId}`, {
+    credentials: 'include'
+  });
+  
+  if (!response.ok) {
+    throw new Error('Errore nel download del documento');
+  }
+  
+  const blob = await response.blob();
+  return blob;
 }; 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { fetchClinicalFolder, createMedicalRecord, createMedicalDocument, uploadMedicalDocument } from '../../services/profile/fetch_clinical_folders';
+import { fetchClinicalFolder, createMedicalRecord, createMedicalDocument, uploadMedicalDocument, downloadMedicalDocument } from '../../services/profile/fetch_clinical_folders';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { FolderOpen, User, FileText, Upload, ArrowLeft, Plus, Stethoscope } from 'lucide-react';
+import { FolderOpen, User, FileText, Upload, ArrowLeft, Plus, Stethoscope, Download } from 'lucide-react';
 
 const ClinicalFolder = () => {
   const { patientId } = useParams();
@@ -17,7 +17,14 @@ const ClinicalFolder = () => {
     diagnosis: '',
     treatment_plan: '',
     notes: '',
-    vital_signs: ''
+    vital_signs: {
+      blood_pressure: '',
+      temperature: '',
+      heart_rate: '',
+      respiratory_rate: '',
+      weight: '',
+      height: ''
+    }
   });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState(null);
@@ -31,13 +38,23 @@ const ClinicalFolder = () => {
   const [docFile, setDocFile] = useState(null);
   const [docFormLoading, setDocFormLoading] = useState(false);
   const [docFormError, setDocFormError] = useState(null);
+  const [downloadingDoc, setDownloadingDoc] = useState(null);
 
   const loadFolder = async () => {
     setLoading(true);
     try {
       const res = await fetchClinicalFolder(patientId);
+      console.log('DEBUG: Cartella clinica caricata:', res);
+      console.log('DEBUG: Record medici:', res.medical_records);
+      console.log('DEBUG: Numero record medici:', res.medical_records?.length);
+      console.log('DEBUG: Documenti:', res.documents);
+      console.log('DEBUG: Numero documenti:', res.documents?.length);
+      console.log('DEBUG: Tipo di medical_records:', typeof res.medical_records);
+      console.log('DEBUG: È un array?', Array.isArray(res.medical_records));
       setFolder(res);
     } catch (err) {
+      console.error('DEBUG: Errore caricamento cartella:', err);
+      console.error('DEBUG: Response error:', err.response?.data);
       setError('Errore nel caricamento della cartella clinica');
     } finally {
       setLoading(false);
@@ -50,7 +67,21 @@ const ClinicalFolder = () => {
   }, [patientId]);
 
   const handleFormChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Se il campo è un vital sign, aggiorna l'oggetto vital_signs
+    if (['blood_pressure', 'temperature', 'heart_rate', 'respiratory_rate', 'weight', 'height'].includes(name)) {
+      setForm(prev => ({
+        ...prev,
+        vital_signs: {
+          ...prev.vital_signs,
+          [name]: value
+        }
+      }));
+    } else {
+      // Altrimenti aggiorna il campo normale
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleFormSubmit = async e => {
@@ -58,18 +89,47 @@ const ClinicalFolder = () => {
     setFormLoading(true);
     setFormError(null);
     try {
-      const vitalSigns = form.vital_signs ? JSON.parse(form.vital_signs) : undefined;
-      await createMedicalRecord({
+      console.log('DEBUG: Invio record medico:', form);
+      console.log('DEBUG: Patient ID:', patientId);
+      console.log('DEBUG: Doctor ID:', account?.id);
+      
+      // Gestione vital signs - rimuovi i campi vuoti
+      let vitalSigns = undefined;
+      if (form.vital_signs) {
+        const nonEmptyVitalSigns = {};
+        Object.entries(form.vital_signs).forEach(([key, value]) => {
+          if (value && value.trim() !== '') {
+            nonEmptyVitalSigns[key] = value.trim();
+          }
+        });
+        
+        // Solo se ci sono campi non vuoti, usa vitalSigns
+        if (Object.keys(nonEmptyVitalSigns).length > 0) {
+          vitalSigns = nonEmptyVitalSigns;
+        }
+      }
+      
+      const recordData = {
         patient_id: parseInt(patientId),
         symptoms: form.symptoms,
         diagnosis: form.diagnosis,
         treatment_plan: form.treatment_plan,
         notes: form.notes,
         vital_signs: vitalSigns
-      }, account?.id);
-      setForm({ symptoms: '', diagnosis: '', treatment_plan: '', notes: '', vital_signs: '' });
+      };
+      
+      console.log('DEBUG: Dati record da inviare:', recordData);
+      console.log('DEBUG: Vital signs da inviare:', vitalSigns);
+      console.log('DEBUG: Tipo di vital signs:', typeof vitalSigns);
+      
+      const result = await createMedicalRecord(recordData, account?.id);
+      console.log('DEBUG: Record medico creato:', result);
+      
+      setForm({ symptoms: '', diagnosis: '', treatment_plan: '', notes: '', vital_signs: { blood_pressure: '', temperature: '', heart_rate: '', respiratory_rate: '', weight: '', height: '' } });
       await loadFolder();
     } catch (err) {
+      console.error('DEBUG: Errore creazione record:', err);
+      console.error('DEBUG: Response error:', err.response?.data);
       setFormError('Errore durante il salvataggio. Controlla i dati inseriti.');
     } finally {
       setFormLoading(false);
@@ -81,7 +141,12 @@ const ClinicalFolder = () => {
     setDocForm({ ...docForm, [e.target.name]: e.target.value });
   };
   const handleDocFileChange = e => {
-    setDocFile(e.target.files[0]);
+    const file = e.target.files[0];
+    setDocFile(file);
+    // Reset error when user selects a new file
+    if (docFormError) {
+      setDocFormError(null);
+    }
   };
 
   const handleDocFormSubmit = async e => {
@@ -89,22 +154,80 @@ const ClinicalFolder = () => {
     setDocFormLoading(true);
     setDocFormError(null);
     try {
+      // Validazione campi obbligatori
       if (!docFile) throw new Error('Seleziona un file');
+      if (!docForm.document_type) throw new Error('Seleziona il tipo di documento');
+      if (!docForm.title.trim()) throw new Error('Inserisci il titolo del documento');
+      
+      console.log('DEBUG: Inizio upload documento');
+      console.log('DEBUG: File selezionato:', docFile);
+      console.log('DEBUG: Dati form:', docForm);
+      
       const formData = new FormData();
       formData.append('patient_id', patientId);
       formData.append('doctor_id', account?.id);
       formData.append('document_type', docForm.document_type);
-      formData.append('title', docForm.title);
-      formData.append('description', docForm.description);
+      formData.append('title', docForm.title.trim());
+      formData.append('description', docForm.description.trim());
       formData.append('file', docFile);
-      await uploadMedicalDocument(formData);
+      
+      console.log('DEBUG: FormData creato, elementi:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value);
+      }
+      
+      const result = await uploadMedicalDocument(formData);
+      console.log('DEBUG: Upload completato:', result);
+      
       setDocForm({ document_type: '', title: '', description: '' });
       setDocFile(null);
       await loadFolder();
     } catch (err) {
-      setDocFormError('Errore durante il salvataggio. Controlla i dati inseriti.');
+      console.error('DEBUG: Errore dettagliato upload:', err);
+      console.error('DEBUG: Response error:', err.response?.data);
+      console.error('DEBUG: Status:', err.response?.status);
+      
+      let errorMessage = 'Errore durante il salvataggio. ';
+      if (err.response?.data?.detail) {
+        errorMessage += err.response.data.detail;
+      } else if (err.message) {
+        errorMessage += err.message;
+      } else {
+        errorMessage += 'Controlla i dati inseriti.';
+      }
+      
+      setDocFormError(errorMessage);
+      
+      // Reset file input per permettere all'utente di riprovare
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) {
+        fileInput.value = '';
+      }
     } finally {
       setDocFormLoading(false);
+    }
+  };
+
+  // Gestione download documento
+  const handleDownloadDocument = async (documentId, fileName) => {
+    setDownloadingDoc(documentId);
+    try {
+      const blob = await downloadMedicalDocument(documentId);
+      
+      // Crea un link temporaneo per il download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || 'documento.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Errore nel download:', error);
+      alert('Errore nel download del documento');
+    } finally {
+      setDownloadingDoc(null);
     }
   };
 
@@ -205,7 +328,7 @@ const ClinicalFolder = () => {
               </div>
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-4 text-center">
                 <div className="text-2xl font-bold">
-                  {folder.medical_documents?.length || 0}
+                  {folder.documents?.length || 0}
                 </div>
                 <div className="text-sm opacity-90">Documenti</div>
               </div>
@@ -307,15 +430,75 @@ const ClinicalFolder = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Segni Vitali (JSON)</label>
-                  <textarea
-                    name="vital_signs"
-                    value={form.vital_signs}
-                    onChange={handleFormChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="2"
-                    placeholder='{"pressione": "120/80", "temperatura": "36.5", "frequenza": "72"}'
-                  />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Segni Vitali</label>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Pressione</label>
+                      <input
+                        type="text"
+                        name="blood_pressure"
+                        value={form.vital_signs.blood_pressure}
+                        onChange={handleFormChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="es. 120/80 mmHg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Temperatura</label>
+                      <input
+                        type="text"
+                        name="temperature"
+                        value={form.vital_signs.temperature}
+                        onChange={handleFormChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="es. 36.5°C"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Frequenza Cardiaca</label>
+                      <input
+                        type="text"
+                        name="heart_rate"
+                        value={form.vital_signs.heart_rate}
+                        onChange={handleFormChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="es. 72 bpm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Frequenza Respiratoria</label>
+                      <input
+                        type="text"
+                        name="respiratory_rate"
+                        value={form.vital_signs.respiratory_rate}
+                        onChange={handleFormChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="es. 16 resp/min"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Peso</label>
+                      <input
+                        type="text"
+                        name="weight"
+                        value={form.vital_signs.weight}
+                        onChange={handleFormChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="es. 70 kg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Altezza</label>
+                      <input
+                        type="text"
+                        name="height"
+                        value={form.vital_signs.height}
+                        onChange={handleFormChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="es. 175 cm"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <button
@@ -480,6 +663,28 @@ const ClinicalFolder = () => {
                           <p className="text-sm text-gray-600">{record.notes}</p>
                         </div>
                       )}
+                      
+                      {record.vital_signs && Object.keys(record.vital_signs).length > 0 && (
+                        <div>
+                          <span className="text-sm font-medium text-gray-700">Segni Vitali:</span>
+                          <div className="mt-1 space-y-1">
+                            {Object.entries(record.vital_signs).map(([key, value]) => (
+                              <div key={key} className="flex justify-between text-sm">
+                                <span className="text-gray-600 capitalize">
+                                  {key === 'blood_pressure' ? 'Pressione' :
+                                   key === 'heart_rate' ? 'Frequenza Cardiaca' :
+                                   key === 'respiratory_rate' ? 'Frequenza Respiratoria' :
+                                   key === 'temperature' ? 'Temperatura' :
+                                   key === 'weight' ? 'Peso' :
+                                   key === 'height' ? 'Altezza' : key}:
+                                </span>
+                                <span className="text-gray-800 font-medium">{value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
                     </div>
                   ))
                 ) : (
@@ -495,24 +700,48 @@ const ClinicalFolder = () => {
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Upload className="w-5 h-5 text-blue-600" />
-                Documenti ({folder.medical_documents?.length || 0})
+                Documenti ({folder.documents?.length || 0})
               </h3>
               
               <div className="space-y-3 max-h-64 overflow-y-auto">
-                {folder.medical_documents?.length > 0 ? (
-                  folder.medical_documents.map((doc, index) => (
+                {folder.documents?.length > 0 ? (
+                  folder.documents.map((doc, index) => (
                     <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                       <div className="flex justify-between items-start">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-medium text-gray-900">{doc.title}</h4>
                           <p className="text-sm text-gray-600">{doc.document_type}</p>
                           {doc.description && (
                             <p className="text-sm text-gray-500">{doc.description}</p>
                           )}
+                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                            <span>Caricato: {new Date(doc.uploaded_at).toLocaleDateString('it-IT')}</span>
+                            {doc.file_size && (
+                              <span>Dimensione: {(doc.file_size / 1024).toFixed(1)} KB</span>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-xs text-gray-500">
-                          {new Date(doc.uploaded_at).toLocaleDateString('it-IT')}
-                        </span>
+                        <div className="flex flex-col gap-2">
+                          {doc.download_url && (
+                            <button 
+                              onClick={() => handleDownloadDocument(doc.id, doc.title)}
+                              disabled={downloadingDoc === doc.id}
+                              className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {downloadingDoc === doc.id ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
+                                  Download...
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="w-3 h-3" />
+                                  Scarica
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))

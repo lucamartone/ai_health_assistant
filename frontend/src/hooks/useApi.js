@@ -13,6 +13,11 @@ const apiCall = async (url, options = {}) => {
 
   const finalOptions = { ...defaultOptions, ...options };
 
+  // Se il body è FormData, rimuovi il Content-Type per permettere al browser di gestirlo
+  if (finalOptions.body instanceof FormData) {
+    delete finalOptions.headers['Content-Type'];
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}${url}`, finalOptions);
     
@@ -35,6 +40,16 @@ const api = {
   },
 
   post: (url, data, options = {}) => {
+    // Se data è FormData, passalo direttamente come body
+    if (data instanceof FormData) {
+      return apiCall(url, {
+        ...options,
+        method: 'POST',
+        body: data,
+      });
+    }
+    
+    // Altrimenti serializza come JSON
     return apiCall(url, {
       ...options,
       method: 'POST',
@@ -43,6 +58,16 @@ const api = {
   },
 
   put: (url, data, options = {}) => {
+    // Se data è FormData, passalo direttamente come body
+    if (data instanceof FormData) {
+      return apiCall(url, {
+        ...options,
+        method: 'PUT',
+        body: data,
+      });
+    }
+    
+    // Altrimenti serializza come JSON
     return apiCall(url, {
       ...options,
       method: 'PUT',
@@ -66,6 +91,16 @@ const useApi = () => {
   }, []);
 
   const post = useCallback((url, data, options = {}) => {
+    // Se data è FormData, passalo direttamente come body
+    if (data instanceof FormData) {
+      return apiCall(url, {
+        ...options,
+        method: 'POST',
+        body: data,
+      });
+    }
+    
+    // Altrimenti serializza come JSON
     return apiCall(url, {
       ...options,
       method: 'POST',
@@ -74,6 +109,16 @@ const useApi = () => {
   }, []);
 
   const put = useCallback((url, data, options = {}) => {
+    // Se data è FormData, passalo direttamente come body
+    if (data instanceof FormData) {
+      return apiCall(url, {
+        ...options,
+        method: 'PUT',
+        body: data,
+      });
+    }
+    
+    // Altrimenti serializza come JSON
     return apiCall(url, {
       ...options,
       method: 'PUT',
