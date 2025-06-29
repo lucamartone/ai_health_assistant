@@ -6,19 +6,13 @@ import {
   setHours,
   setMinutes
 } from 'date-fns';
-import { getAppointments, getLocations, insertAppointment } from '../../services/appointments/fetch_appointments';
+import { getAppointments, getLocations, insertAppointment, removeAppointment } from '../../services/appointments/fetch_appointments';
 import { me } from '../../services/profile/fetch_profile';
 import { Pencil, Check, Calendar, Clock, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const HOURS = [9, 10, 11, 12, 14, 15, 16, 17];
 const DAYS_VISIBLE = 5;
-const STATES = [
-  { value: 'waiting', label: 'Disponibile' },
-  { value: 'booked', label: 'Prenotato' },
-  { value: 'completed', label: 'Visitato' },
-  { value: 'cancelled', label: 'Cancellato' }
-];
 
 function Appointments() {
   const [appointmentsByLocation, setAppointmentsByLocation] = useState({});
@@ -107,7 +101,6 @@ function Appointments() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -122,36 +115,9 @@ function Appointments() {
               <p className="text-lg text-blue-600 font-medium">Calendario e Disponibilità</p>
               <p className="text-gray-500 mt-2">Gestisci i tuoi orari e appuntamenti</p>
             </div>
-
-            {/* Statistiche rapide */}
-            <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold">
-                  {Object.values(appointmentsByLocation).flat().filter(slot => slot.state === 'booked').length}
-                </div>
-                <div className="text-sm opacity-90">Prenotati</div>
-              </div>
-              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold">
-                  {Object.values(appointmentsByLocation).flat().filter(slot => slot.state === 'waiting').length}
-                </div>
-                <div className="text-sm opacity-90">Disponibili</div>
-              </div>
-              <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold">
-                  {Object.values(appointmentsByLocation).flat().filter(slot => slot.state === 'completed').length}
-                </div>
-                <div className="text-sm opacity-90">Completati</div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold">{locations.length}</div>
-                <div className="text-sm opacity-90">Sedi</div>
-              </div>
-            </div>
           </div>
         </motion.div>
 
-        {/* Contenuto principale */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -176,7 +142,6 @@ function Appointments() {
             </div>
           ) : (
             <>
-              {/* Tab sedi */}
               <div className="bg-gray-50 rounded-xl p-4 mb-6">
                 <div className="flex gap-3 overflow-x-auto">
                   {locations.map((loc) => (
@@ -203,14 +168,6 @@ function Appointments() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 mb-6">
-                    <h3 className="text-xl font-bold text-blue-900 mb-2 flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
-                      {activeTab}
-                    </h3>
-                    <p className="text-blue-700">Gestisci gli appuntamenti per questa sede</p>
-                  </div>
-
                   <div className="overflow-x-auto">
                     <div className="grid grid-cols-6 gap-4 text-sm min-w-[800px]">
                       <div className="flex items-center justify-end pr-4">
@@ -236,8 +193,8 @@ function Appointments() {
                             const slot = schedule[slotIndex];
 
                             let cellClass = 'bg-gray-100 text-gray-400 border-gray-200';
-                            let statusText = 'Libero';
-                            
+                            let statusText = 'Non disponibile';
+
                             if (slot) {
                               if (slot.state === 'waiting') {
                                 cellClass = 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200';
@@ -259,15 +216,15 @@ function Appointments() {
                                 key={day + '-' + hour}
                                 className={`rounded-lg px-3 py-3 text-center font-medium border transition-all duration-200 ${cellClass}`}
                               >
-                                {editing && slot ? (
+                                {editing ? (
                                   <select
-                                    value={slot.state || ''}
+                                    value={slot?.state || ''}
                                     onChange={async (e) => {
                                       const newState = e.target.value;
                                       const updated = [...appointmentsByLocation[activeTab]];
                                       updated[slotIndex] = {
                                         ...updated[slotIndex],
-                                        state: newState,
+                                        state: newState || null,
                                       };
                                       setAppointmentsByLocation(prev => ({
                                         ...prev,
@@ -283,23 +240,28 @@ function Appointments() {
                                             state: 'waiting',
                                           });
                                         } catch (error) {
-                                          console.error('Errore nell\'inserimento:', error);
+                                          console.error("Errore nell'inserimento:", error);
+                                        }
+                                      } else if (newState === '') {
+                                        try {
+                                          console.log("rimuovo");
+                                          await removeAppointment({
+                                            doctor_id: doctorId,
+                                            location_id: addressToId[activeTab],
+                                            date_time: slot.dateTime.toISOString(),
+                                          });
+                                        } catch (error) {
+                                          console.error("Errore nella rimozione:", error);
                                         }
                                       }
                                     }}
                                     className="w-full text-xs bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                   >
-                                    <option value="">Libero</option>
-                                    {STATES.map((state) => (
-                                      <option key={state.value} value={state.value}>
-                                        {state.label}
-                                      </option>
-                                    ))}
+                                    <option value="">Non disponibile</option>
+                                    <option value="waiting">Disponibile</option>
                                   </select>
                                 ) : (
-                                  <div className="text-xs font-medium">
-                                    {statusText}
-                                  </div>
+                                  <div className="text-xs font-medium">{statusText}</div>
                                 )}
                               </div>
                             );

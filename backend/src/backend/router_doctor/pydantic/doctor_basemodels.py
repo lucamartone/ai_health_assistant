@@ -11,6 +11,11 @@ class AppointmentInsert(BaseModel):
     date_time: str  # ISO 8601 format
     state: str = 'waiting'  # Default state for new appointments
 
+class AppointmentRemotion(BaseModel):
+    doctor_id: int
+    location_id: int
+    date_time: str  # ISO 8601 format
+
 # Clinical Folder Models
 class VitalSigns(BaseModel):
     blood_pressure: Optional[str] = None

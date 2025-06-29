@@ -54,3 +54,22 @@ export async function insertAppointment(dict) {
     const data = await response.json();
     return data;
 }
+
+export async function removeAppointment(dict) {
+    const url = `${import.meta.env.VITE_BACKEND_URL}/doctor/appointments/remove_appointment`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dict)
+    });
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Errore rimozione appuntamento');
+    }
+    
+    const data = await response.json();
+    return data;
+}

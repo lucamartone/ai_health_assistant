@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Query, Body
 from typing import Optional
 from datetime import datetime
 from backend.connection import execute_query
-from backend.router_doctor.pydantic.doctor_basemodels import AppointmentInsert, AppointmentsRequest
+from backend.router_doctor.pydantic.doctor_basemodels import AppointmentInsert, AppointmentsRequest, AppointmentRemotion
 
 router_appointments = APIRouter()
 
@@ -62,19 +62,19 @@ def insert_appointment(data: AppointmentInsert):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore inserimento: {str(e)}")
 
-@router_appointments.put("/book_appointment")
-def book_appointment(data: dict = Body(...)):
-    """Prenota un appuntamento per un paziente specifico."""
+@router_appointments.post("/remove_appointment")
+def remove_appointment(data: AppointmentRemotion = Body(...)):
+    """Rimuove un appuntamento specifico."""
     try:
         query = """
-        UPDATE appointment
-        SET state = %s AND patient_id = %s
-        WHERE doctor_id = %s AND date_time = %s
+        DELETE FROM appointment
+        WHERE doctor_id = %s AND location_id = %s AND date_time::timestamp = %s::timestamp
         """
-        params = ('booked', data.patient_id, data.doctor_id, data.date_time,)
+
+        params = (data.doctor_id, data.location_id, data.date_time)
         execute_query(query, params)
-        return {"message": "Stato aggiornato con successo"}
+        return {"message": "Appuntamento rimosso con successo"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore aggiornamento: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Errore rimozione: {str(e)}")
 
 
