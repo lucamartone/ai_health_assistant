@@ -101,22 +101,7 @@ function Appointments() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-xl p-8 mb-8"
-        >
-          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
-            <div className="flex flex-col items-center text-center lg:text-left">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-4">
-                <Calendar className="h-10 w-10 text-white" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestione Appuntamenti</h1>
-              <p className="text-lg text-blue-600 font-medium">Calendario e Disponibilità</p>
-              <p className="text-gray-500 mt-2">Gestisci i tuoi orari e appuntamenti</p>
-            </div>
-          </div>
-        </motion.div>
+        
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -125,7 +110,10 @@ function Appointments() {
           className="bg-white rounded-2xl shadow-xl p-8"
         >
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Calendario Appuntamenti</h2>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-7 h-7 text-blue-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Calendario Appuntamenti</h2>
+            </div>
             <button
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
               onClick={() => setEditing((prev) => !prev)}

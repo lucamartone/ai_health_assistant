@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 python-jose
-mariadb
 pydantic[email]
 python-dotenv==1.0.0
 passlib

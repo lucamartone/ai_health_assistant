@@ -88,7 +88,7 @@ function Header() {
                 Benvenuto, {account.name} {account.surname}
               </span>
               <button
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate(isDoctorApp ? '/doctor/profile' : '/profile')}
                 className="p-2 rounded-full hover:bg-white/20 transition-all active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 title="Profilo"
               >
@@ -177,7 +177,7 @@ function Header() {
                 <span className="text-white text-sm px-5">Benvenuto, {account.name} {account.surname}</span>
                 <button
                   onClick={() => {
-                    navigate('/profile');
+                    navigate(isDoctorApp ? '/doctor/profile' : '/profile');
                     setIsMobileMenuOpen(false);
                   }}
                   className="flex items-center px-5 py-2 text-sm font-medium text-white hover:bg-white/10 rounded-lg active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
