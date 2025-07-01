@@ -49,7 +49,7 @@ CREATE TABLE appointment (
     location_id INT NOT NULL REFERENCES location(id),
     date_time TIMESTAMP WITH TIME ZONE NOT NULL,
     price NUMERIC(10,2) DEFAULT 50 CHECK (price >= 0),
-    state VARCHAR(20) DEFAULT 'waiting' CHECK (state IN ('waiting', 'booked', 'completed', 'cancelled')),
+    state VARCHAR(20) DEFAULT 'waiting' CHECK (state IN ('waiting', 'booked', 'completed', 'cancelled', 'terminated')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

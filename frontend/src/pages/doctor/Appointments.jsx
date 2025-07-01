@@ -6,7 +6,7 @@ import {
   setHours,
   setMinutes
 } from 'date-fns';
-import { getAppointments, getLocations, insertAppointment, removeAppointment } from '../../services/appointments/fetch_appointments';
+import { getAppointments, getLocations, insertAppointment, removeAppointment, reload } from '../../services/appointments/fetch_appointments';
 import { me } from '../../services/profile/fetch_profile';
 import { Pencil, Check, Calendar, Clock, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -24,6 +24,7 @@ function Appointments() {
   const [addressToId, setAddressToId] = useState({});
 
   useEffect(() => {
+    reload();
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -101,8 +102,6 @@ function Appointments() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -179,6 +178,7 @@ function Appointments() {
                               (s) => new Date(s.dateTime).getTime() === targetSlotTime.getTime()
                             );
                             const slot = schedule[slotIndex];
+                            const isPast = slot?.dateTime < new Date();
 
                             let cellClass = 'bg-gray-100 text-gray-400 border-gray-200';
                             let statusText = 'Non disponibile';
@@ -196,6 +196,9 @@ function Appointments() {
                               } else if (slot.state === 'cancelled') {
                                 cellClass = 'bg-gray-100 text-gray-400 border-gray-200';
                                 statusText = 'Cancellato';
+                              } else if (slot.state === 'terminated') {
+                                cellClass = 'bg-purple-100 text-purple-800 border-purple-300';
+                                statusText = 'Terminato';
                               }
                             }
 
@@ -207,6 +210,7 @@ function Appointments() {
                                 {editing ? (
                                   <select
                                     value={slot?.state || ''}
+                                    disabled={isPast}
                                     onChange={async (e) => {
                                       const newState = e.target.value;
                                       const updated = [...appointmentsByLocation[activeTab]];
@@ -232,7 +236,6 @@ function Appointments() {
                                         }
                                       } else if (newState === '') {
                                         try {
-                                          console.log("rimuovo");
                                           await removeAppointment({
                                             doctor_id: doctorId,
                                             location_id: addressToId[activeTab],
@@ -243,7 +246,8 @@ function Appointments() {
                                         }
                                       }
                                     }}
-                                    className="w-full text-xs bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full text-xs bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={isPast ? 'Non modificabile perché nel passato' : ''}
                                   >
                                     <option value="">Non disponibile</option>
                                     <option value="waiting">Disponibile</option>

@@ -77,4 +77,16 @@ def remove_appointment(data: AppointmentRemotion = Body(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore rimozione: {str(e)}")
 
-
+@router_appointments.post("/reload")
+def reload():
+    """Contrassegna gli appuntamenti come passati."""
+    try:
+        query = """
+        UPDATE appointment
+        SET state = 'terminated'
+        WHERE date_time < NOW()
+        """
+        execute_query(query, commit=True)
+        return {"message": "Appuntamenti ricaricati con successo"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante il ricaricamento: {str(e)}")

@@ -73,3 +73,21 @@ export async function removeAppointment(dict) {
     const data = await response.json();
     return data;
 }
+
+export async function reload() {
+    const url = `${import.meta.env.VITE_BACKEND_URL}/doctor/appointments/reload`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Errore ricaricamento appuntamenti');
+    }
+    
+    const data = await response.json();
+    return data;
+}
