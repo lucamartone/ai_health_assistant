@@ -79,6 +79,7 @@ class AIChatService:
         try:
             # Get conversation history
             conversation = self.conversations.get(conversation_id, [])
+            logger.info(f"Conversation ID: {conversation_id}, History length: {len(conversation)}")
             
             # Add user message to conversation
             conversation.append({
@@ -103,6 +104,7 @@ class AIChatService:
             
             # Store updated conversation
             self.conversations[conversation_id] = conversation
+            logger.info(f"Updated conversation stored. Total conversations: {len(self.conversations)}")
             
             return response
             
@@ -183,16 +185,17 @@ class AIChatService:
 3. Suggerire quando consultare un medico
 4. Offrire consigli su stili di vita sani
 5. Riconoscere situazioni di emergenza e guidare verso assistenza medica immediata
+6. Suggerire specializzazioni mediche in base alla diagnosi, le specializzazioni sono:
+    "Allergologia", "Anestesia e Rianimazione", "Cardiologia", "Chirurgia Generale",
+  "Dermatologia", "Endocrinologia", "Gastroenterologia", "Ginecologia",
+  "Medicina Generale", "Nefrologia", "Neurologia", "Oculistica", "Oncologia",
+  "Ortopedia", "Otorinolaringoiatria", "Pediatria", "Psichiatria", "Psicologia",
+  "Radiologia", "Urologia".
 
-IMPORTANTE:
-- Non fare mai diagnosi definitive
-- Non prescrivere farmaci
-- Incoraggia sempre la consultazione medica per problemi seri
-- Riconosci i limiti dell'AI e indirizza verso professionisti sanitari quando appropriato
-- Mantieni un tono empatico ma professionale
-- Usa un linguaggio chiaro e comprensibile
+
 
 Rispondi sempre in italiano e sii utile ma cauto nelle raccomandazioni mediche."""
+        print(user_context)
         
         if user_context:
             prompt += f"\n\nContesto utente: {json.dumps(user_context, ensure_ascii=False)}"
