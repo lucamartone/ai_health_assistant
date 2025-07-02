@@ -19,18 +19,21 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const navigate = useNavigate();
-
-  // Add new state for message animations
   const [visibleMessages, setVisibleMessages] = useState([]);
 
-  // Initialize with a new chat if none exists
+  // Example static user context (replace with dynamic source)
+  const userContext = {
+    eta: 30,
+    sesso: 'maschio',
+    patologie: ['ipertensione']
+  };
+
   useEffect(() => {
     if (conversations.length === 0) {
       createNewChat();
     }
   }, []);
 
-  // Update messages when active conversation changes
   useEffect(() => {
     if (activeConversation) {
       const currentConv = conversations.find(c => c.id === activeConversation);
@@ -41,12 +44,10 @@ const Chat = () => {
     }
   }, [activeConversation, conversations]);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Show welcome message with delay
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsWelcomeVisible(true);
@@ -54,7 +55,6 @@ const Chat = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto-resize textarea
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -64,7 +64,7 @@ const Chat = () => {
   };
 
   const createNewChat = () => {
-    const newId = Date.now();
+    const newId = String(Date.now());
     const newChat = {
       id: newId,
       title: 'Nuova Chat',
@@ -89,39 +89,32 @@ const Chat = () => {
   };
 
   const handleDeleteChat = (chatId) => {
-    // Rimuovi la chat dalle conversazioni
     const updatedConversations = conversations.filter(conv => conv.id !== chatId);
     setConversations(updatedConversations);
 
-    // Se la chat eliminata era quella attiva
     if (chatId === activeConversation) {
-      // Se ci sono altre chat, seleziona la prima disponibile
       if (updatedConversations.length > 0) {
         const nextChat = updatedConversations[0];
         setActiveConversation(nextChat.id);
         setMessages(nextChat.messages);
         setIsFirstMessage(nextChat.messages.length === 0);
       } else {
-        // Se non ci sono altre chat, creane una nuova
         createNewChat();
       }
     }
   };
 
   const handleRenameChat = (id, newTitle) => {
-    setConversations(prev => prev.map(conv => 
-      conv.id === id ? { ...conv, title: newTitle } : conv
-    ));
+    setConversations(prev =>
+      prev.map(conv => (conv.id === id ? { ...conv, title: newTitle } : conv))
+    );
   };
 
   const updateConversationTitle = (id, firstMessage) => {
-    const title = firstMessage.length > 30 
-      ? firstMessage.slice(0, 30) + '...' 
-      : firstMessage;
-    
-    setConversations(prev => prev.map(conv => 
-      conv.id === id ? { ...conv, title } : conv
-    ));
+    const title = firstMessage.length > 30 ? firstMessage.slice(0, 30) + '...' : firstMessage;
+    setConversations(prev =>
+      prev.map(conv => (conv.id === id ? { ...conv, title } : conv))
+    );
   };
 
   const sendMessage = async () => {
@@ -129,15 +122,15 @@ const Chat = () => {
 
     const userMessage = { role: 'user', content: input.trim() };
     const updatedMessages = [...messages, userMessage];
-    
-    // Update conversation with user message
-    setConversations(prev => prev.map(conv => 
-      conv.id === activeConversation
-        ? { ...conv, messages: updatedMessages }
-        : conv
-    ));
 
-    // Update title if it's the first message
+    setConversations(prev =>
+      prev.map(conv =>
+        conv.id === activeConversation
+          ? { ...conv, messages: updatedMessages }
+          : conv
+      )
+    );
+
     if (messages.length === 0) {
       updateConversationTitle(activeConversation, input.trim());
     }
@@ -148,30 +141,37 @@ const Chat = () => {
     setIsFirstMessage(false);
 
     try {
-      const response = await llmService.askHealthQuestion(input.trim());
+      const response = await llmService.askHealthQuestion(
+        input.trim(),
+        activeConversation,
+        userContext  // ✅ qui passa il contesto al backend
+      );
+
       const aiMessage = { role: 'assistant', content: response.response };
       const finalMessages = [...updatedMessages, aiMessage];
-      
-      // Update conversation with AI response
-      setConversations(prev => prev.map(conv => 
-        conv.id === activeConversation
-          ? { ...conv, messages: finalMessages }
-          : conv
-      ));
+
+      setConversations(prev =>
+        prev.map(conv =>
+          conv.id === activeConversation
+            ? { ...conv, messages: finalMessages }
+            : conv
+        )
+      );
       setMessages(finalMessages);
     } catch (error) {
       const errorMessage = {
         role: 'error',
-        content: 'Mi dispiace, si è verificato un errore. Riprova più tardi.',
+        content: 'Mi dispiace, si è verificato un errore. Riprova più tardi.'
       };
       const finalMessages = [...updatedMessages, errorMessage];
-      
-      // Update conversation with error message
-      setConversations(prev => prev.map(conv => 
-        conv.id === activeConversation
-          ? { ...conv, messages: finalMessages }
-          : conv
-      ));
+
+      setConversations(prev =>
+        prev.map(conv =>
+          conv.id === activeConversation
+            ? { ...conv, messages: finalMessages }
+            : conv
+        )
+      );
       setMessages(finalMessages);
     } finally {
       setIsLoading(false);
@@ -189,7 +189,6 @@ const Chat = () => {
     adjustTextareaHeight();
   }, [input]);
 
-  // Update visible messages with animation
   useEffect(() => {
     if (messages.length > visibleMessages.length) {
       const newMessage = messages[messages.length - 1];
@@ -208,10 +207,9 @@ const Chat = () => {
         onDeleteChat={handleDeleteChat}
         onCollapse={setIsSidebarCollapsed}
       />
-      
+
       <main className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
         <div className={`flex-1 flex flex-col transition-all duration-500 ease-in-out ${isFirstMessage ? 'opacity-100' : 'opacity-0'}`}>
-          {/* Centered input when no messages */}
           <div className="flex-1 flex flex-col items-center justify-center p-4">
             <WelcomeMessage
               isVisible={isWelcomeVisible}
@@ -226,7 +224,6 @@ const Chat = () => {
         </div>
 
         <div className={`flex-1 flex flex-col transition-all duration-500 ease-in-out ${isFirstMessage ? 'opacity-0' : 'opacity-100'}`}>
-          {/* Messages Area */}
           <div className="flex-1 overflow-y-auto bg-gray-50">
             <MessageList
               messages={messages}
@@ -235,7 +232,6 @@ const Chat = () => {
             />
           </div>
 
-          {/* Input Area */}
           <ChatInput
             input={input}
             setInput={setInput}
