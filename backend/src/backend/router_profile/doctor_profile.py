@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query, Response
-from backend.router_profile.pydantic.profile_requests import RegisterDoctorRequest, LoginRequest
+from backend.router_profile.pydantic.schemas import RegisterDoctorRequest, LoginRequest
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
 from passlib.context import CryptContext

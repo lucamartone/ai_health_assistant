@@ -1,7 +1,7 @@
 // src/components/ModalMessage.jsx
 import React from 'react';
 
-function LoginModal({ message, onClose }) {
+function SimpleModal({ message, onClose }) {
   if (!message) return null;
 
   return (
@@ -21,4 +21,4 @@ function LoginModal({ message, onClose }) {
   );
 }
 
-export default LoginModal;
+export default SimpleModal;

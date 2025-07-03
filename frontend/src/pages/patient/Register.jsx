@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { register_patient } from '../../services/profile/fetch_profile';
-import LoginModal from '../../components/LoginModal';
+import SimpleModal from '../../components/SimpleModal';
 
 function Register() {
   const [name, setName] = useState('');
@@ -164,7 +164,7 @@ function Register() {
           </span>
         </p>
       </div>
-      <LoginModal message={modalMessage} onClose={() => setModalMessage('')} />
+      <SimpleModal message={modalMessage} onClose={() => setModalMessage('')} />
     </div>
   );
 }

@@ -1,35 +1,44 @@
-// src/pages/tabs/SecurityTab.jsx
 import { useState } from 'react';
+import { changePassword } from '../../services/profile/fetch_profile';
+import { useAuth } from '../../contexts/AuthContext';
+import SimpleModal from '../SimpleModal';
 
 function SecurityTab() {
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [message, setMessage] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const { account } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
 
-    if (password.length < 8) {
-      setMessage('La password deve contenere almeno 8 caratteri.');
+    // Validazione base
+    if (!password || !newPassword) {
+      setModalMessage('Compila entrambi i campi.');
       return;
     }
-
-    if (password !== confirm) {
-      setMessage('Le password non coincidono.');
+    if (newPassword.length < 8) {
+      setModalMessage('La nuova password deve contenere almeno 8 caratteri.');
+      return;
+    }
+    if (password === newPassword) {
+      setModalMessage('La nuova password deve essere diversa da quella attuale.');
       return;
     }
 
     setLoading(true);
     try {
-      // Simulazione chiamata API
-      await new Promise((res) => setTimeout(res, 1000));
-      setMessage('Password aggiornata con successo!');
-      setPassword('');
-      setConfirm('');
-    } catch {
-      setMessage('Errore durante l\'aggiornamento della password');
+      const data = await changePassword(password, newPassword, account.email);
+      if (data.success) {
+        setModalMessage('Password aggiornata con successo!');
+        setPassword('');
+        setNewPassword('');
+      } else {
+        setModalMessage(data.error || 'Errore durante l\'aggiornamento della password.');
+      }
+    } catch (err) {
+      setModalMessage('Errore di rete. Riprova più tardi.', err.detail);
     } finally {
       setLoading(false);
     }
@@ -40,7 +49,7 @@ function SecurityTab() {
       <h2 className="text-2xl font-bold text-gray-900">Sicurezza Account</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 text-sm font-semibold">Nuova Password</label>
+          <label className="block mb-1 text-sm font-semibold">Vecchia Password</label>
           <input
             type="password"
             value={password}
@@ -50,20 +59,15 @@ function SecurityTab() {
           />
         </div>
         <div>
-          <label className="block mb-1 text-sm font-semibold">Conferma Password</label>
+          <label className="block mb-1 text-sm font-semibold">Nuova Password</label>
           <input
             type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
             className="w-full px-4 py-2 border rounded-lg"
             minLength={8}
           />
         </div>
-        {message && (
-          <p className={`text-sm ${message.includes('successo') ? 'text-green-600' : 'text-red-600'}`}>
-            {message}
-          </p>
-        )}
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded-lg"
@@ -72,6 +76,14 @@ function SecurityTab() {
           {loading ? 'Aggiornando...' : 'Aggiorna Password'}
         </button>
       </form>
+
+      {/* Modale gestito solo se c'è un messaggio */}
+      {modalMessage && (
+        <SimpleModal
+          message={modalMessage}
+          onClose={() => setModalMessage('')}
+        />
+      )}
     </div>
   );
 }

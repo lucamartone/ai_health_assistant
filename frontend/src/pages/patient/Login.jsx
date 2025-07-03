@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { login_patient } from '../../services/profile/fetch_profile';
 import { useAuth } from '../../contexts/AuthContext';
-import LoginModal from '../../components/LoginModal';
+import SimpleModal from '../../components/SimpleModal';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -85,7 +85,7 @@ function Login() {
           </a>
         </p>
       </div>
-      <LoginModal message={modalMessage} onClose={() => setModalMessage('')} />
+      <SimpleModal message={modalMessage} onClose={() => setModalMessage('')} />
     </div>
   );
 }

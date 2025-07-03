@@ -104,11 +104,12 @@ export async function getProfile() {
   return await response.json();
 }
 
-export async function changePassword(currentPassword, newPassword, currentAccount) {
+export async function changePassword(oldPassword, newPassword, accountEmail) {
   const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/account/change_password`, {
+    data: {oldPassword, newPassword, accountEmail},
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ current_password: currentPasswordPassword, new_password: newPassword, current_account: currentAccount }),
+    body: JSON.stringify(data),
   });
 
   if (!response.ok) {

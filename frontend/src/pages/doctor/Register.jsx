@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { register_doctor } from '../../services/profile/fetch_profile';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
-import LoginModal from '../../components/LoginModal';
+import SimpleModal from '../../components/SimpleModal';
 
 const SPECIALIZATIONS = [
   "Allergologia", "Anestesia e Rianimazione", "Cardiologia", "Chirurgia Generale",
@@ -241,7 +241,7 @@ function Register() {
           </span>
         </p>
       </div>
-      <LoginModal message={modalMessage} onClose={() => setModalMessage('')} />
+      <SimpleModal message={modalMessage} onClose={() => setModalMessage('')} />
     </div>
   );
 }

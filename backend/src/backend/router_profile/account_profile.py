@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Response, Depends, Query
 from datetime import datetime, timedelta
 from backend.connection import execute_query
 from pydantic import EmailStr
-from backend.router_profile.pydantic.profile_requests import LoginRequest
+from backend.router_profile.pydantic.schemas import ChangePasswordRequest
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token, get_current_account
 from passlib.context import CryptContext
 import re
@@ -87,15 +87,11 @@ async def logout(response: Response):
     return {"message": "Logout effettuato con successo"}
 
 @router_account_profile.post("/change_password")
-async def change_password(
-    current_password: str = Query(..., description="Password attuale"),
-    new_password: str = Query(..., description="Nuova password"),
-    current_account: dict = Depends(get_current_account)
-):
+async def change_password(data: ChangePasswordRequest,):
     """Endpoint per modificare la password di un utente."""
     try:
         # Validate new password strength
-        if not validate_password(new_password):
+        if not validate_password(data.new_password):
             raise HTTPException(
                 status_code=400,
                 detail="La nuova password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero"
@@ -103,23 +99,23 @@ async def change_password(
 
         # Verify current password
         query = "SELECT password FROM account WHERE email = %s"
-        result = execute_query(query, (current_account["email"],))
+        result = execute_query(query, (data.account_email,))
         
         if not result:
             raise HTTPException(status_code=404, detail="Utente non trovato")
             
-        if not pwd_context.verify(current_password, result[0][0]):
+        if not pwd_context.verify(data.old_password, result[0][0]):
             raise HTTPException(status_code=401, detail="Password attuale non valida")
 
         # Hash and update new password
-        hashed_password = pwd_context.hash(new_password)
+        hashed_password = pwd_context.hash(data.new_password)
         update_query = """
         UPDATE account 
         SET password = %s,
             password_changed_at = CURRENT_TIMESTAMP
         WHERE email = %s
         """
-        execute_query(update_query, (hashed_password, current_account["email"]), commit=True)
+        execute_query(update_query, (hashed_password, data.account_email), commit=True)
 
         return {"message": "Password modificata con successo"}
 
