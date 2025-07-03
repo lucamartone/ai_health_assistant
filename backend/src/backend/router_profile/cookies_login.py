@@ -46,6 +46,7 @@ def get_current_account(access_token: str = Cookie(None)) -> Optional[dict]:
             "id": payload.get("id"),
             "name": payload.get("name"),
             "surname": payload.get("surname"),
+            "phone": payload.get("phone"),
             "role": payload.get("role")
         }
     except ExpiredSignatureError:
@@ -74,6 +75,8 @@ async def refresh_token(refresh_token: str = Cookie(None)):
             "sub": payload.get("sub"),
             "id": payload.get("id"),
             "name": payload.get("name"),
+            "phone": payload.get("phone"),
+            "role": payload.get("role"),
             "surname": payload.get("surname")
         })
         return {"access_token": new_access_token}

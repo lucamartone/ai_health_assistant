@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Response
-from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest
+from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest, ModifyProfileRequest
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
 from passlib.context import CryptContext
@@ -67,7 +67,7 @@ async def login(data: LoginRequest, response: Response):
     try:
         # Check for too many failed attempts (implement rate limiting)
         query = """
-        SELECT account.id, name, surname, email, password, last_login_attempt, failed_attempts 
+        SELECT account.id, name, surname, email, password, last_login_attempt, failed_attempts, telefon 
         FROM account join patient ON account.id = patient.id
         WHERE email = %s
         """
@@ -116,7 +116,8 @@ async def login(data: LoginRequest, response: Response):
             "id": account[0],
             "name": account[1],
             "surname": account[2],
-            "role": "patient"
+            "role": "patient",
+            "phone": account[7]  # Assuming phone is stored in the password field
         })
         
         refresh_token = create_refresh_token({
@@ -124,7 +125,8 @@ async def login(data: LoginRequest, response: Response):
             "id": account[0],
             "name": account[1],
             "surname": account[2],
-            "role": "patient"
+            "role": "patient",
+            "phone": account[7]  # Assuming phone is stored in the password field
         })
 
         # Set access token cookie (short-lived)
@@ -169,7 +171,7 @@ async def login(data: LoginRequest, response: Response):
 
 #bottone modica e sovrascrive info nel db -> pagina utente / profilo 
 @router_patient_profile.post("/modify_data")
-async def modify_data(nome, cognome, telefono, email):
+async def modify_data(data: ModifyProfileRequest):
     try:
         query = """
             UPDATE account
@@ -178,7 +180,7 @@ async def modify_data(nome, cognome, telefono, email):
                 telefon = %s
             WHERE email = %s
         """
-        params = (nome, cognome,   telefono, email)
+        params = (data.name, data.surname, data.phone, data.email)
         execute_query(query, params, commit=True)
         return {"message": "Dati aggiornati con successo"}
     except Exception as e:

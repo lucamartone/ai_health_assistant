@@ -31,3 +31,9 @@ class ChangePasswordRequest(BaseModel):
     old_password: str
     new_password: str
     account_email: EmailStr
+
+class ModifyProfileRequest(BaseModel):
+    name: str
+    surname: str
+    phone: Optional[str] = None
+    email: EmailStr

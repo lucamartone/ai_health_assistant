@@ -1,4 +1,5 @@
 // src/pages/tabs/ProfileTab.jsx
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { modify_profile } from '../../services/profile/fetch_profile';
@@ -10,22 +11,22 @@ function ProfileTab() {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [email, setEmail] = useState('');
-  const [name, setNome] = useState('');
-  const [cognome, setCognome] = useState('');
-  const [telefono, setTel] = useState('');
-
-  const handleChange = (e) => {
-    const updated = { ...account, [e.target.name]: e.target.value };
-    setAccount(updated);
-  };
+  const [name, setName] = useState(account.name || '');
+  const [surname, setSurname] = useState(account.surname || '');
+  const [phone, setPhone] = useState(account.phone || '');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       //modifica il profile ul click del bott di modifica
-      await modify_profile(name, cognome, telefono, account.email);
-
+      const data = await modify_profile(name, surname, phone, account.email);
+      console.log("dati");
+      setSuccessMsg('Dati aggiornati con successo');
+      setAccount({ ...account, name, surname, phone });
+      navigate(location.pathname, { replace: true });
     } catch (err) {
       setErrorMsg('Errore durante l\'aggiornamento');
     } finally {
@@ -50,8 +51,8 @@ function ProfileTab() {
           <input
             name="name"
             type="text"
-            value={account.name}
-            onChange={(e) => setNome(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             disabled={!isEditing}
             className="w-full px-4 py-2 border rounded-lg"
           />
@@ -61,8 +62,8 @@ function ProfileTab() {
           <input
             name="surname"
             type="text"
-            value={account.surname}
-            onChange={(e) => setCognome(e.target.value)}
+            value={surname}
+            onChange={(e) => setSurname(e.target.value)}
             disabled={!isEditing}
             className="w-full px-4 py-2 border rounded-lg"
           />
@@ -72,8 +73,8 @@ function ProfileTab() {
           <input
             name="phone"
             type="tel"
-            value={account.phone || ''}
-            onChange={(e) => setTel(e.target.value)}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             disabled={!isEditing}
             className="w-full px-4 py-2 border rounded-lg"
           />

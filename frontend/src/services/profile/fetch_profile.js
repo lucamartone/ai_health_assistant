@@ -148,15 +148,18 @@ export async function getPatientDoctors(patientId) {
 }
 
 
-export async function modify_profile(name, cogn,  tel, mail){
-    try {
-      data = {name, cogn, tel, mail}
-    await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/modify_data`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    }, false);
-  } catch (error) {
-    console.error('Errore logout:', error);
+export async function modify_profile(name, surname, phone, email){
+  const data = {name, surname, phone, email};
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/modify_data`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  }, false);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Errore registrazione');
   }
+
+  return await response.json();
 }
