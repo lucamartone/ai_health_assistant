@@ -164,3 +164,11 @@ async def login(data: LoginRequest, response: Response):
         raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore server: {str(e)}")
+
+
+
+#bottone modica e sovrascrive info nel db -> pagina utente / profilo 
+@router_patient_profile.post("/modify_data")
+async def modify_data(nome, cognome, email, telefono){
+    
+}
