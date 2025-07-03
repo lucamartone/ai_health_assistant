@@ -104,6 +104,21 @@ export async function getProfile() {
   return await response.json();
 }
 
+export async function changePassword(currentPassword, newPassword, currentAccount) {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/account/change_password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ current_password: currentPasswordPassword, new_password: newPassword, current_account: currentAccount }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Errore cambio password');
+  }
+
+  return await response.json();
+}
+
 export async function me() {
   const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/cookies/me`, {
     method: 'GET',
