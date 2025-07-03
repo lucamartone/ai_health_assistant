@@ -1,6 +1,7 @@
 // src/pages/tabs/ProfileTab.jsx
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { modify_profile } from '../../services/profile/fetch_profile';
 
 function ProfileTab() {
   const { account, setAccount } = useAuth();
@@ -8,6 +9,10 @@ function ProfileTab() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [email, setEmail] = useState('');
+  const [name, setNome] = useState('');
+  const [cognome, setCognome] = useState('');
+  const [telefono, setTel] = useState('');
 
   const handleChange = (e) => {
     const updated = { ...account, [e.target.name]: e.target.value };
@@ -18,11 +23,9 @@ function ProfileTab() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // API call here (simulata)
-      await new Promise(r => setTimeout(r, 1000));
-      setSuccessMsg('Dati aggiornati con successo');
-      setIsEditing(false);
-      setTimeout(() => setSuccessMsg(''), 3000);
+      //modifica il profile ul click del bott di modifica
+      await modify_profile(name, cognome, telefono, account.email);
+
     } catch (err) {
       setErrorMsg('Errore durante l\'aggiornamento');
     } finally {
@@ -48,7 +51,7 @@ function ProfileTab() {
             name="name"
             type="text"
             value={account.name}
-            onChange={handleChange}
+            onChange={(e) => setNome(e.target.value)}
             disabled={!isEditing}
             className="w-full px-4 py-2 border rounded-lg"
           />
@@ -59,7 +62,7 @@ function ProfileTab() {
             name="surname"
             type="text"
             value={account.surname}
-            onChange={handleChange}
+            onChange={(e) => setCognome(e.target.value)}
             disabled={!isEditing}
             className="w-full px-4 py-2 border rounded-lg"
           />
@@ -70,7 +73,7 @@ function ProfileTab() {
             name="phone"
             type="tel"
             value={account.phone || ''}
-            onChange={handleChange}
+            onChange={(e) => setTel(e.target.value)}
             disabled={!isEditing}
             className="w-full px-4 py-2 border rounded-lg"
           />

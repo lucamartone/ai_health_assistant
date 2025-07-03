@@ -145,3 +145,17 @@ export async function getPatientDoctors(patientId) {
 
   return await response.json();
 }
+
+
+export async function modify_profile(name, cogn,  tel, mail){
+    try {
+      data = {name, cogn, tel, mail}
+    await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/modify_data`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }, false);
+  } catch (error) {
+    console.error('Errore logout:', error);
+  }
+}

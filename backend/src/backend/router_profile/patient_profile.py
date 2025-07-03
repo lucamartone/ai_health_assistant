@@ -169,6 +169,18 @@ async def login(data: LoginRequest, response: Response):
 
 #bottone modica e sovrascrive info nel db -> pagina utente / profilo 
 @router_patient_profile.post("/modify_data")
-async def modify_data(nome, cognome, email, telefono){
-    
-}
+async def modify_data(nome, cognome, telefono, email):
+    try:
+        query = """
+            UPDATE account
+            SET name = %s,
+                surname = %s,
+                telefon = %s
+            WHERE email = %s
+        """
+        params = (nome, cognome,   telefono, email)
+        execute_query(query, params, commit=True)
+        return {"message": "Dati aggiornati con successo"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante l'aggiornamento: {str(e)}")
+
