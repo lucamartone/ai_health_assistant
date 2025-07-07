@@ -104,9 +104,9 @@ export async function getProfile() {
   return await response.json();
 }
 
-export async function changePassword(oldPassword, newPassword, accountEmail) {
+export async function changePassword(old_password, new_password, account_email) {
+  const data = {old_password, new_password, account_email};
   const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/account/change_password`, {
-    data: {oldPassword, newPassword, accountEmail},
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -146,7 +146,6 @@ export async function getPatientDoctors(patientId) {
 
   return await response.json();
 }
-
 
 export async function modify_profile(name, surname, phone, email){
   const data = {name, surname, phone, email};

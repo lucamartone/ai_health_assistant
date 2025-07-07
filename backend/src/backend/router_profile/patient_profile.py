@@ -67,7 +67,7 @@ async def login(data: LoginRequest, response: Response):
     try:
         # Check for too many failed attempts (implement rate limiting)
         query = """
-        SELECT account.id, name, surname, email, password, last_login_attempt, failed_attempts, telefon 
+        SELECT account.id, name, surname, email, password, last_login_attempt, failed_attempts, phone 
         FROM account join patient ON account.id = patient.id
         WHERE email = %s
         """
@@ -177,7 +177,7 @@ async def modify_data(data: ModifyProfileRequest):
             UPDATE account
             SET name = %s,
                 surname = %s,
-                telefon = %s
+                phone = %s
             WHERE email = %s
         """
         params = (data.name, data.surname, data.phone, data.email)

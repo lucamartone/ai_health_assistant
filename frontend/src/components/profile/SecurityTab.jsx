@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { changePassword } from '../../services/profile/fetch_profile';
+import { useNavigate } from 'react-router-dom';
+import { changePassword, logout } from '../../services/profile/fetch_profile';
 import { useAuth } from '../../contexts/AuthContext';
 import SimpleModal from '../SimpleModal';
 
@@ -9,6 +10,7 @@ function SecurityTab() {
   const [loading, setLoading] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const { account } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,14 +32,17 @@ function SecurityTab() {
     setLoading(true);
     try {
       const data = await changePassword(password, newPassword, account.email);
-      if (data.success) {
+      if (data.message) {
         setModalMessage('Password aggiornata con successo!');
         setPassword('');
         setNewPassword('');
-      } else {
-        setModalMessage(data.error || 'Errore durante l\'aggiornamento della password.');
+        await logout(); // Effettua il logout dopo il cambio password
+        navigate('/'); // Reindirizza alla home page
       }
     } catch (err) {
+      if (err.status === 401) {
+        setModalMessage('Password attuale errata. Reinseriscila.');
+      }
       setModalMessage('Errore di rete. Riprova più tardi.', err.detail);
     } finally {
       setLoading(false);

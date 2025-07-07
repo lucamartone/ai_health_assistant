@@ -87,7 +87,7 @@ async def logout(response: Response):
     return {"message": "Logout effettuato con successo"}
 
 @router_account_profile.post("/change_password")
-async def change_password(data: ChangePasswordRequest,):
+async def change_password(data: ChangePasswordRequest):
     """Endpoint per modificare la password di un utente."""
     try:
         # Validate new password strength
