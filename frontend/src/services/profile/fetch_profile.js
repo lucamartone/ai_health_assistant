@@ -113,8 +113,11 @@ export async function changePassword(old_password, new_password, account_email) 
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Errore cambio password');
+    const errorData = await response.json();
+    const err = new Error(errorData.detail || 'Errore cambio password');
+    err.status = response.status;        // <-- codice HTTP
+    err.detail = errorData.detail;       // <-- messaggio backend
+    throw err;
   }
 
   return await response.json();

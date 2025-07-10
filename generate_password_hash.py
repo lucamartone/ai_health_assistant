@@ -15,4 +15,4 @@ print(f"Hash: {hashed_password}")
 
 # Verifica che l'hash sia corretto
 is_valid = pwd_context.verify(password, hashed_password)
-print(f"Verifica: {is_valid}") 
+print(f"Verifica: {is_valid}")

@@ -12,7 +12,7 @@ CREATE TABLE account (
     sex CHAR(1) CHECK (sex IN ('M', 'F')),
     birth_date DATE CHECK (birth_date < CURRENT_DATE),
     profile_img BYTEA,
-    phone VARCHAR(20),
+    phone VARCHAR(20) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login_attempt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     failed_attempts INT DEFAULT 0,

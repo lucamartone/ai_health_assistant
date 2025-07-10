@@ -102,10 +102,10 @@ async def change_password(data: ChangePasswordRequest):
         result = execute_query(query, (data.account_email,))
         
         if not result:
-            raise HTTPException(status_code=404, detail="Utente non trovato")
+            raise HTTPException(status_code=405, detail="Utente non trovato")
             
         if not pwd_context.verify(data.old_password, result[0][0]):
-            raise HTTPException(status_code=401, detail="Password attuale non valida")
+            raise HTTPException(status_code=401, detail="Password attuale non valida, reinseriscila")
 
         # Hash and update new password
         hashed_password = pwd_context.hash(data.new_password)
@@ -122,4 +122,4 @@ async def change_password(data: ChangePasswordRequest):
     except HTTPException as he:
         raise he
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Errore durante il cambio password: {str(e)}")
+        raise HTTPException(status_code=404, detail=f"Errore durante il cambio password: {str(e)}")

@@ -40,10 +40,7 @@ function SecurityTab() {
         navigate('/'); // Reindirizza alla home page
       }
     } catch (err) {
-      if (err.status === 401) {
-        setModalMessage('Password attuale errata. Reinseriscila.');
-      }
-      setModalMessage('Errore di rete. Riprova più tardi.', err.detail);
+       setModalMessage(err.detail);
     } finally {
       setLoading(false);
     }
