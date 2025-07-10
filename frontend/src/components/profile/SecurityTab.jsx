@@ -36,8 +36,12 @@ function SecurityTab() {
         setModalMessage('Password aggiornata con successo!');
         setPassword('');
         setNewPassword('');
-        await logout(); // Effettua il logout dopo il cambio password
-        navigate('/'); // Reindirizza alla home page
+
+        // Attendi 2 secondi prima di fare logout e reindirizzare
+        setTimeout(async () => {
+          await logout();       // Effettua logout
+          navigate('/');        // Vai alla home page
+        }, 2000); // 2000 ms = 2 secondi
       }
     } catch (err) {
        setModalMessage(err.detail);

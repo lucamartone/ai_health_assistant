@@ -90,7 +90,7 @@ if ENVIRONMENT == "production":
     app.add_middleware(HTTPSRedirectMiddleware)
 
 # ✅ Middleware per headers di sicurezza
-app.add_middleware(SecurityHeadersMiddleware)
+# app.add_middleware(SecurityHeadersMiddleware)
 
 # ✅ Health check semplice
 @app.get("/health")
