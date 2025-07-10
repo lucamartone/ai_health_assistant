@@ -7,11 +7,12 @@
 
 # paziente
 - modale di prenotazione effettuata
-- modifica profilo
+- modifica profilo  / eliminare la poss di modificare email      ✔ 
 - recupero password
 - elenco calendario / prossimi appuntamenti
 - implementazione preferenze
 - cronologia appuntamenti + recensione
+- preferenze e salute ampliare db
 
 # chat
 - integrazione chat ai con database
