@@ -9,6 +9,7 @@ function SecurityTab() {
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
   const { account } = useAuth();
   const navigate = useNavigate();
 
@@ -36,17 +37,21 @@ function SecurityTab() {
         setModalMessage('Password aggiornata con successo!');
         setPassword('');
         setNewPassword('');
-
-        // Attendi 2 secondi prima di fare logout e reindirizzare
-        setTimeout(async () => {
-          await logout();       // Effettua logout
-          navigate('/');        // Vai alla home page
-        }, 2000); // 2000 ms = 2 secondi
+        setPasswordChangeSuccess(true);
       }
     } catch (err) {
        setModalMessage(err.detail);
+       setPasswordChangeSuccess(false);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCloseModal = async () => {
+    setModalMessage('');
+    if (passwordChangeSuccess) {
+      navigate('/');
+      await logout();
     }
   };
 
@@ -85,10 +90,7 @@ function SecurityTab() {
 
       {/* Modale gestito solo se c'è un messaggio */}
       {modalMessage && (
-        <SimpleModal
-          message={modalMessage}
-          onClose={() => setModalMessage('')}
-        />
+        <SimpleModal message={modalMessage} onClose={handleCloseModal} />
       )}
     </div>
   );
