@@ -188,3 +188,18 @@ async def get_patient_history(patient_id: int = Query(..., gt=0, description="ID
         return {"history": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero della cronologia: {str(e)}")
+    
+
+@router_appointments.get("/booked_appointments")
+async def get_booked_appointment(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    try:
+        query =  """
+            SELECT *
+            FROM appointment
+            WHERE state = 'booked' AND patient_id = %s
+            ORDER BY date_time ASC
+        """
+        raw_result = execute_query(query, (patient_id,))
+        return {"appointments": raw_result}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore nel recupero dei prossimi appuntamenti: {str(e)}")
