@@ -1,19 +1,19 @@
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti
-- cambio password
+- cambio password                                                ✅ 
 - recupero password
 - modifica profilo
 - verifica dei dottori registrati (tabella id)
 - cronologia appuntamenti
 
 # paziente
-- modale di prenotazione effettuata
-- modifica profilo  / eliminare la poss di modificare email      ✅ 
-- recupero password
-- elenco calendario / prossimi appuntamenti
-- implementazione preferenze
 - cronologia appuntamenti + recensione
-- preferenze e salute ampliare db
+- modale di prenotazione effettuata (iniziato da Marco)
+- modifica profilo  / eliminare la poss di modificare email      ✅ 
+- elenco calendario / prossimi appuntamenti (iniziato da Matteo)
+- salute ampliare db
+- implementazione preferenze
+- recupero password
 
 # chat
 - integrazione chat ai con database
