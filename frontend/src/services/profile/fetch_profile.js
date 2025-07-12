@@ -150,9 +150,9 @@ export async function getPatientDoctors(patientId) {
   return await response.json();
 }
 
-export async function modify_profile(name, surname, phone, email){
-  const data = {name, surname, phone, email};
-  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/modify_data`, {
+export async function edit_profile(name, surname, phone, email, profile_img) {
+  const data = {name, surname, phone, email, profile_img};
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/edit_profile`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -164,4 +164,18 @@ export async function modify_profile(name, surname, phone, email){
   }
 
   return await response.json();
+}
+
+export async function fetch_updated_account() {
+  const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/profile/cookies/me`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error("Errore nel recupero del profilo aggiornato");
+  }
+
+  const data = await response.json();
+  return data.account;
 }
