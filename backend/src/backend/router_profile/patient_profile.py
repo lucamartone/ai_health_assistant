@@ -182,6 +182,13 @@ async def edit_profile(data: ModifyProfileRequest):
                 execute_query(query_img, (img_bytes, data.email), commit=True)
             except Exception as img_err:
                 raise HTTPException(status_code=400, detail="Errore durante la decodifica dell'immagine profilo")
+        else:
+            try:
+                query_img = "UPDATE account SET profile_img = NULL WHERE email = %s"
+                execute_query(query_img, (data.email,), commit=True)
+            except Exception as img_err:
+                raise HTTPException(status_code=400, detail="Errore durante la rimozione dell'immagine profilo")
+
 
         return {"message": "Dati aggiornati con successo"}
 

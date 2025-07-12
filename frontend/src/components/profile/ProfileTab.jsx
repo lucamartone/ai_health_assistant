@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { edit_profile, fetch_updated_account } from '../../services/profile/fetch_profile';
-import { UploadIcon, PlusIcon } from 'lucide-react';
+import { UploadIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
 
 function ProfileTab() {
   const { account, setAccount } = useAuth();
@@ -31,15 +31,11 @@ function ProfileTab() {
         base64Image = await toBase64(selectedFile);
       }
 
-      // Aggiorna profilo nel backend
       await edit_profile(name, surname, phone, account.email, base64Image);
-
-      // Ricarica dati aggiornati da /me (immagine inclusa)
       const updatedAccount = await fetch_updated_account();
 
       setAccount(updatedAccount);
-      setProfileImg(updatedAccount.profile_img); // aggiorna preview
-
+      setProfileImg(updatedAccount.profile_img);
       setSuccessMsg('Dati aggiornati con successo');
       setIsEditing(false);
       navigate(location.pathname, { replace: true });
@@ -57,10 +53,16 @@ function ProfileTab() {
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImg(reader.result); // anteprima locale
+        setProfileImg(reader.result);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setProfileImg(null);
+    setSelectedFile(null);
+    setAccount(prev => ({ ...prev, profile_img: null }));
   };
 
   const toBase64 = (file) =>
@@ -97,12 +99,25 @@ function ProfileTab() {
             />
           ) : (
             <div className="flex items-center justify-center w-full h-full bg-gray-100 text-gray-500 text-4xl group-hover:text-blue-500">
-              <PlusIcon size={32} />
+              {isEditing ? <PlusIcon size={32} /> : <UserIcon size={32} />}
             </div>
           )}
+
           {isEditing && (
             <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <UploadIcon size={24} className="text-white" />
+              <div className="flex gap-4">
+                <UploadIcon size={24} className="text-white" />
+                {profileImg && (
+                  <Trash2Icon
+                    size={24}
+                    className="text-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveImage();
+                    }}
+                  />
+                )}
+              </div>
             </div>
           )}
           <input
