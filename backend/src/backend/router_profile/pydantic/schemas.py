@@ -37,3 +37,4 @@ class ModifyProfileRequest(BaseModel):
     surname: str
     phone: Optional[str] = None
     email: EmailStr
+    profile_img: Optional[str] = None
