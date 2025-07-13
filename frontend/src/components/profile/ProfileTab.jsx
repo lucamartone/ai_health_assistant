@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { edit_profile, fetch_updated_account } from '../../services/profile/fetch_profile';
+import { editProfile, fetchUpdatedAccount } from '../../services/profile/fetch_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
 
 function ProfileTab() {
@@ -31,8 +31,8 @@ function ProfileTab() {
         base64Image = await toBase64(selectedFile);
       }
 
-      await edit_profile(name, surname, phone, account.email, base64Image);
-      const updatedAccount = await fetch_updated_account();
+      await editProfile(name, surname, phone, account.email, base64Image);
+      const updatedAccount = await fetchUpdatedAccount();
 
       setAccount(updatedAccount);
       setProfileImg(updatedAccount.profile_img);

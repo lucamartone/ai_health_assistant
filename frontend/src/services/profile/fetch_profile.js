@@ -150,7 +150,7 @@ export async function getPatientDoctors(patientId) {
   return await response.json();
 }
 
-export async function edit_profile(name, surname, phone, email, profile_img) {
+export async function editProfile(name, surname, phone, email, profile_img) {
   const data = {name, surname, phone, email, profile_img};
   const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/edit_profile`, {
     method: 'POST',
@@ -166,7 +166,7 @@ export async function edit_profile(name, surname, phone, email, profile_img) {
   return await response.json();
 }
 
-export async function fetch_updated_account() {
+export async function fetchUpdatedAccount() {
   const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/profile/cookies/me`, {
     method: 'GET',
     credentials: 'include',
