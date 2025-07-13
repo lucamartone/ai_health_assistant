@@ -10,7 +10,7 @@
 - cronologia appuntamenti + recensione
 - modale di prenotazione effettuata (iniziato da Marco)
 - modifica profilo  / eliminare la poss di modificare email      ✅ 
-- elenco calendario / prossimi appuntamenti (iniziato da Matteo)
+- elenco calendario / prossimi appuntamenti                      ✅     mancano join in query per passare da id ad info 
 - salute ampliare db
 - implementazione preferenze
 - recupero password

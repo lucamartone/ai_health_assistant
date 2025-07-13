@@ -1,5 +1,7 @@
 // src/pages/tabs/AppointmentsTab.jsx
 import { useEffect, useState } from 'react';
+import {get_booked_appointments} from '../../services/appointments/fetch_appointments';
+
 
 function AppointmentsTab({ account }) {
   const [appointments, setAppointments] = useState([]);
@@ -7,18 +9,21 @@ function AppointmentsTab({ account }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!account?.id) return;
+    if (!account?.id) {  
+      return;
+    }
     setLoadingAppointments(true);
     setError('');
 
-    fetch(`/profile/patient/appointments/history?patient_id=${account.id}`)
-      .then(res => {
-        if (!res.ok) throw new Error('Errore nel recupero appuntamenti');
-        return res.json();
-      })
-      .then(data => setAppointments(data.history || []))
-      .catch(err => setError(err.message))
+    get_booked_appointments(account.id)
+      .then(data =>{
+        setAppointments(data.appointments || [])})
+      .catch(err => {
+        setError(err.message);
+      } )
       .finally(() => setLoadingAppointments(false));
+
+
   }, [account]);
 
   const formatDate = (date) =>
@@ -30,37 +35,44 @@ function AppointmentsTab({ account }) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Prossimi Appuntamenti</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Prossimi Appunamenti</h2>
 
       {loadingAppointments ? (
         <div className="text-center py-6 text-gray-600">Caricamento...</div>
       ) : error ? (
         <div className="text-center text-red-600">{error}</div>
       ) : appointments.length === 0 ? (
-        <div className="text-center text-gray-600">Nessun appuntamento trovato.</div>
+        <div className="text-center text-gray-600">Nessuno appuntamento trovato.</div>
       ) : (
         <div className="space-y-4">
-          {appointments.map((apt, index) => (
-            <div key={index} className="bg-gray-50 rounded-lg p-4 shadow-sm">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-gray-800">Dr. {apt.doctor_name || 'N/A'}</p>
-                  <p className="text-sm text-gray-500">
-                    {formatDate(apt.date)} - {apt.time}
-                  </p>
+          {appointments.map((apt, index) => {
+            const dateObj = new Date(apt.date_time);
+            const formattedDate = formatDate(dateObj);
+            const formattedTime = dateObj.toLocaleTimeString('it-IT', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+
+            return (
+              <div key={index} className="bg-gray-50 rounded-lg p-4 shadow-sm">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-gray-800">
+                      ID Dottore: {apt.doctor_id}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {formattedDate} - {formattedTime}
+                    </p>
+                    <p className="text-sm text-gray-500">Luogo: ID {apt.location_id}</p>
+                    <p className="text-sm text-gray-500">Prezzo: €{apt.price}</p>
+                  </div>
+                  <span className="px-3 py-1 text-sm rounded-full font-medium bg-blue-100 text-blue-800">
+                    {apt.state}
+                  </span>
                 </div>
-                <span className={`px-3 py-1 text-sm rounded-full font-medium ${
-                  apt.status === 'completed'
-                    ? 'bg-green-100 text-green-800'
-                    : apt.status === 'cancelled'
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {apt.status}
-                </span>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

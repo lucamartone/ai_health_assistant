@@ -126,7 +126,7 @@ function Profile() {
         >
           {activeTab === 'overview' && <PanoramicaTab />}
           {activeTab === 'profile' && <ProfileTab />}
-          {activeTab === 'appointments' && <AppointmentsTab />}
+          {activeTab === 'appointments' && <AppointmentsTab account={account}/>}
           {activeTab === 'doctors' && <DoctorsTab />}
           {activeTab === 'chat' && <ChatTab />}
           {activeTab === 'health' && <HealthTab />}
