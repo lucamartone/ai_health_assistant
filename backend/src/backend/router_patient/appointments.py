@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Query, Body
 from typing import Optional
 from datetime import datetime
 from backend.connection import execute_query
+from backend.router_patient.pydantic.pydantic import Appointment
 
 router_appointments = APIRouter()
 
@@ -200,6 +201,21 @@ async def get_booked_appointment(patient_id: int = Query(..., gt=0, description=
             ORDER BY date_time ASC
         """
         raw_result = execute_query(query, (patient_id,))
-        return {"appointments": raw_result}
+        
+        appointments = [
+            Appointment(
+                id=row[0],
+                doctor_id=row[1],
+                patient_id=row[2],
+                location_id=row[3],
+                date_time=row[4],
+                price=float(row[5]),
+                state=row[6],
+                created_at=row[7]
+            )
+            for row in raw_result
+        ]
+
+        return {"appointments": appointments}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero dei prossimi appuntamenti: {str(e)}")

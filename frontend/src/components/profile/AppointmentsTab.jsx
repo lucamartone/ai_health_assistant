@@ -30,7 +30,7 @@ function AppointmentsTab({ account }) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Cronologia Appuntamenti</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Prossimi Appuntamenti</h2>
 
       {loadingAppointments ? (
         <div className="text-center py-6 text-gray-600">Caricamento...</div>
