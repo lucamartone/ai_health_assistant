@@ -20,5 +20,6 @@
 - indirizzamento verso prenotazione / specialista con filtro di categoria
 - formattazione risposte
 
+CAPIRE CONSISTENZA DATI HISTORY APPOINTMNET E COME POPOLARE HISTORY
 
 

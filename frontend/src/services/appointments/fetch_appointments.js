@@ -110,3 +110,22 @@ export async function get_booked_appointments(id_patient) {
     const data = await response.json();
     return data;
 }
+
+//restituisce tutti gli appuntamenti in fase complete e non ancora valutati dato un paziente -> usata per display appuntamenti da valutare
+export async function get_to_rank_appointments(id_patient) {
+    const url = `${import.meta.env.VITE_BACKEND_URL}/patient/reviews/appointments_to_rank?patient_id=${id_patient}`;
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+        'Content-Type': 'application/json'
+        }
+    })
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Errore restituzione appuntamenti prenotati');
+    }
+    
+    const data = await response.json();
+    return data;
+}
