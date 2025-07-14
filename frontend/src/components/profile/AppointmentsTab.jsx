@@ -55,22 +55,24 @@ function AppointmentsTab({ account }) {
 
             return (
               <div key={index} className="bg-gray-50 rounded-lg p-4 shadow-sm">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-gray-800">
-                      ID Dottore: {apt.doctor_id}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {formattedDate} - {formattedTime}
-                    </p>
-                    <p className="text-sm text-gray-500">Luogo: ID {apt.location_id}</p>
-                    <p className="text-sm text-gray-500">Prezzo: €{apt.price}</p>
-                  </div>
-                  <span className="px-3 py-1 text-sm rounded-full font-medium bg-blue-100 text-blue-800">
-                    {apt.state}
-                  </span>
-                </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-medium text-gray-800">
+                  Dott. {apt.doctor_surname} ({apt.specialization})
+                </p>
+                <p className="text-sm text-gray-500">
+                  {formattedDate} - {formattedTime}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Luogo: {apt.address}, {apt.city}
+                </p>
+                <p className="text-sm text-gray-500">Prezzo: €{apt.price}</p>
               </div>
+              <span className="px-3 py-1 text-sm rounded-full font-medium bg-blue-100 text-blue-800">
+                {apt.state}
+              </span>
+            </div>
+          </div>
             );
           })}
         </div>

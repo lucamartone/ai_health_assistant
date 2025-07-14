@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Query, Body
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from backend.connection import execute_query
 from backend.router_patient.pydantic.pydantic import Appointment
+
 
 router_appointments = APIRouter()
 
@@ -194,24 +195,37 @@ async def get_patient_history(patient_id: int = Query(..., gt=0, description="ID
 @router_appointments.get("/booked_appointments")
 async def get_booked_appointment(patient_id: int = Query(..., gt=0, description="ID del paziente")):
     try:
-        query =  """
-            SELECT *
-            FROM appointment
-            WHERE state = 'booked' AND patient_id = %s
-            ORDER BY date_time ASC
+        query =   """
+            SELECT 
+                a.id,
+                acc.surname AS doctor_surname,
+                d.specialization,
+                l.address AS location_address,
+                l.city,
+                a.date_time,
+                a.price,
+                a.state,
+                a.created_at
+            FROM appointment a
+            JOIN doctor d ON a.doctor_id = d.id
+            JOIN account acc ON d.id = acc.id
+            JOIN location l ON a.location_id = l.id
+            WHERE a.state = 'booked' AND a.patient_id = %s
+            ORDER BY a.date_time ASC
         """
         raw_result = execute_query(query, (patient_id,))
         
-        appointments = [
+        appointments: List[Appointment] = [
             Appointment(
                 id=row[0],
-                doctor_id=row[1],
-                patient_id=row[2],
-                location_id=row[3],
-                date_time=row[4],
-                price=float(row[5]),
-                state=row[6],
-                created_at=row[7]
+                doctor_surname=row[1],
+                specialization=row[2],
+                address=row[3],
+                city=row[4],
+                date_time=row[5],
+                price=float(row[6]),
+                state=row[7],
+                created_at=row[8]
             )
             for row in raw_result
         ]
