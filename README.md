@@ -7,9 +7,11 @@
 - cronologia appuntamenti
 
 # paziente
-- cronologia appuntamenti + recensione
+- cronologia appuntamenti
+- recensione appuntamenti
 - modale di prenotazione effettuata (iniziato da Marco)
-- modifica profilo  / eliminare la poss di modificare email      ✅ 
+- cambio password                                                ✅
+- modifica profilo                                               ✅ 
 - elenco calendario / prossimi appuntamenti                      ✅   
 - salute ampliare db
 - implementazione preferenze
