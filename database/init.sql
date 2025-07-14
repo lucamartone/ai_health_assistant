@@ -176,9 +176,9 @@ BEFORE INSERT ON appointment
 FOR EACH ROW
 EXECUTE FUNCTION check_future_appointment_date();
 
--- =========================================
--- TRIGGER: stato valido appuntamento
--- =========================================
+-- -- =========================================
+-- -- TRIGGER: stato valido appuntamento
+-- -- =========================================
 
 CREATE OR REPLACE FUNCTION check_appointment_state() RETURNS TRIGGER AS $$
 BEGIN
