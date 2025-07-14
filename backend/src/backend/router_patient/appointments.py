@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Query, Body
 from typing import Optional, List
 from datetime import datetime
 from backend.connection import execute_query
-from backend.router_patient.pydantic.pydantic import Appointment
+from backend.router_patient.pydantic.schemas import Appointment
 
 
 router_appointments = APIRouter()

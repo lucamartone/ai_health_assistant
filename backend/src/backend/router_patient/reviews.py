@@ -2,13 +2,13 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import Optional, List
 from datetime import datetime
 from backend.connection import execute_query
-from backend.router_patient.pydantic.pydantic import Appointment
+from backend.router_patient.pydantic.schemas import Appointment, ReviewRequest
 
 router_reviews = APIRouter()
 
 #appuntamenti del panziente completati ma non ancora valutati
 @router_reviews.get("/appointments_to_rank")
-async def get_appoinntments_to_rank(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, description="ID del paziente")):
     try:
         #query
         query = ''' SELECT
@@ -25,11 +25,11 @@ async def get_appoinntments_to_rank(patient_id: int = Query(..., gt=0, descripti
                     JOIN doctor d ON a.doctor_id = d.id
                     JOIN account acc ON d.id = acc.id
                     JOIN location l ON a.location_id = l.id
-                    LEFT JOIN history h ON h.appointment_id = a.id
+                    LEFT JOIN review r ON r.appointment_id = a.id
                     WHERE
                         a.date_time < NOW()
                         AND a.state = 'completed'
-                        AND h.review IS NULL
+                        AND r.stars IS NULL
                         AND a.patient_id = %s
                         ORDER BY a.date_time ASC;
                 '''
@@ -56,11 +56,27 @@ async def get_appoinntments_to_rank(patient_id: int = Query(..., gt=0, descripti
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti da valutare: {str(e)}")
 
-@router_reviews.get("/review_doctor")
-async def review_doctor(doctor_id: str, patient_id: str, rating: int):
-    """Endpoint to rate a doctor."""
-    # Implement logic to save the rating for the doctor
-    if doctor_id and patient_id and 1 <= rating <= 5:
-        return {"message": "Doctor rated successfully", "doctor_id": doctor_id, "rating": rating}
-    else:
-        raise HTTPException(status_code=400, detail="Invalid input")
+@router_reviews.post("/review_appointment")
+async def review_appointment(data: ReviewRequest):
+    """Endpoint to rate an appointment."""
+    try:
+        # Check if the appointment exists and is completed
+        query = """
+            SELECT id FROM appointment WHERE id = %s AND state = 'completed'
+        """
+        raw_result = execute_query(query, (data.appointment_id,))
+        
+        if not raw_result:
+            raise HTTPException(status_code=404, detail="Appointment not found or not completed.")
+
+        # Insert the review into the review table
+        insert_query = """
+            INSERT INTO review (appointment_id, stars, report)
+            VALUES (%s, %s, %s)
+        """
+        execute_query(insert_query, (data.appointment_id, data.stars, data.report), commit=True)
+
+        return {"message": "Review submitted successfully."}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error submitting review: {str(e)}")

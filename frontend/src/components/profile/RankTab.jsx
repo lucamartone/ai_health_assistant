@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { get_to_rank_appointments } from '../../services/appointments/fetch_appointments';
+import { getToRankAppointments, reviewAppointment } from '../../services/appointments/fetch_reviews';
 import { Star } from 'lucide-react';
 
 function RankTab({ account }) {
@@ -15,8 +15,25 @@ function RankTab({ account }) {
     setReviewText('');
   };
 
+  const handleSubmitReview = async () => {
+    if (!selectedAppointmentId || rating === 0) {
+      alert("Seleziona una valutazione con le stelle.");
+      return;
+    }
+
+    try {
+      await reviewAppointment(selectedAppointmentId, rating, reviewText);
+      // Rimuove l'appuntamento dalla lista dopo l'invio
+      setAppointments((prev) => prev.filter((a) => a.id !== selectedAppointmentId));
+      setSelectedAppointmentId(null);
+    } catch (err) {
+      console.error(err);
+      alert("Errore durante l'invio della valutazione.");
+    }
+  };
+
   const handleStarClick = (index) => {
-    setRating(index + 1); // index è 0-based
+    setRating(index + 1);
   };
 
   const formatDate = (date) =>
@@ -30,7 +47,7 @@ function RankTab({ account }) {
     if (!account?.id) return;
 
     setError('');
-    get_to_rank_appointments(account.id)
+    getToRankAppointments(account.id)
       .then((data) => setAppointments(data.appointments || []))
       .catch((err) => setError(err.message));
   }, [account]);
@@ -42,7 +59,7 @@ function RankTab({ account }) {
       {error ? (
         <div className="text-center text-red-600">{error}</div>
       ) : appointments.length === 0 ? (
-        <div className="text-center text-gray-600">Nessun appuntamento trovato.</div>
+        <div className="text-center text-gray-600">Nessun appuntamento da valutare.</div>
       ) : (
         <div className="space-y-4">
           {appointments.map((apt) => {
@@ -70,47 +87,41 @@ function RankTab({ account }) {
                     </p>
                     <p className="text-sm text-gray-500">Prezzo: €{apt.price}</p>
                   </div>
-                  <button
-                    onClick={() => openModalForRank(apt.id)}
-                    className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                  >
-                    Valuta
-                  </button>
+
+                  {!isSelected && (
+                    <button
+                      onClick={() => openModalForRank(apt.id)}
+                      className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    >
+                      Valuta
+                    </button>
+                  )}
                 </div>
 
                 {isSelected && (
-                  <div className="mt-4 border-t pt-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      {[...Array(5)].map((_, index) => (
-                        <Star
-                          key={index}
-                          className={`w-6 h-6 cursor-pointer ${
-                            index < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400'
-                          }`}
-                          onClick={() => handleStarClick(index)}
-                        />
-                      ))}
-                    </div>
-                    <textarea
-                      value={reviewText}
-                      onChange={(e) => setReviewText(e.target.value)}
-                      placeholder="Scrivi una recensione opzionale..."
-                      className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      rows={3}
-                    />
-                    <div className="mt-2 flex justify-end">
+                  <div className="mt-6 border-t pt-6 flex justify-center">
+                    <div className="w-full max-w-md text-center">
+                      <div className="flex justify-center items-center gap-2 mb-3">
+                        {[...Array(5)].map((_, index) => (
+                          <Star
+                            key={index}
+                            className={`w-6 h-6 cursor-pointer ${
+                              index < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400'
+                            }`}
+                            onClick={() => handleStarClick(index)}
+                          />
+                        ))}
+                      </div>
+                      <textarea
+                        value={reviewText}
+                        onChange={(e) => setReviewText(e.target.value)}
+                        placeholder="Scrivi una recensione opzionale..."
+                        className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        rows={3}
+                      />
                       <button
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-                        onClick={() => {
-                          // TODO: invio della valutazione al backend
-                          console.log({
-                            appointmentId: apt.id,
-                            rating,
-                            review: reviewText,
-                          });
-                          alert('Valutazione inviata (mock)');
-                          setSelectedAppointmentId(null);
-                        }}
+                        className="mt-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                        onClick={handleSubmitReview}
                       >
                         Invia valutazione
                       </button>

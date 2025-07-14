@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 from datetime import datetime
 
 class Appointment(BaseModel):
@@ -11,3 +12,8 @@ class Appointment(BaseModel):
     price: float
     state: str
     created_at: datetime
+
+class ReviewRequest(BaseModel):
+    appointment_id: int
+    stars: int
+    report: Optional[str] = None

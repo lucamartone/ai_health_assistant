@@ -105,12 +105,11 @@ CREATE TABLE medical_document (
 );
 
 -- Tabella history
-CREATE TABLE history (
+CREATE TABLE review (
     id SERIAL PRIMARY KEY,
-    patient_id INT NOT NULL REFERENCES patient(id),
     appointment_id INT NOT NULL REFERENCES appointment(id),
     report TEXT,
-    review INT CHECK (review IS NULL OR (review BETWEEN 1 AND 5))
+    stars INT CHECK (stars IS NULL OR (stars BETWEEN 1 AND 5))
 );
 
 -- =========================================
@@ -162,39 +161,39 @@ EXECUTE FUNCTION update_password_changed_at();
 -- TRIGGER: data appuntamento nel futuro
 -- =========================================
 
-CREATE OR REPLACE FUNCTION check_future_appointment_date() RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.date_time <= CURRENT_TIMESTAMP THEN
-        RAISE EXCEPTION 'La data dell''appuntamento deve essere nel futuro';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION check_future_appointment_date() RETURNS TRIGGER AS $$
+-- BEGIN
+--     IF NEW.date_time <= CURRENT_TIMESTAMP THEN
+--         RAISE EXCEPTION 'La data dell''appuntamento deve essere nel futuro';
+--     END IF;
+--     RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_check_valid_date_time
-BEFORE INSERT ON appointment
-FOR EACH ROW
-EXECUTE FUNCTION check_future_appointment_date();
+-- CREATE TRIGGER trg_check_valid_date_time
+-- BEFORE INSERT ON appointment
+-- FOR EACH ROW
+-- EXECUTE FUNCTION check_future_appointment_date();
 
--- -- =========================================
--- -- TRIGGER: stato valido appuntamento
--- -- =========================================
+-- -- -- =========================================
+-- -- -- TRIGGER: stato valido appuntamento
+-- -- -- =========================================
 
-CREATE OR REPLACE FUNCTION check_appointment_state() RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.state = 'completed' AND OLD.state != 'booked' THEN
-        RAISE EXCEPTION 'Un appuntamento può essere completato solo se era prenotato';
-    ELSIF NEW.state = 'cancelled' AND OLD.state = 'completed' THEN
-        RAISE EXCEPTION 'Un appuntamento completato non può essere cancellato';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION check_appointment_state() RETURNS TRIGGER AS $$
+-- BEGIN
+--     IF NEW.state = 'completed' AND OLD.state != 'booked' THEN
+--         RAISE EXCEPTION 'Un appuntamento può essere completato solo se era prenotato';
+--     ELSIF NEW.state = 'cancelled' AND OLD.state = 'completed' THEN
+--         RAISE EXCEPTION 'Un appuntamento completato non può essere cancellato';
+--     END IF;
+--     RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_check_appointment_state
-BEFORE UPDATE ON appointment
-FOR EACH ROW
-EXECUTE FUNCTION check_appointment_state();
+-- CREATE TRIGGER trg_check_appointment_state
+-- BEFORE UPDATE ON appointment
+-- FOR EACH ROW
+-- EXECUTE FUNCTION check_appointment_state();
 
 -- =========================================
 -- Indici utili
