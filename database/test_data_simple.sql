@@ -16,7 +16,7 @@ INSERT INTO location (id, doctor_id, address, city, province, latitude, longitud
 ON CONFLICT (id) DO NOTHING;
 
 -- Appuntamento (ID forzato a 1)
-INSERT INTO appointment (id, doctor_id, patient_id, location_id, date_time, state) VALUES
+INSERT INTO appointment (id, doctor_id, patient_id, location_id, date_time, status) VALUES
 (1, 10, 20, 1, NOW() + INTERVAL '7 days', 'booked')
 ON CONFLICT (id) DO NOTHING;
 

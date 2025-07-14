@@ -14,8 +14,8 @@ async def book_appointment(
 ):
     try:
         check_query = """
-        SELECT state, patient_id 
-        FROM appointment 
+        SELECT status, patient_id
+        FROM appointment
         WHERE id = %s
         """
         check_result = execute_query(check_query, (appointment_id,))
@@ -23,15 +23,15 @@ async def book_appointment(
         if not check_result:
             raise HTTPException(status_code=404, detail="Appointment not found")
 
-        current_state, current_user = check_result[0]
+        current_status, current_user = check_result[0]
 
-        if current_state != 'waiting' or current_user is not None:
+        if current_status != 'waiting' or current_user is not None:
             raise HTTPException(status_code=400, detail="Appointment is no longer available")
 
         update_query = """
         UPDATE appointment
-        SET patient_id = %s, state = 'booked'
-        WHERE id = %s AND state = 'waiting' AND patient_id IS NULL
+        SET patient_id = %s, status = 'booked'
+        WHERE id = %s AND status = 'waiting' AND patient_id IS NULL
         RETURNING id
         """
         result = execute_query(update_query, (patient_id, appointment_id), commit=True)
@@ -60,7 +60,7 @@ async def cancel_appointment(
 ):
     try:
         check_query = """
-        SELECT state, patient_id 
+        SELECT status, patient_id 
         FROM appointment 
         WHERE id = %s
         """
@@ -69,15 +69,15 @@ async def cancel_appointment(
         if not check_result:
             raise HTTPException(status_code=404, detail="Appointment not found")
 
-        current_state, current_user = check_result[0]
+        current_status, current_user = check_result[0]
 
-        if current_state != 'booked' or current_user != patient_id:
+        if current_status != 'booked' or current_user != patient_id:
             raise HTTPException(status_code=400, detail="Cannot cancel this appointment - it may not exist or you may not have permission")
 
         update_query = """
         UPDATE appointment
-        SET patient_id = NULL, state = 'waiting'
-        WHERE id = %s AND patient_id = %s AND state = 'booked'
+        SET patient_id = NULL, status = 'waiting'
+        WHERE id = %s AND patient_id = %s AND status = 'booked'
         RETURNING id
         """
         result = execute_query(update_query, (appointment_id, patient_id), commit=True)
@@ -120,7 +120,7 @@ async def get_free_slots(
         JOIN location l ON a.location_id = l.id 
         WHERE a.doctor_id = %s
           AND a.patient_id IS NULL
-          AND a.state = 'waiting'
+          AND a.status = 'waiting'
           AND l.latitude = %s
           AND l.longitude = %s
         """
@@ -165,7 +165,7 @@ async def get_patient_history(patient_id: int = Query(..., gt=0, description="ID
           a.id AS appointment_id,
           a.date_time,
           a.price,
-          a.state,
+          a.status,
           l.address,
           l.city,
           d.id AS doctor_id,
@@ -183,7 +183,7 @@ async def get_patient_history(patient_id: int = Query(..., gt=0, description="ID
         """
         raw_result = execute_query(query, (patient_id,))
         columns = [
-            "appointment_id", "date_time", "price", "state", "address", "city",
+            "appointment_id", "date_time", "price", "status", "address", "city",
             "doctor_id", "doctor_name", "doctor_surname", "report", "review"
         ]
         result = [dict(zip(columns, row)) for row in raw_result]
@@ -204,13 +204,13 @@ async def get_booked_appointment(patient_id: int = Query(..., gt=0, description=
                 l.city,
                 a.date_time,
                 a.price,
-                a.state,
+                a.status,
                 a.created_at
             FROM appointment a
             JOIN doctor d ON a.doctor_id = d.id
             JOIN account acc ON d.id = acc.id
             JOIN location l ON a.location_id = l.id
-            WHERE a.state = 'booked' AND a.patient_id = %s
+            WHERE a.status = 'booked' AND a.patient_id = %s
             ORDER BY a.date_time ASC
         """
         raw_result = execute_query(query, (patient_id,))
@@ -224,7 +224,7 @@ async def get_booked_appointment(patient_id: int = Query(..., gt=0, description=
                 city=row[4],
                 date_time=row[5],
                 price=float(row[6]),
-                state=row[7],
+                status=row[7],
                 created_at=row[8]
             )
             for row in raw_result

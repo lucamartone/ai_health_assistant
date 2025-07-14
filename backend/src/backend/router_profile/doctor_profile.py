@@ -186,7 +186,7 @@ async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description=
           a.id AS appointment_id,
           a.date_time,
           a.price,
-          a.state,
+          a.status,
           l.address,
           l.city,
           p.id AS patient_id,
@@ -201,7 +201,7 @@ async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description=
         """
         raw_result = execute_query(query, (doctor_id,))
         columns = [
-            "appointment_id", "date_time", "price", "state", "address", "city",
+            "appointment_id", "date_time", "price", "status", "address", "city",
             "patient_id", "patient_name", "patient_surname"
         ]
         result = [dict(zip(columns, row)) for row in raw_result]

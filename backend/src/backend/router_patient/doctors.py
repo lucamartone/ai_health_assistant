@@ -26,7 +26,7 @@ async def get_all_doctors(
         FROM doctor d
         JOIN account u ON d.id = u.id
         LEFT JOIN location l ON l.doctor_id = d.id
-        LEFT JOIN appointment a ON a.doctor_id = d.id AND a.state = 'waiting'
+        LEFT JOIN appointment a ON a.doctor_id = d.id AND a.status = 'waiting'
         GROUP BY d.id, u.name, u.surname, d.specialization, d.rank, u.profile_img, l.latitude, l.longitude, l.address, l.city
         ORDER BY d.rank DESC
         LIMIT %s;
@@ -61,7 +61,7 @@ async def get_free_doctors(
         JOIN account u ON d.id = u.id
         JOIN appointment a ON a.doctor_id = d.id
         JOIN location l ON l.id = a.location_id
-        WHERE a.state = 'waiting'
+        WHERE a.status = 'waiting'
         ORDER BY d.rank DESC
         LIMIT %s;
         """
@@ -97,7 +97,7 @@ async def get_doctors_by_specialization(
         JOIN appointment a ON a.doctor_id = d.id
         JOIN location l ON l.id = a.location_id
         WHERE d.specialization = %s
-          AND a.state = 'waiting'
+          AND a.status = 'waiting'
         ORDER BY d.rank DESC
         LIMIT %s;
         """
@@ -135,7 +135,7 @@ async def get_doctors_by_priceASC(
         JOIN appointment a ON a.doctor_id = d.id
         JOIN location l ON l.id = a.location_id
         WHERE d.specialization = %s
-          AND a.state = 'waiting'
+          AND a.status = 'waiting'
           AND a.price >= %s
         """
         params = [specialization, min_price]
@@ -185,7 +185,7 @@ async def get_doctors_by_priceDESC(
         JOIN appointment a ON a.doctor_id = d.id
         JOIN location l ON l.id = a.location_id
         WHERE d.specialization = %s
-          AND a.state = 'waiting'
+          AND a.status = 'waiting'
           AND a.price >= %s
         """
         params = [specialization, min_price]
@@ -237,7 +237,7 @@ async def get_doctors_by_location(
         JOIN account u ON d.id = u.id
         JOIN appointment a ON a.doctor_id = d.id
         JOIN location l ON l.id = a.location_id
-        WHERE a.state = 'waiting'
+        WHERE a.status = 'waiting'
         HAVING distance_km <= %s
         ORDER BY distance_km ASC
         LIMIT %s;

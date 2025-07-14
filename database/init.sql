@@ -50,7 +50,7 @@ CREATE TABLE appointment (
     location_id INT NOT NULL REFERENCES location(id),
     date_time TIMESTAMP WITH TIME ZONE NOT NULL,
     price NUMERIC(10,2) DEFAULT 50 CHECK (price >= 0),
-    state VARCHAR(20) DEFAULT 'waiting' CHECK (state IN ('waiting', 'booked', 'completed', 'cancelled', 'terminated')),
+    status VARCHAR(20) DEFAULT 'waiting' CHECK (status IN ('waiting', 'booked', 'completed', 'cancelled', 'terminated')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -179,21 +179,21 @@ EXECUTE FUNCTION update_password_changed_at();
 -- -- -- TRIGGER: stato valido appuntamento
 -- -- -- =========================================
 
--- CREATE OR REPLACE FUNCTION check_appointment_state() RETURNS TRIGGER AS $$
+-- CREATE OR REPLACE FUNCTION check_appointment_status() RETURNS TRIGGER AS $$
 -- BEGIN
---     IF NEW.state = 'completed' AND OLD.state != 'booked' THEN
+--     IF NEW.status = 'completed' AND OLD.status != 'booked' THEN
 --         RAISE EXCEPTION 'Un appuntamento può essere completato solo se era prenotato';
---     ELSIF NEW.state = 'cancelled' AND OLD.state = 'completed' THEN
+--     ELSIF NEW.status = 'cancelled' AND OLD.status = 'completed' THEN
 --         RAISE EXCEPTION 'Un appuntamento completato non può essere cancellato';
 --     END IF;
 --     RETURN NEW;
 -- END;
 -- $$ LANGUAGE plpgsql;
 
--- CREATE TRIGGER trg_check_appointment_state
+-- CREATE TRIGGER trg_check_appointment_status
 -- BEFORE UPDATE ON appointment
 -- FOR EACH ROW
--- EXECUTE FUNCTION check_appointment_state();
+-- EXECUTE FUNCTION check_appointment_status();
 
 -- =========================================
 -- Indici utili
@@ -205,7 +205,7 @@ CREATE INDEX idx_doctor_specialization ON doctor(specialization);
 CREATE INDEX idx_appointment_doctor ON appointment(doctor_id);
 CREATE INDEX idx_appointment_patient ON appointment(patient_id);
 CREATE INDEX idx_appointment_datetime ON appointment(date_time);
-CREATE INDEX idx_appointment_state ON appointment(state);
+CREATE INDEX idx_appointment_status ON appointment(status);
 CREATE INDEX idx_location_coordinates ON location(latitude, longitude);
 
 -- Indici per le cartelle cliniche

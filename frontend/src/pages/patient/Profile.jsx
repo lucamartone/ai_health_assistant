@@ -6,6 +6,7 @@ import {
   BarChart3, User, Calendar, Stethoscope, MessageCircle, Star,
   Heart, Shield, Settings
 } from 'lucide-react';
+import { NumberOfPendingAppointments, NumberOfCompletedAppointments, NumberOfAppointments, NumberOfDoctorsVisited, LastVisitDate } from '../../services/profile/fetch_overview';
 
 import PanoramicaTab from '../../components/profile/PanoramicaTab';
 import ProfileTab from '../../components/profile/ProfileTab';
@@ -48,18 +49,30 @@ function Profile() {
   }, [loading, account, navigate]);
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    if (!account?.id) return;
 
-  const fetchStats = async () => {
-    setStats({
-      totalAppointments: 12,
-      completedAppointments: 10,
-      upcomingAppointments: 2,
-      doctorsVisited: 3,
-      lastVisit: '2024-01-15',
-    });
-  };
+    const fetchStats = async () => {
+      try {
+        const upcoming = await NumberOfPendingAppointments(account.id);
+        const completed = await NumberOfCompletedAppointments(account.id);
+        const total = await NumberOfAppointments(account.id);
+        const doctorsVisited = await NumberOfDoctorsVisited(account.id);
+        const lastVisit = await LastVisitDate(account.id);
+        setStats({
+          totalAppointments: total,
+          completedAppointments: completed,
+          upcomingAppointments: upcoming,
+          doctorsVisited: doctorsVisited,
+          lastVisit: lastVisit || 'N/A',
+        });
+      } catch (error) {
+        console.error('Errore nel recupero delle statistiche:', error);
+      }
+    };
+
+    fetchStats();
+  }, [account]);
+
 
   const handleLogout = async () => {
     await logout();
@@ -81,7 +94,7 @@ function Profile() {
       <div className="max-w-7xl mx-auto px-4 py-8">
 
         {/* 🟦 Statistiche sempre visibili in alto */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
             <div className="text-2xl font-bold">{stats.totalAppointments}</div>
             <div className="text-sm opacity-90">Appuntamenti</div>
@@ -97,6 +110,10 @@ function Profile() {
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-4 text-center">
             <div className="text-2xl font-bold">{stats.doctorsVisited}</div>
             <div className="text-sm opacity-90">Medici</div>
+          </div>
+          <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-xl p-4 text-center">
+            <div className="text-xl font-semibold">{stats.lastVisit}</div>
+            <div className="text-sm opacity-90">Ultima Visita</div>
           </div>
         </div>
 

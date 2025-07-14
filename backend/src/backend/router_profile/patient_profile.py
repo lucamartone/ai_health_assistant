@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response, Query
 from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest, ModifyProfileRequest
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
@@ -9,7 +9,6 @@ import base64
 
 router_patient_profile = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 @router_patient_profile.post("/register")
 async def register(data: RegisterRequest):
@@ -52,7 +51,6 @@ async def register(data: RegisterRequest):
         raise he
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nella registrazione: {str(e)}")
-
 
 @router_patient_profile.post("/login")
 async def login(data: LoginRequest, response: Response):
@@ -159,7 +157,6 @@ async def login(data: LoginRequest, response: Response):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore server: {str(e)}")
 
-
 @router_patient_profile.post("/edit_profile")
 async def edit_profile(data: ModifyProfileRequest):
     try:
@@ -194,3 +191,73 @@ async def edit_profile(data: ModifyProfileRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore durante l'aggiornamento: {str(e)}")
+
+@router_patient_profile.get("/number_of_pending_appointments")
+async def number_of_pending_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    try:
+        query = """
+        SELECT COUNT(*) FROM appointment
+        WHERE patient_id = %s AND status = 'booked'
+        """
+        result = execute_query(query, (patient_id,))
+        if not result:
+            return {"count": 0}
+        return {"count": result[0][0]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante il conteggio degli appuntamenti: {str(e)}")
+    
+@router_patient_profile.get("/number_of_completed_appointments")
+async def number_of_completed_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    try:
+        query = """
+        SELECT COUNT(*) FROM appointment
+        WHERE patient_id = %s AND status = 'completed'
+        """
+        result = execute_query(query, (patient_id,))
+        if not result:
+            return {"count": 0}
+        return {"count": result[0][0]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante il conteggio degli appuntamenti: {str(e)}")
+    
+@router_patient_profile.get("/number_of_appointments")
+async def number_of_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    try:
+        query = """
+        SELECT COUNT(*) FROM appointment
+        WHERE patient_id = %s
+        """
+        result = execute_query(query, (patient_id,))
+        if not result:
+            return {"count": 0}
+        return {"count": result[0][0]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante il conteggio degli appuntamenti: {str(e)}")
+    
+@router_patient_profile.get("/number_of_doctors_visited")
+async def number_of_doctors_visited(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    try:
+        query = """
+        SELECT COUNT(DISTINCT doctor_id) FROM appointment
+        WHERE patient_id = %s AND status = 'completed'
+        """
+        result = execute_query(query, (patient_id,))
+        if not result:
+            return {"count": 0}
+        return {"count": result[0][0]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante il conteggio dei medici visitati: {str(e)}")
+    
+@router_patient_profile.get("/last_visit_date")
+async def last_visit_date(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    try:
+        query = """
+        SELECT MAX(date_time) FROM appointment
+        WHERE patient_id = %s AND status IN ('completed', 'booked', 'cancelled')
+        """
+        result = execute_query(query, (patient_id,))
+        if not result or not result[0][0]:
+            return {"last_visit": 'N/A'}
+        return {"last_visit": result[0][0]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante il recupero dell'ultima visita: {str(e)}")

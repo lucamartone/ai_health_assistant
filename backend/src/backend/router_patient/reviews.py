@@ -19,7 +19,7 @@ async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, descriptio
                         l.city,
                         a.date_time,
                         a.price,
-                        a.state,
+                        a.status,
                         a.created_at
                     FROM appointment a
                     JOIN doctor d ON a.doctor_id = d.id
@@ -28,7 +28,7 @@ async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, descriptio
                     LEFT JOIN review r ON r.appointment_id = a.id
                     WHERE
                         a.date_time < NOW()
-                        AND a.state = 'completed'
+                        AND a.status = 'completed'
                         AND r.stars IS NULL
                         AND a.patient_id = %s
                         ORDER BY a.date_time ASC;
@@ -45,7 +45,7 @@ async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, descriptio
                 city=row[4],
                 date_time=row[5],
                 price=float(row[6]),
-                state=row[7],
+                status=row[7],
                 created_at=row[8]
             )
             for row in raw_result
@@ -62,7 +62,7 @@ async def review_appointment(data: ReviewRequest):
     try:
         # Check if the appointment exists and is completed
         query = """
-            SELECT id FROM appointment WHERE id = %s AND state = 'completed'
+            SELECT id FROM appointment WHERE id = %s AND status = 'completed'
         """
         raw_result = execute_query(query, (data.appointment_id,))
         
