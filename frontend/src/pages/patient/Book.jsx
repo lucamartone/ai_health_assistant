@@ -4,7 +4,7 @@ import { getCoordinatesFromAddress } from '../../services/maps/fetch_maps';
 import BookingCalendar from '../../components/BookingCalendar';
 import MapView from '../../components/MapView';
 import { useAuth } from '../../contexts/AuthContext';
-import SimpleModal from '../../components/SimpleModal';
+import BookingModal from '../../components/BookingModal';
 
 const SPECIALIZATIONS = [
   "Allergologia", "Anestesia e Rianimazione", "Cardiologia", "Chirurgia Generale",
@@ -22,7 +22,8 @@ function Book() {
   const [price, setPrice] = useState('');
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [fetchError, setFetchError] = useState(null);
-  const [modalMessage, setModalMessage] = useState('');
+  const [appointmentDetails, setAppointmentDetails] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { account } = useAuth();
 
   const handleSlotSelect = async (doctor, date, time, appointment_id) => {
@@ -32,9 +33,15 @@ function Book() {
     }
     try {
       await bookAppointment(appointment_id, account.id);
-      setModalMessage(
-        `✅ Prenotazione confermata con il Dr. ${doctor.name} ${doctor.surname}\n📅 ${date.toLocaleDateString()} alle ${time}\n📍 ${doctor.city}, ${doctor.address || 'indirizzo non disponibile'}\n💶 Prezzo: ${doctor.price}€`
-      );
+      setAppointmentDetails({
+        name: doctor.name,
+        surname: doctor.surname,
+        date: date.toLocaleDateString(),
+        time,
+        city: doctor.city,
+        address: doctor.address,
+        price: doctor.price,
+      });
     } catch (err) {
       alert('Errore durante la prenotazione: ' + (err.message || ''));
     }
@@ -58,7 +65,7 @@ function Book() {
     };
 
     fetchDoctors();
-  }, []);
+  }, [refreshKey]);
 
   const filteredDoctors = Array.isArray(doctors)
     ? doctors.filter((doc) =>
@@ -176,8 +183,14 @@ function Book() {
         </div>
       </div>
 
-      {/* ✅ Modale di conferma */}
-      <SimpleModal message={modalMessage} onClose={() => setModalMessage('')} />
+      {/* Modale di conferma appuntamento */}
+      <BookingModal
+        appointmentDetails={appointmentDetails}
+        onClose={() => {
+          setAppointmentDetails(null);
+          setRefreshKey(prev => prev + 1); // forza un re-render della lista
+        }}
+      />
     </div>
   );
 }
