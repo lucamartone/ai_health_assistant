@@ -10,7 +10,7 @@
 - cronologia appuntamenti + recensione (iniziato da Matteo)         maca logica del pulsante valuta e api back per salvare la valutazione nel db
 - cronologia appuntamenti
 - recensione appuntamenti
-- modale di prenotazione effettuata (iniziato da Marco)
+- modale di prenotazione effettuata                              ✅
 - cambio password                                                ✅
 - modifica profilo                                               ✅ 
 - elenco calendario / prossimi appuntamenti                      ✅   

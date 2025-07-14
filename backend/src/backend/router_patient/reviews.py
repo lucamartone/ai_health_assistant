@@ -56,11 +56,6 @@ async def get_appoinntments_to_rank(patient_id: int = Query(..., gt=0, descripti
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti da valutare: {str(e)}")
 
-
-
-
-
-
 @router_reviews.get("/review_doctor")
 async def review_doctor(doctor_id: str, patient_id: str, rating: int):
     """Endpoint to rate a doctor."""
