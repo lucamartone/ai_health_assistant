@@ -8,8 +8,11 @@
 
 # paziente
 - cronologia appuntamenti + recensione (iniziato da Matteo)         maca logica del pulsante valuta e api back per salvare la valutazione nel db
+- cronologia appuntamenti
+- recensione appuntamenti
 - modale di prenotazione effettuata (iniziato da Marco)
-- modifica profilo  / eliminare la poss di modificare email      ✅ 
+- cambio password                                                ✅
+- modifica profilo                                               ✅ 
 - elenco calendario / prossimi appuntamenti                      ✅   
 - salute ampliare db
 - implementazione preferenze

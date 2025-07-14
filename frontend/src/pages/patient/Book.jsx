@@ -4,6 +4,7 @@ import { getCoordinatesFromAddress } from '../../services/maps/fetch_maps';
 import BookingCalendar from '../../components/BookingCalendar';
 import MapView from '../../components/MapView';
 import { useAuth } from '../../contexts/AuthContext';
+import SimpleModal from '../../components/SimpleModal';
 
 const SPECIALIZATIONS = [
   "Allergologia", "Anestesia e Rianimazione", "Cardiologia", "Chirurgia Generale",
@@ -21,6 +22,7 @@ function Book() {
   const [price, setPrice] = useState('');
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [fetchError, setFetchError] = useState(null);
+  const [modalMessage, setModalMessage] = useState('');
   const { account } = useAuth();
 
   const handleSlotSelect = async (doctor, date, time, appointment_id) => {
@@ -30,9 +32,11 @@ function Book() {
     }
     try {
       await bookAppointment(appointment_id, account.id);
-      alert(`Prenotazione confermata con ${doctor.name} il ${date.toLocaleDateString()} alle ${time}`);
+      setModalMessage(
+        `✅ Prenotazione confermata con il Dr. ${doctor.name} ${doctor.surname}\n📅 ${date.toLocaleDateString()} alle ${time}\n📍 ${doctor.city}, ${doctor.address || 'indirizzo non disponibile'}\n💶 Prezzo: ${doctor.price}€`
+      );
     } catch (err) {
-      alert('Errore durante la prenotazione: ' + (err.message || '')); 
+      alert('Errore durante la prenotazione: ' + (err.message || ''));
     }
   };
 
@@ -171,6 +175,9 @@ function Book() {
           )}
         </div>
       </div>
+
+      {/* ✅ Modale di conferma */}
+      <SimpleModal message={modalMessage} onClose={() => setModalMessage('')} />
     </div>
   );
 }
