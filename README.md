@@ -13,15 +13,12 @@
 - cambio password                                                ✅
 - modifica profilo                                               ✅
 - elenco calendario / prossimi appuntamenti                      ✅
-- salute ampliare db
-- implementazione preferenze
-- recupero password
+- salute ampliare db                                             ✅
+- (implementazione preferenze)
+- (recupero password)
 
 # chat
 - integrazione chat ai con database
 - indirizzamento verso prenotazione / specialista con filtro di categoria
 - formattazione risposte
-
-CAPIRE CONSISTENZA DATI HISTORY APPOINTMNET E COME POPOLARE HISTORY
-
 
