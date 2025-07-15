@@ -1,31 +1,69 @@
-// src/pages/tabs/HealthTab.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getHealthData, updateHealthData } from '../../services/profile/fetch_health';
+import { useAuth } from '../../contexts/AuthContext';
 
 function HealthTab() {
-  const [healthData, setHealthData] = useState({
-    bloodType: 'A+',
-    allergies: ['Nessuna allergia nota'],
-    conditions: ['Nessuna condizione cronica'],
-    emergencyContact: {
-      name: 'Mario Rossi',
-      phone: '+39 123 456 7890',
-      relationship: 'Familiare',
-    },
-  });
+  const { account } = useAuth();
+  const [healthData, setHealthData] = useState(null);
+  const [originalData, setOriginalData] = useState(null);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!account?.id) return;
+
+    getHealthData(account.id)
+      .then((data) => {
+        const formatted = {
+          blood_type: data.blood_type || '',
+          allergies: data.allergies || [],
+          chronic_conditions: data.chronic_conditions || [],
+        };
+        setHealthData(formatted);
+        setOriginalData(formatted);
+      })
+      .catch((err) => {
+        setError('Errore nel caricamento dei dati di salute');
+        console.error(err);
+      });
+  }, [account]);
 
   const handleChange = (field, value) => {
-    setHealthData(prev => ({ ...prev, [field]: value }));
+    const updated = { ...healthData, [field]: value };
+    setHealthData(updated);
+    checkIfChanged(updated);
   };
 
-  const handleContactChange = (key, value) => {
-    setHealthData(prev => ({
-      ...prev,
-      emergencyContact: {
-        ...prev.emergencyContact,
-        [key]: value,
-      },
-    }));
+  const checkIfChanged = (updatedData) => {
+    setHasChanges(JSON.stringify(updatedData) !== JSON.stringify(originalData));
   };
+
+  const handleSave = async () => {
+    if (!account?.id || !hasChanges) return;
+    setSaving(true);
+    setError('');
+
+    try {
+      await updateHealthData(
+        account.id,
+        healthData.blood_type,
+        healthData.allergies,
+        healthData.chronic_conditions
+      );
+      setOriginalData(healthData);
+      setHasChanges(false);
+    } catch (err) {
+      setError(err.message || 'Errore durante il salvataggio');
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!healthData) {
+    return <div className="text-center py-6 text-gray-600">Caricamento dati di salute...</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -35,8 +73,8 @@ function HealthTab() {
       <div className="bg-blue-50 p-6 rounded-lg">
         <label className="block text-sm font-semibold text-blue-900 mb-2">Gruppo Sanguigno</label>
         <select
-          value={healthData.bloodType}
-          onChange={e => handleChange('bloodType', e.target.value)}
+          value={healthData.blood_type}
+          onChange={e => handleChange('blood_type', e.target.value)}
           className="w-full px-4 py-2 border rounded-lg"
         >
           {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((type) => (
@@ -45,26 +83,10 @@ function HealthTab() {
         </select>
       </div>
 
-      {/* Contatto emergenza */}
-      <div className="bg-red-50 p-6 rounded-lg space-y-4">
-        <h3 className="text-lg font-semibold text-red-900">Contatto di Emergenza</h3>
-        {['name', 'phone', 'relationship'].map((field) => (
-          <div key={field}>
-            <label className="block text-sm font-medium capitalize mb-1">{field}</label>
-            <input
-              type="text"
-              value={healthData.emergencyContact[field]}
-              onChange={e => handleContactChange(field, e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-        ))}
-      </div>
-
       {/* Allergie */}
       <div className="bg-yellow-50 p-6 rounded-lg space-y-2">
         <h3 className="text-lg font-semibold text-yellow-900 mb-2">Allergie</h3>
-        {healthData.allergies.map((allergy, idx) => (
+        {healthData.allergies?.map((allergy, idx) => (
           <div key={idx} className="flex items-center gap-2">
             <input
               type="text"
@@ -77,7 +99,12 @@ function HealthTab() {
               className="flex-1 px-3 py-2 border rounded-lg"
             />
             <button
-              onClick={() => handleChange('allergies', healthData.allergies.filter((_, i) => i !== idx))}
+              onClick={() =>
+                handleChange(
+                  'allergies',
+                  healthData.allergies.filter((_, i) => i !== idx)
+                )
+              }
               className="text-red-600 hover:text-red-800"
             >
               ✕
@@ -95,20 +122,25 @@ function HealthTab() {
       {/* Condizioni croniche */}
       <div className="bg-purple-50 p-6 rounded-lg space-y-2">
         <h3 className="text-lg font-semibold text-purple-900 mb-2">Condizioni Croniche</h3>
-        {healthData.conditions.map((condition, idx) => (
+        {healthData.chronic_conditions?.map((condition, idx) => (
           <div key={idx} className="flex items-center gap-2">
             <input
               type="text"
               value={condition}
               onChange={(e) => {
-                const updated = [...healthData.conditions];
+                const updated = [...healthData.chronic_conditions];
                 updated[idx] = e.target.value;
-                handleChange('conditions', updated);
+                handleChange('chronic_conditions', updated);
               }}
               className="flex-1 px-3 py-2 border rounded-lg"
             />
             <button
-              onClick={() => handleChange('conditions', healthData.conditions.filter((_, i) => i !== idx))}
+              onClick={() =>
+                handleChange(
+                  'chronic_conditions',
+                  healthData.chronic_conditions.filter((_, i) => i !== idx)
+                )
+              }
               className="text-red-600 hover:text-red-800"
             >
               ✕
@@ -116,10 +148,28 @@ function HealthTab() {
           </div>
         ))}
         <button
-          onClick={() => handleChange('conditions', [...healthData.conditions, ''])}
+          onClick={() =>
+            handleChange('chronic_conditions', [...healthData.chronic_conditions, ''])
+          }
           className="text-sm text-purple-700 hover:text-purple-900 mt-2"
         >
           + Aggiungi condizione
+        </button>
+      </div>
+
+      {/* Pulsante Salva */}
+      {error && <div className="text-red-600 text-sm">{error}</div>}
+      <div className="text-right">
+        <button
+          onClick={handleSave}
+          disabled={!hasChanges || saving}
+          className={`px-6 py-2 rounded-lg font-medium transition ${
+            hasChanges
+              ? 'bg-green-600 text-white hover:bg-green-700'
+              : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+          }`}
+        >
+          {saving ? 'Salvataggio...' : 'Salva'}
         </button>
       </div>
     </div>

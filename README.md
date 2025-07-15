@@ -1,21 +1,21 @@
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti
-- cambio password                                                ✅ 
+- cambio password                                                 
 - recupero password
 - modifica profilo
 - verifica dei dottori registrati (tabella id)
 - cronologia appuntamenti
 
 # paziente
-- cronologia appuntamenti                                        ✅    
+- cronologia appuntamenti                                        ✅                                                  
 - recensione appuntamenti                                        ✅
 - modale di prenotazione effettuata                              ✅
 - cambio password                                                ✅
 - modifica profilo                                               ✅
 - elenco calendario / prossimi appuntamenti                      ✅
-- salute ampliare db
-- implementazione preferenze
-- recupero password
+- salute ampliare db                                             ✅
+- (implementazione preferenze)
+- (recupero password)
 
 # chat
 - integrazione chat ai con database
@@ -23,5 +23,4 @@
 - formattazione risposte
 
 CAPIRE CONSISTENZA DATI review APPOINTMNET E COME POPOLARE review
-
 

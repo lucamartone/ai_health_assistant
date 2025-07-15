@@ -92,7 +92,6 @@ export async function reload() {
     return data;
 }
 
-//restituisce tutti gli appuntamenti in fasw book dato un paziente -> usata per display appuntamenti in calendario
 export async function get_booked_appointments(id_patient) {
     const url = `${import.meta.env.VITE_BACKEND_URL}/patient/appointments/booked_appointments?patient_id=${id_patient}`;
     const response = await fetch(url, {

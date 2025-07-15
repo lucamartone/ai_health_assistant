@@ -28,7 +28,10 @@ CREATE TABLE doctor (
 
 -- Tabella patient (deriva da account)
 CREATE TABLE patient (
-    id INT PRIMARY KEY REFERENCES account(id)
+    id INT PRIMARY KEY REFERENCES account(id),
+    blood_type VARCHAR(10) CHECK (blood_type IN ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')),
+    allergies TEXT[],
+    chronic_conditions TEXT[]
 );
 
 -- Tabella location
