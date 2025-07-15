@@ -110,3 +110,22 @@ export async function get_booked_appointments(id_patient) {
     const data = await response.json();
     return data;
 }
+
+export async function getHistory(patient_id) {
+    const url = `${import.meta.env.VITE_BACKEND_URL}/patient/appointments/history?patient_id=${patient_id}`;
+    
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Errore recupero cronologia appuntamenti');
+    }
+    
+    const data = await response.json();
+    return data;
+}

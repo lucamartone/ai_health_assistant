@@ -158,38 +158,51 @@ async def get_free_slots(
 
 
 @router_appointments.get("/history")
-async def get_patient_history(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+async def history(patient_id: int = Query(..., gt=0, description="ID del paziente")):
     try:
-        query = """
-        SELECT
-          a.id AS appointment_id,
-          a.date_time,
-          a.price,
-          a.status,
-          l.address,
-          l.city,
-          d.id AS doctor_id,
-          u.name AS doctor_name,
-          u.surname AS doctor_surname,
-          h.report,
-          h.review
-        FROM history h
-        JOIN appointment a ON h.appointment_id = a.id
-        JOIN location l ON a.location_id = l.id
-        JOIN doctor d ON a.doctor_id = d.id
-        JOIN account u ON d.id = u.id
-        WHERE h.patient_id = %s
-        ORDER BY a.date_time DESC
-        """
+        #query
+        query = ''' SELECT
+                        a.id,
+                        acc.surname AS doctor_surname,
+                        d.specialization,
+                        l.address,
+                        l.city,
+                        a.date_time,
+                        a.price,
+                        a.status,
+                        a.created_at
+                    FROM appointment a
+                    JOIN doctor d ON a.doctor_id = d.id
+                    JOIN account acc ON d.id = acc.id
+                    JOIN location l ON a.location_id = l.id
+                    WHERE
+                        a.date_time < NOW()
+                        AND a.status = 'completed'
+                        AND a.patient_id = %s
+                        ORDER BY a.date_time ASC;
+                '''
+        #esecuzione query
         raw_result = execute_query(query, (patient_id,))
-        columns = [
-            "appointment_id", "date_time", "price", "status", "address", "city",
-            "doctor_id", "doctor_name", "doctor_surname", "report", "review"
+        
+        appointments: List[Appointment] = [
+            Appointment(
+                id=row[0],
+                doctor_surname=row[1],
+                specialization=row[2],
+                address=row[3],
+                city=row[4],
+                date_time=row[5],
+                price=float(row[6]),
+                status=row[7],
+                created_at=row[8]
+            )
+            for row in raw_result
         ]
-        result = [dict(zip(columns, row)) for row in raw_result]
-        return {"history": result}
+
+        return {"appointments": appointments}
+
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Errore nel recupero della cronologia: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti: {str(e)}")
     
 
 @router_appointments.get("/booked_appointments")

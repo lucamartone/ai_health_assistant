@@ -25,5 +25,5 @@ INSERT INTO clinical_folder (id, patient_id) VALUES (1, 20) ON CONFLICT (id) DO 
 
 -- Record medico
 INSERT INTO medical_record (clinical_folder_id, doctor_id, appointment_id, symptoms, diagnosis, treatment_plan, notes) VALUES
-(1, 10, 1, 'Mal di testa', 'Cefalea', 'Paracetamolo', 'Nessuna nota')
-ON CONFLICT DO NOTHING; 
+(1, 10, 1, 'Mal di testa', 'Cefalea', 'Paracetamolo per una settimana', 'Nessuna nota')
+ON CONFLICT DO NOTHING;
