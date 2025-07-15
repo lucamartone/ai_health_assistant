@@ -7,7 +7,7 @@
 - cronologia appuntamenti
 
 # paziente
-- cronologia appuntamenti                                               
+- cronologia appuntamenti                                        ✅    
 - recensione appuntamenti                                        ✅
 - modale di prenotazione effettuata                              ✅
 - cambio password                                                ✅
