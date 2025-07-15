@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from typing import Optional, List
-from datetime import datetime
+from typing import List
 from backend.connection import execute_query
 from backend.router_patient.pydantic.schemas import Appointment, ReviewRequest
 

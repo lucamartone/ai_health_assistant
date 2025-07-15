@@ -11,7 +11,7 @@ import { NumberOfPendingAppointments, NumberOfCompletedAppointments, NumberOfApp
 import PanoramicaTab from '../../components/profile/PanoramicaTab';
 import ProfileTab from '../../components/profile/ProfileTab';
 import AppointmentsTab from '../../components/profile/AppointmentsTab';
-import DoctorsTab from '../../components/profile/DoctorsTab';
+import HistoryTab from '../../components/profile/HistoryTab';
 import ChatTab from '../../components/profile/ChatTab';
 import HealthTab from '../../components/profile/HealthTab';
 import SecurityTab from '../../components/profile/SecurityTab';
@@ -22,7 +22,7 @@ const TABS = [
   { key: 'overview', label: 'Panoramica', icon: <BarChart3 className="h-5 w-5" /> },
   { key: 'profile', label: 'Profilo', icon: <User className="h-5 w-5" /> },
   { key: 'appointments', label: 'Appuntamenti', icon: <Calendar className="h-5 w-5" /> },
-  { key: 'doctors', label: 'I Miei Dottori', icon: <Stethoscope className="h-5 w-5" /> },
+  { key: 'history', label: 'Cronologia', icon: <Stethoscope className="h-5 w-5" /> },
   {key: 'rank', label: 'Valuta', icon: <Star className="h-5 w-5" />},
   { key: 'chat', label: 'Chat AI', icon: <MessageCircle className="h-5 w-5" /> },
   { key: 'health', label: 'Salute', icon: <Heart className="h-5 w-5" /> },
@@ -147,7 +147,7 @@ function Profile() {
           {activeTab === 'profile' && <ProfileTab />}
           {activeTab === 'appointments' && <AppointmentsTab account={account}/>}
           {activeTab === 'rank' && <RankTab account={account}/>}
-          {activeTab === 'doctors' && <DoctorsTab />}
+          {activeTab === 'history' && <HistoryTab />}
           {activeTab === 'chat' && <ChatTab />}
           {activeTab === 'health' && <HealthTab />}
           {activeTab === 'security' && <SecurityTab />}
