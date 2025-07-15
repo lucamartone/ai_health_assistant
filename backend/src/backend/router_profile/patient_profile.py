@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Response, Query
-from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest, ModifyProfileRequest
+from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest, ModifyProfileRequest, HealthDataInput
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
 from passlib.context import CryptContext
@@ -261,3 +261,50 @@ async def last_visit_date(patient_id: int = Query(..., gt=0, description="ID del
         return {"last_visit": result[0][0]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore durante il recupero dell'ultima visita: {str(e)}")
+    
+@router_patient_profile.post("/update_health_data")
+async def update_health_data(data: HealthDataInput):
+    try:
+        query = """
+        INSERT INTO patient (id, blood_type, allergies, chronic_conditions)
+        VALUES (%s, %s, %s, %s)
+        ON CONFLICT (id) DO UPDATE
+        SET blood_type = EXCLUDED.blood_type,
+            allergies = EXCLUDED.allergies,
+            chronic_conditions = EXCLUDED.chronic_conditions
+        """
+        execute_query(query, (
+            data.patient_id,
+            data.blood_type,
+            data.allergies,
+            data.chronic_conditions
+        ), commit=True)
+
+        return {"message": "Dati sanitari aggiornati con successo"}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Errore durante l'aggiornamento dei dati sanitari: {str(e)}"
+        )
+    
+@router_patient_profile.get("/get_health_data")
+async def get_health_data(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    try:
+        query = """
+        SELECT blood_type, allergies, chronic_conditions
+        FROM patient
+        WHERE id = %s
+        """
+        result = execute_query(query, (patient_id,))
+        if not result:
+            raise HTTPException(status_code=404, detail="Dati sanitari non trovati")
+        
+        health_data = result[0]
+        return {
+            "blood_type": health_data[0],
+            "allergies": health_data[1],
+            "chronic_conditions": health_data[2]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante il recupero dei dati sanitari: {str(e)}")

@@ -1,13 +1,13 @@
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti
-- cambio password                                                ✅ 
+- cambio password                                                 
 - recupero password
 - modifica profilo
 - verifica dei dottori registrati (tabella id)
 - cronologia appuntamenti
 
 # paziente
-- cronologia appuntamenti                                               
+- cronologia appuntamenti                                        ✅                                                  
 - recensione appuntamenti                                        ✅
 - modale di prenotazione effettuata                              ✅
 - cambio password                                                ✅

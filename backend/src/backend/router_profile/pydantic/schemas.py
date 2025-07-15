@@ -38,3 +38,9 @@ class ModifyProfileRequest(BaseModel):
     phone: Optional[str] = None
     email: EmailStr
     profile_img: Optional[str] = None
+
+class HealthDataInput(BaseModel):
+    patient_id: int
+    blood_type: Optional[str] = None
+    allergies: Optional[List[str]] = None
+    chronic_conditions: Optional[List[str]] = None

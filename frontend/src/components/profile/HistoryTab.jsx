@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getPatientDoctors } from '../../services/profile/fetch_profile';
-import { Stethoscope, MapPin, Mail } from 'lucide-react';
 import { getHistory } from '../../services/appointments/fetch_appointments';
 
 function HistoryTab({ account }) {
@@ -10,7 +7,7 @@ function HistoryTab({ account }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!account?.id) {  
+    if (!account?.id) {
       return;
     }
     setLoadingAppointments(true);
