@@ -22,6 +22,6 @@
 - indirizzamento verso prenotazione / specialista con filtro di categoria
 - formattazione risposte
 
-CAPIRE CONSISTENZA DATI HISTORY APPOINTMNET E COME POPOLARE HISTORY
+CAPIRE CONSISTENZA DATI review APPOINTMNET E COME POPOLARE review
 
 

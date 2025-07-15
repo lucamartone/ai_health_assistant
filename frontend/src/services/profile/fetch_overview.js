@@ -1,3 +1,4 @@
+
 export async function NumberOfPendingAppointments(accountId) {
     const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/number_of_pending_appointments?patient_id=${accountId}`, {
         method: 'GET',

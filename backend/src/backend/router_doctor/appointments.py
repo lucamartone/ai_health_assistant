@@ -30,7 +30,7 @@ def get_appointments(data: AppointmentsRequest = Query(..., description="ID of t
     """Recupera gli appuntamenti futuri di un dottore specifico."""
     try:
         query = """
-        SELECT id, doctor_id, patient_id, location_id, date_time, price, state
+        SELECT id, doctor_id, patient_id, location_id, date_time, price, status
         FROM appointment
         WHERE doctor_id = %s AND date_time >= NOW()
         ORDER BY date_time ASC
@@ -39,7 +39,7 @@ def get_appointments(data: AppointmentsRequest = Query(..., description="ID of t
         raw_result = execute_query(query, params)
 
         # Colonne da associare ai valori di ogni riga
-        columns = ["id", "doctor_id", "patient_id", "location_id", "date_time", "price", "state"]
+        columns = ["id", "doctor_id", "patient_id", "location_id", "date_time", "price", "status"]
         appointments = [dict(zip(columns, row)) for row in raw_result]
 
         return {"appointments": appointments}
@@ -53,10 +53,10 @@ def insert_appointment(data: AppointmentInsert):
     print("inserisco")
     try:
         query = """
-        INSERT INTO appointment (doctor_id, location_id, date_time, state)
+        INSERT INTO appointment (doctor_id, location_id, date_time, status)
         VALUES (%s, %s, %s, %s)
         """
-        params = (data.doctor_id, data.location_id, data.date_time, data.state)
+        params = (data.doctor_id, data.location_id, data.date_time, data.status)
         execute_query(query, params, commit=True)
         return {"message": "Appuntamento inserito con successo"}
     except Exception as e:
@@ -83,7 +83,7 @@ def reload():
     try:
         query = """
         UPDATE appointment
-        SET state = 'terminated'
+        SET status = 'terminated'
         WHERE date_time < NOW()
         """
         execute_query(query, commit=True)

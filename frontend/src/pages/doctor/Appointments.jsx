@@ -58,7 +58,7 @@ function Appointments() {
 
           grouped[locName].push({
             dateTime: new Date(appointment.date_time),
-            state: appointment.state
+            state: appointment.status
           });
         }
 
