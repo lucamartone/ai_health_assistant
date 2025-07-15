@@ -34,7 +34,7 @@ async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, descriptio
                         ORDER BY a.date_time ASC;
                 '''
         #esecuzione query
-        raw_result = execute_query(query, (patient_id,))
+        raw_result = execute_query(query, (patient_id,), commit = True)
         
         appointments: List[Appointment] = [
             Appointment(
@@ -70,11 +70,12 @@ async def review_appointment(data: ReviewRequest):
             raise HTTPException(status_code=404, detail="Appointment not found or not completed.")
 
         # Insert the review into the review table
-        insert_query = """
-            INSERT INTO review (appointment_id, stars, report)
-            VALUES (%s, %s, %s)
+        update_query = """
+            UPDATE review
+            SET stars = %s, report = %s
+            WHERE appointment_id = %s
         """
-        execute_query(insert_query, (data.appointment_id, data.stars, data.report), commit=True)
+        execute_query(update_query, (data.stars, data.report, data.appointment_id), commit=True)
 
         return {"message": "Review submitted successfully."}
 
