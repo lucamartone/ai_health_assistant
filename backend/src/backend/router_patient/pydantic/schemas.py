@@ -10,7 +10,7 @@ class Appointment(BaseModel):
     city: str
     date_time: datetime
     price: float
-    state: str
+    status: str
     created_at: datetime
 
 class ReviewRequest(BaseModel):
