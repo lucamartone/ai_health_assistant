@@ -147,7 +147,7 @@ function Profile() {
           {activeTab === 'profile' && <ProfileTab />}
           {activeTab === 'appointments' && <AppointmentsTab account={account}/>}
           {activeTab === 'rank' && <RankTab account={account}/>}
-          {activeTab === 'history' && <HistoryTab />}
+          {activeTab === 'history' && <HistoryTab account={account}/>}
           {activeTab === 'chat' && <ChatTab />}
           {activeTab === 'health' && <HealthTab />}
           {activeTab === 'security' && <SecurityTab />}
