@@ -12,7 +12,6 @@ import PanoramicaTab from '../../components/profile/patient/PanoramicaTab';
 import ProfileTab from '../../components/profile/patient/ProfileTab';
 import AppointmentsTab from '../../components/profile/patient/AppointmentsTab';
 import HistoryTab from '../../components/profile/patient/HistoryTab';
-import ChatTab from '../../components/profile/patient/ChatTab';
 import HealthTab from '../../components/profile/patient/HealthTab';
 import SecurityTab from '../../components/profile/patient/SecurityTab';
 import PreferencesTab from '../../components/profile/patient/PreferencesTab';
@@ -23,8 +22,7 @@ const TABS = [
   { key: 'profile', label: 'Profilo', icon: <User className="h-5 w-5" /> },
   { key: 'appointments', label: 'Appuntamenti', icon: <Calendar className="h-5 w-5" /> },
   { key: 'history', label: 'Cronologia', icon: <Stethoscope className="h-5 w-5" /> },
-  {key: 'rank', label: 'Valuta', icon: <Star className="h-5 w-5" />},
-  { key: 'chat', label: 'Chat AI', icon: <MessageCircle className="h-5 w-5" /> },
+  { key: 'rank', label: 'Valuta', icon: <Star className="h-5 w-5" />},
   { key: 'health', label: 'Salute', icon: <Heart className="h-5 w-5" /> },
   { key: 'security', label: 'Sicurezza', icon: <Shield className="h-5 w-5" /> },
   { key: 'preferences', label: 'Preferenze', icon: <Settings className="h-5 w-5" /> },
@@ -117,23 +115,68 @@ function Profile() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-2xl shadow-xl mb-8 overflow-x-auto flex justify-center">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap ${
-                activeTab === tab.key
-                  ? 'bg-blue-600 text-white border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
+        {/* Tabs raggruppati con separazione visiva */}
+        <div className="bg-white rounded-2xl shadow-xl mb-8 overflow-x-auto">
+          <div className="flex justify-center items-center space-x-6 px-4 py-2">
+            
+            {/* Gruppo sinistra */}
+            <div className="flex space-x-1 pr-4 border-r border-gray-200">
+              {TABS.filter(tab => ['overview', 'profile', 'health'].includes(tab.key)).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg whitespace-nowrap transition ${
+                    activeTab === tab.key
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Gruppo centro */}
+            <div className="flex space-x-1 px-4 border-r border-gray-200">
+              {TABS.filter(tab => ['appointments', 'history', 'rank'].includes(tab.key)).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg whitespace-nowrap transition ${
+                    activeTab === tab.key
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Gruppo destra */}
+            <div className="flex space-x-1 pl-4">
+              {TABS.filter(tab => ['security', 'preferences'].includes(tab.key)).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg whitespace-nowrap transition ${
+                    activeTab === tab.key
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+          </div>
         </div>
+
+
 
         {/* Tab content */}
         <motion.div
@@ -148,7 +191,6 @@ function Profile() {
           {activeTab === 'appointments' && <AppointmentsTab account={account}/>}
           {activeTab === 'rank' && <RankTab account={account}/>}
           {activeTab === 'history' && <HistoryTab account={account}/>}
-          {activeTab === 'chat' && <ChatTab />}
           {activeTab === 'health' && <HealthTab />}
           {activeTab === 'security' && <SecurityTab />}
           {activeTab === 'preferences' && <PreferencesTab />}
