@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getToRankAppointments, reviewAppointment } from '../../services/appointments/fetch_reviews';
+import { getToRankAppointments, reviewAppointment } from '../../../services/appointments/fetch_reviews';
 import { Star } from 'lucide-react';
 
 function RankTab({ account }) {

@@ -8,15 +8,15 @@ import {
 } from 'lucide-react';
 import { NumberOfPendingAppointments, NumberOfCompletedAppointments, NumberOfAppointments, NumberOfDoctorsVisited, LastVisitDate } from '../../services/profile/fetch_overview';
 
-import PanoramicaTab from '../../components/profile/PanoramicaTab';
-import ProfileTab from '../../components/profile/ProfileTab';
-import AppointmentsTab from '../../components/profile/AppointmentsTab';
-import HistoryTab from '../../components/profile/HistoryTab';
-import ChatTab from '../../components/profile/ChatTab';
-import HealthTab from '../../components/profile/HealthTab';
-import SecurityTab from '../../components/profile/SecurityTab';
-import PreferencesTab from '../../components/profile/PreferencesTab';
-import RankTab from '../../components/profile/RankTab';
+import PanoramicaTab from '../../components/profile/patient/PanoramicaTab';
+import ProfileTab from '../../components/profile/patient/ProfileTab';
+import AppointmentsTab from '../../components/profile/patient/AppointmentsTab';
+import HistoryTab from '../../components/profile/patient/HistoryTab';
+import ChatTab from '../../components/profile/patient/ChatTab';
+import HealthTab from '../../components/profile/patient/HealthTab';
+import SecurityTab from '../../components/profile/patient/SecurityTab';
+import PreferencesTab from '../../components/profile/patient/PreferencesTab';
+import RankTab from '../../components/profile/patient/RankTab';
 
 const TABS = [
   { key: 'overview', label: 'Panoramica', icon: <BarChart3 className="h-5 w-5" /> },

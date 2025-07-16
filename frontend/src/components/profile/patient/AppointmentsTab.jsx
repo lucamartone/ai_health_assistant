@@ -1,6 +1,5 @@
-// src/pages/tabs/AppointmentsTab.jsx
 import { useEffect, useState } from 'react';
-import {get_booked_appointments} from '../../services/appointments/fetch_appointments';
+import {get_booked_appointments} from '../../../services/appointments/fetch_appointments';
 
 
 function AppointmentsTab({ account }) {

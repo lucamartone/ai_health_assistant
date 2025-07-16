@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { changePassword, logout } from '../../services/profile/fetch_profile';
-import { useAuth } from '../../contexts/AuthContext';
-import SimpleModal from '../SimpleModal';
+import { changePassword, logout } from '../../../services/profile/fetch_profile';
+import { useAuth } from '../../../contexts/AuthContext';
+import SimpleModal from '../../SimpleModal';
 
 function SecurityTab() {
   const [password, setPassword] = useState('');
