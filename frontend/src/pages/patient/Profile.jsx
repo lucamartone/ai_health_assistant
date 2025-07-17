@@ -186,7 +186,7 @@ function Profile() {
           transition={{ duration: 0.3 }}
           className="bg-white rounded-2xl shadow-xl p-8"
         >
-          {activeTab === 'overview' && <PanoramicaTab />}
+          {activeTab === 'overview' && <PanoramicaTab/>}
           {activeTab === 'profile' && <ProfileTab />}
           {activeTab === 'appointments' && <AppointmentsTab account={account}/>}
           {activeTab === 'rank' && <RankTab account={account}/>}
