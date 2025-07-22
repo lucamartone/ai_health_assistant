@@ -1,6 +1,6 @@
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti
-- cambio password                                                 
+- cambio password
 - recupero password
 - modifica profilo
 - verifica dei dottori registrati (tabella id)
@@ -22,6 +22,7 @@
 - integrazione chat ai con database
 - indirizzamento verso prenotazione / specialista con filtro di categoria
 - formattazione risposte
+- modifica prompt per far ritornare un solo specialista
 
 # ranking dottori nelle prenotazioni
 - trovare dei parametri per ordinare i dottori (localizzazione, valutazioni, anni di attività)
