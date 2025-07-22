@@ -16,11 +16,18 @@
 - salute ampliare db                                             ✅
 - (implementazione preferenze)
 - (recupero password)
+- controllare bug cartella clinica
 
 # chat
 - integrazione chat ai con database
 - indirizzamento verso prenotazione / specialista con filtro di categoria
 - formattazione risposte
 
-CAPIRE CONSISTENZA DATI review APPOINTMNET E COME POPOLARE review
+# ranking dottori nelle prenotazioni
+- trovare dei parametri per ordinare i dottori (localizzazione, valutazioni, anni di attività)
+
+# autenticazione
+- modifica registrazione dottore
+- aggiunta caricamento documento nel profilo
+- pagina accettazione richieste
 
