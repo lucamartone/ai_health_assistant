@@ -4,6 +4,8 @@ from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+import base64
+from backend.router_profile.pydantic.schemas import ModifyProfileRequest
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token
 
 router_doctor_profile = APIRouter()
@@ -176,6 +178,59 @@ async def login(data: LoginRequest, response: Response):
         raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore server: {str(e)}")
+
+@router_doctor_profile.post("/edit_profile")
+async def edit_profile(data: ModifyProfileRequest):
+    try:
+        # Aggiorna i dati di base
+        query = """
+            UPDATE account
+            SET name = %s,
+                surname = %s,
+                phone = %s
+            WHERE email = %s
+        """
+        params = (data.name, data.surname, data.phone, data.email)
+        execute_query(query, params, commit=True)
+
+        query = """
+            UPDATE doctor
+            SET specialization = %s
+            WHERE id = (SELECT id FROM account WHERE email = %s)
+        """
+        params = (data.specialization, data.email)
+        execute_query(query, params, commit=True)
+
+        for address in data.addresses:
+                
+            query = """
+                UPDATE location
+                SET address = %s
+                WHERE doctor_id = (SELECT id FROM account WHERE email = %s)
+            """
+            params = (address, data.email)
+            execute_query(query, params, commit=True)
+
+        # Aggiorna l'immagine se presente
+        if data.profile_img:
+            try:
+                img_bytes = base64.b64decode(data.profile_img.split(",")[-1])
+                query_img = "UPDATE account SET profile_img = %s WHERE email = %s"
+                execute_query(query_img, (img_bytes, data.email), commit=True)
+            except Exception as img_err:
+                raise HTTPException(status_code=400, detail="Errore durante la decodifica dell'immagine profilo")
+        else:
+            try:
+                query_img = "UPDATE account SET profile_img = NULL WHERE email = %s"
+                execute_query(query_img, (data.email,), commit=True)
+            except Exception as img_err:
+                raise HTTPException(status_code=400, detail="Errore durante la rimozione dell'immagine profilo")
+
+
+        return {"message": "Dati aggiornati con successo"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante l'aggiornamento: {str(e)}")
 
 @router_doctor_profile.get("/appointments")
 async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description="ID del dottore")):

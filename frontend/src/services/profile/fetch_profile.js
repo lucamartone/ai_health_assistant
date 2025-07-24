@@ -150,7 +150,7 @@ export async function getPatientDoctors(patientId) {
   return await response.json();
 }
 
-export async function editProfile(name, surname, phone, email, profile_img) {
+export async function editPatientProfile(name, surname, phone, email, profile_img) {
   const data = {name, surname, phone, email, profile_img};
   const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/edit_profile`, {
     method: 'POST',
@@ -164,6 +164,22 @@ export async function editProfile(name, surname, phone, email, profile_img) {
   }
 
   return await response.json();
+}
+
+export async function editDoctorProfile(name, surname, phone, email, profile_img, specialization, addresses) {
+ const data = {name, surname, phone, email, profile_img, specialization, addresses};
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/doctor/edit_profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Errore aggiornamento profilo dottore');
+    }
+  
+    return await response.json();
 }
 
 export async function fetchUpdatedAccount() {

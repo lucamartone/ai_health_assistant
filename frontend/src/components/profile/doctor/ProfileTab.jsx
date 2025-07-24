@@ -1,37 +1,51 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { editPatientProfile, fetchUpdatedAccount } from '../../../services/profile/fetch_profile';
+import { editDoctorProfile } from '../../../services/profile/fetch_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon, PencilIcon } from 'lucide-react';
 
 function ProfileTab() {
-  const { account, setAccount } = useAuth();
+  const { account, setAccount, refreshAccount } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [name, setName] = useState(account.name || '');
-  const [surname, setSurname] = useState(account.surname || '');
-  const [phone, setPhone] = useState(account.phone || '');
-  const [profileImg, setProfileImg] = useState(account.profile_img || null);
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [phone, setPhone] = useState('');
+  const [profileImg, setProfileImg] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const fileInputRef = useRef(null);
 
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const originalData = {
-    name: account.name || '',
-    surname: account.surname || '',
-    phone: account.phone || '',
-    profile_img: account.profile_img || null
-  };
+  // 🔁 Aggiorna i campi se cambia l'account
+  useEffect(() => {
+    if (account) {
+      setName(account.name || '');
+      setSurname(account.surname || '');
+      setPhone(account.phone || '');
+      setProfileImg(account.profile_img || null);
+    }
+  }, [account]);
+
+  // 🔁 Reset dei campi quando si annulla l'editing
+  useEffect(() => {
+    if (!isEditing && account) {
+      setName(account.name || '');
+      setSurname(account.surname || '');
+      setPhone(account.phone || '');
+      setProfileImg(account.profile_img || null);
+      setSelectedFile(null);
+    }
+  }, [isEditing, account]);
 
   const hasChanges =
-    name !== originalData.name ||
-    surname !== originalData.surname ||
-    phone !== originalData.phone ||
-    (selectedFile !== null);
+    name !== (account?.name || '') ||
+    surname !== (account?.surname || '') ||
+    phone !== (account?.phone || '') ||
+    selectedFile !== null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,14 +54,23 @@ function ProfileTab() {
     setIsLoading(true);
     try {
       let base64Image = profileImg;
-      if (selectedFile) base64Image = await toBase64(selectedFile);
+      if (selectedFile) {
+        base64Image = await toBase64(selectedFile);
+      }
 
-      await editPatientProfile(name, surname, phone, account.email, base64Image);
-      const updatedAccount = await fetchUpdatedAccount();
-      setAccount(updatedAccount);
-      setProfileImg(updatedAccount.profile_img);
-      setSuccessMsg('Dati aggiornati con successo');
+      await editDoctorProfile(name, surname, phone, account.email, base64Image);
+      await refreshAccount();
+
+      setAccount((prev) => ({
+        ...prev,
+        name,
+        surname,
+        phone,
+        profile_img: base64Image,
+      }));
+
       setIsEditing(false);
+      setSuccessMsg('Dati aggiornati con successo');
       navigate(location.pathname, { replace: true });
     } catch (err) {
       console.error(err);
@@ -80,19 +103,8 @@ function ProfileTab() {
       reader.onerror = reject;
     });
 
-  useEffect(() => {
-    if (!isEditing) {
-      setName(originalData.name);
-      setSurname(originalData.surname);
-      setPhone(originalData.phone);
-      setProfileImg(originalData.profile_img);
-      setSelectedFile(null);
-    }
-  }, [isEditing]);
-
   return (
     <div className="max-w-5xl mx-auto p-4">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Profilo Personale</h2>
         <button
@@ -103,7 +115,6 @@ function ProfileTab() {
         </button>
       </div>
 
-      {/* Form + Foto */}
       <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-8 items-start">
         {/* FOTO */}
         <div className="flex flex-col items-center">
@@ -195,16 +206,13 @@ function ProfileTab() {
         </div>
       </form>
 
-      {/* INFO NON MODIFICABILI - UNA SOLA RIGA */}
+      {/* INFO NON MODIFICABILI */}
       <div className="mt-10 pt-6 border-t">
         <div className="flex flex-wrap gap-x-12 gap-y-4">
-          {/* EMAIL */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-600">Email:</span>
             <span className="text-sm">{account.email}</span>
           </div>
-
-          {/* DATA CREAZIONE */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-600">Creazione account:</span>
             <span className="text-sm">10 luglio 2024</span>

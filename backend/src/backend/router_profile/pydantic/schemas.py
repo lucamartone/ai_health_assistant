@@ -37,6 +37,8 @@ class ModifyProfileRequest(BaseModel):
     surname: str
     phone: Optional[str] = None
     email: EmailStr
+    specialization: Optional[str] = None
+    addresses: Optional[List[str]] = None
     profile_img: Optional[str] = None
 
 class HealthDataInput(BaseModel):

@@ -3,7 +3,6 @@
 - cambio password
 - recupero password
 - modifica profilo
-- verifica dei dottori registrati (tabella id)
 - cronologia appuntamenti
 
 # paziente
