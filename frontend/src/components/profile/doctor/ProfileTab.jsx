@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { editDoctorProfile, fetchUpdatedAccount } from '../../../services/profile/fetch_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon, PencilIcon } from 'lucide-react';
+import AddressAutocomplete from '../../../components/AddressAutocomplete';
 
 function ProfileTab() {
   const { account, setAccount } = useAuth();
@@ -13,6 +14,8 @@ function ProfileTab() {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [phone, setPhone] = useState('');
+  const [specialization, setSpecialization] = useState('');
+  const [addresses, setAddresses] = useState([]);
   const [profileImg, setProfileImg] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -20,13 +23,14 @@ function ProfileTab() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Sincronizza i campi ogni volta che cambia account (dopo refresh)
   useEffect(() => {
     if (account && !isEditing) {
       setName(account.name || '');
       setSurname(account.surname || '');
       setPhone(account.phone || '');
       setProfileImg(account.profile_img || null);
+      setSpecialization(account.specialization || '');
+      setAddresses(account.addresses || []);
       setSelectedFile(null);
     }
   }, [account, isEditing]);
@@ -35,6 +39,8 @@ function ProfileTab() {
     name !== (account?.name || '') ||
     surname !== (account?.surname || '') ||
     phone !== (account?.phone || '') ||
+    specialization !== (account?.specialization || '') ||
+    JSON.stringify(addresses) !== JSON.stringify(account?.addresses || []) ||
     selectedFile !== null;
 
   const handleSubmit = async (e) => {
@@ -44,14 +50,9 @@ function ProfileTab() {
     setIsLoading(true);
     try {
       let base64Image = profileImg;
-      if (selectedFile) {
-        base64Image = await toBase64(selectedFile);
-      }
+      if (selectedFile) base64Image = await toBase64(selectedFile);
 
-      // ✅ Salva lato backend
-      await editDoctorProfile(name, surname, phone, account.email, base64Image);
-
-      // ✅ Rileggi i dati aggiornati dal backend
+      await editDoctorProfile(name, surname, phone, account.email, base64Image, specialization, addresses);
       const updatedAccount = await fetchUpdatedAccount();
       setAccount(updatedAccount);
 
@@ -91,7 +92,6 @@ function ProfileTab() {
 
   return (
     <div className="max-w-5xl mx-auto p-4">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Profilo Personale</h2>
         <button
@@ -102,7 +102,6 @@ function ProfileTab() {
         </button>
       </div>
 
-      {/* Form + Foto */}
       <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-8 items-start">
         {/* FOTO */}
         <div className="flex flex-col items-center">
@@ -165,6 +164,15 @@ function ProfileTab() {
               className="sm:col-span-2 px-4 py-2 border rounded-lg w-full"
             />
 
+            <label className="text-sm font-medium text-right sm:col-span-1">Specializzazione</label>
+            <input
+              type="text"
+              value={specialization}
+              onChange={(e) => setSpecialization(e.target.value)}
+              disabled={!isEditing}
+              className="sm:col-span-2 px-4 py-2 border rounded-lg w-full"
+            />
+
             <label className="text-sm font-medium text-right sm:col-span-1">Telefono</label>
             <input
               type="tel"
@@ -173,6 +181,46 @@ function ProfileTab() {
               disabled={!isEditing}
               className="sm:col-span-2 px-4 py-2 border rounded-lg w-full"
             />
+
+            {/* 🔵 INDIRIZZI */}
+            <label className="text-sm font-medium text-right sm:col-span-1">Indirizzi</label>
+            <div className="sm:col-span-2 flex flex-col gap-2">
+              {addresses.map((entry, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <AddressAutocomplete
+                    value={entry}
+                    onChange={(newEntry) => {
+                      const updated = [...addresses];
+                      updated[index] = newEntry;
+                      setAddresses(updated);
+                    }}
+                  />
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = addresses.filter((_, i) => i !== index);
+                        setAddresses(updated);
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2Icon size={18} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAddresses([...addresses, { address: '', latitude: 0, longitude: 0 }])
+                  }
+                  className="text-blue-600 hover:underline text-sm mt-1 flex items-center gap-1"
+                >
+                  <PlusIcon size={16} /> Aggiungi indirizzo
+                </button>
+              )}
+            </div>
           </div>
 
           {isEditing && (
@@ -194,7 +242,6 @@ function ProfileTab() {
         </div>
       </form>
 
-      {/* INFO NON MODIFICABILI */}
       <div className="mt-10 pt-6 border-t">
         <div className="flex flex-wrap gap-x-12 gap-y-4">
           <div className="flex items-center gap-2">
