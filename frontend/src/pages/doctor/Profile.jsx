@@ -8,12 +8,12 @@ import {
 } from 'lucide-react';
 import { NumberOfPendingAppointments, NumberOfCompletedAppointments, NumberOfAppointments, NumberOfDoctorsVisited, LastVisitDate } from '../../services/profile/fetch_overview';
 
-import PanoramicaTab from '../../components/profile/patient/PanoramicaTab';
-import ProfileTab from '../../components/profile/patient/ProfileTab';
-import AppointmentsTab from '../../components/profile/patient/AppointmentsTab';
-import HistoryTab from '../../components/profile/patient/HistoryTab';
-import SecurityTab from '../../components/profile/patient/SecurityTab';
-import PreferencesTab from '../../components/profile/patient/PreferencesTab';
+import PanoramicaTab from '../../components/profile/doctor/PanoramicaTab';
+import ProfileTab from '../../components/profile/doctor/ProfileTab';
+import AppointmentsTab from '../../components/profile/doctor/AppointmentsTab';
+import HistoryTab from '../../components/profile/doctor/HistoryTab';
+import SecurityTab from '../../components/profile/doctor/SecurityTab';
+import PreferencesTab from '../../components/profile/doctor/PreferencesTab';
 
 const TABS = [
   { key: 'overview', label: 'Panoramica', icon: <BarChart3 className="h-5 w-5" /> },

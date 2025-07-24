@@ -1,11 +1,11 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { editDoctorProfile } from '../../../services/profile/fetch_profile';
+import { editDoctorProfile, fetchUpdatedAccount } from '../../../services/profile/fetch_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon, PencilIcon } from 'lucide-react';
 
 function ProfileTab() {
-  const { account, setAccount, refreshAccount } = useAuth();
+  const { account, setAccount } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -20,26 +20,16 @@ function ProfileTab() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🔁 Aggiorna i campi se cambia l'account
+  // ✅ Sincronizza i campi ogni volta che cambia account (dopo refresh)
   useEffect(() => {
-    if (account) {
-      setName(account.name || '');
-      setSurname(account.surname || '');
-      setPhone(account.phone || '');
-      setProfileImg(account.profile_img || null);
-    }
-  }, [account]);
-
-  // 🔁 Reset dei campi quando si annulla l'editing
-  useEffect(() => {
-    if (!isEditing && account) {
+    if (account && !isEditing) {
       setName(account.name || '');
       setSurname(account.surname || '');
       setPhone(account.phone || '');
       setProfileImg(account.profile_img || null);
       setSelectedFile(null);
     }
-  }, [isEditing, account]);
+  }, [account, isEditing]);
 
   const hasChanges =
     name !== (account?.name || '') ||
@@ -58,16 +48,12 @@ function ProfileTab() {
         base64Image = await toBase64(selectedFile);
       }
 
+      // ✅ Salva lato backend
       await editDoctorProfile(name, surname, phone, account.email, base64Image);
-      await refreshAccount();
 
-      setAccount((prev) => ({
-        ...prev,
-        name,
-        surname,
-        phone,
-        profile_img: base64Image,
-      }));
+      // ✅ Rileggi i dati aggiornati dal backend
+      const updatedAccount = await fetchUpdatedAccount();
+      setAccount(updatedAccount);
 
       setIsEditing(false);
       setSuccessMsg('Dati aggiornati con successo');
@@ -105,6 +91,7 @@ function ProfileTab() {
 
   return (
     <div className="max-w-5xl mx-auto p-4">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Profilo Personale</h2>
         <button
@@ -115,6 +102,7 @@ function ProfileTab() {
         </button>
       </div>
 
+      {/* Form + Foto */}
       <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-8 items-start">
         {/* FOTO */}
         <div className="flex flex-col items-center">

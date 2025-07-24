@@ -184,14 +184,14 @@ export async function editDoctorProfile(name, surname, phone, email, profile_img
 
 export async function fetchUpdatedAccount() {
   const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/profile/cookies/me`, {
-    method: 'GET',
     credentials: 'include',
   });
 
   if (!response.ok) {
-    throw new Error("Errore nel recupero del profilo aggiornato");
+    throw new Error('Errore nel recupero del profilo aggiornato');
   }
 
   const data = await response.json();
   return data.account;
 }
+
