@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { FolderOpen, User, FileText, ArrowLeft, Stethoscope, Calendar, MapPin } from 'lucide-react';
 import { fetchClinicalFolderByDoctor } from '../../services/profile/fetch_clinical_folders';
-import { getPatientDoctors } from '../../services/profile/fetch_profile';
+import { getPatientDoctors } from '../../services/profile/fetch_patient_profile';
 
 const ClinicalFolder = () => {
   const navigate = useNavigate();

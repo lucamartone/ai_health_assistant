@@ -1,7 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { editDoctorProfile, fetchUpdatedAccount } from '../../../services/profile/fetch_profile';
+import { editDoctorProfile } from '../../../services/profile/fetch_doctor_profile';
+import { fetchUpdatedAccount } from '../../../services/profile/fetch_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon, PencilIcon } from 'lucide-react';
 import AddressAutocomplete from '../../../components/AddressAutocomplete';
 

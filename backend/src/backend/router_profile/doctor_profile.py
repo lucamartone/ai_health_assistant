@@ -77,25 +77,22 @@ async def register(data: RegisterDoctorRequest):
 
 @router_doctor_profile.post("/login")
 async def login(data: LoginRequest, response: Response):
-    """Endpoint per autenticare un utente e creare una sessione con refresh token."""
     try:
-        # Check for too many failed attempts (implement rate limiting)
         query = """
-        SELECT account.id, name, surname, email, password, last_login_attempt, failed_attempts 
-        FROM account join doctor ON account.id = doctor.id
+        SELECT account.id, name, surname, email, password, profile_img, last_login_attempt, failed_attempts, phone
+        FROM account JOIN doctor ON account.id = doctor.id
         WHERE email = %s
         """
         results = execute_query(query, (data.email,))
 
         if not results:
             raise HTTPException(status_code=404, detail="Account non registrato")
-        
+
         account = results[0]
         db_password = account[4]
-        last_attempt = account[5]
-        failed_attempts = account[6] or 0
+        last_attempt = account[6]
+        failed_attempts = account[7] or 0
 
-        # Check if account is temporarily locked
         if failed_attempts >= 5 and last_attempt:
             lockout_time = last_attempt + timedelta(minutes=15)
             if datetime.now() < lockout_time:
@@ -105,9 +102,8 @@ async def login(data: LoginRequest, response: Response):
                 )
 
         if not pwd_context.verify(data.password, db_password):
-            # Update failed attempts
             update_attempts = """
-            UPDATE account 
+            UPDATE "account" 
             SET failed_attempts = failed_attempts + 1,
                 last_login_attempt = CURRENT_TIMESTAMP
             WHERE email = %s
@@ -115,7 +111,6 @@ async def login(data: LoginRequest, response: Response):
             execute_query(update_attempts, (data.email,), commit=True)
             raise HTTPException(status_code=401, detail="Password errata")
 
-        # Reset failed attempts on successful login
         reset_attempts = """
         UPDATE "account" 
         SET failed_attempts = 0,
@@ -123,41 +118,45 @@ async def login(data: LoginRequest, response: Response):
         WHERE email = %s
         """
         execute_query(reset_attempts, (data.email,), commit=True)
-        
-        # Create tokens
+
+        # Codifica immagine profilo in base64
+        profile_img = account[5]
+        profile_img_base64 = f"data:image/png;base64,{base64.b64encode(profile_img).decode()}" if profile_img else None
+
         access_token = create_access_token({
             "sub": account[3],
             "id": account[0],
             "name": account[1],
             "surname": account[2],
-            "role": "doctor"
+            "email": account[3],
+            "role": "doctor",
+            "phone": account[8]
         })
-        
+
         refresh_token = create_refresh_token({
             "sub": account[3],
             "id": account[0],
             "name": account[1],
             "surname": account[2],
-            "role": "doctor"
+            "email": account[3],
+            "role": "doctor",
+            "phone": account[8]
         })
 
-        # Set access token cookie (short-lived)
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
-            max_age=60 * 60,  # 1 ora
-            samesite="Strict",  # Più sicuro di Lax
-            secure=True,  # True per HTTPS
+            max_age=3600,
+            samesite="Strict",
+            secure=True,
             path="/"
         )
-
-        # Set refresh token cookie (long-lived)
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            max_age=7 * 24 * 60 * 60,  # 7 giorni
+            max_age=7 * 24 * 3600,
             samesite="Strict",
             secure=True,
             path="/"
@@ -170,6 +169,8 @@ async def login(data: LoginRequest, response: Response):
                 "name": account[1],
                 "surname": account[2],
                 "email": account[3],
+                "profile_img": profile_img_base64,
+                "phone": account[8],
                 "role": "doctor"
             }
         }

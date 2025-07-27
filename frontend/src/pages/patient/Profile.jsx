@@ -6,7 +6,7 @@ import {
   BarChart3, User, Calendar, Stethoscope, MessageCircle, Star,
   Heart, Shield, Settings
 } from 'lucide-react';
-import { NumberOfPendingAppointments, NumberOfCompletedAppointments, NumberOfAppointments, NumberOfDoctorsVisited, LastVisitDate } from '../../services/profile/fetch_overview';
+import { getPatientStatistics } from '../../services/profile/fetch_patient_profile';
 
 import PanoramicaTab from '../../components/profile/patient/PanoramicaTab';
 import ProfileTab from '../../components/profile/patient/ProfileTab';
@@ -51,17 +51,13 @@ function Profile() {
 
     const fetchStats = async () => {
       try {
-        const upcoming = await NumberOfPendingAppointments(account.id);
-        const completed = await NumberOfCompletedAppointments(account.id);
-        const total = await NumberOfAppointments(account.id);
-        const doctorsVisited = await NumberOfDoctorsVisited(account.id);
-        const lastVisit = await LastVisitDate(account.id);
+        const stats = await getPatientStatistics(account.id);
         setStats({
-          totalAppointments: total,
-          completedAppointments: completed,
-          upcomingAppointments: upcoming,
-          doctorsVisited: doctorsVisited,
-          lastVisit: lastVisit || 'N/A',
+          totalAppointments: stats.numberOfAppointments,
+          completedAppointments: stats.numberOfCompletedAppointments,
+          upcomingAppointments: stats.numberOfPendingAppointments,
+          doctorsVisited: stats.numberOfDoctorsVisited,
+          lastVisit: stats.lastVisitDate || 'N/A',
         });
       } catch (error) {
         console.error('Errore nel recupero delle statistiche:', error);

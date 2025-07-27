@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import { login_doctor } from '../../services/profile/fetch_profile';
+import { login_doctor } from '../../services/profile/fetch_doctor_profile';
 import { useAuth } from '../../contexts/AuthContext';
 import SimpleModal from '../../components/SimpleModal';
 

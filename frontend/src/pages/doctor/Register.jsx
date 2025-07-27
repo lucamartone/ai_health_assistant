@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { register_doctor } from '../../services/profile/fetch_profile';
+import { register_doctor } from '../../services/profile/fetch_doctor_profile';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
 import SimpleModal from '../../components/SimpleModal';
 

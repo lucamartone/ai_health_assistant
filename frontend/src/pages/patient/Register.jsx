@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { register_patient } from '../../services/profile/fetch_profile';
+import { register_patient } from '../../services/profile/fetch_patient_profile';
 import SimpleModal from '../../components/SimpleModal';
 
 function Register() {

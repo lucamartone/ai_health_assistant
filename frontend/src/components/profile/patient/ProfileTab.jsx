@@ -1,7 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { editPatientProfile, fetchUpdatedAccount } from '../../../services/profile/fetch_profile';
+import { editPatientProfile } from '../../../services/profile/fetch_patient_profile';
+import { fetchUpdatedAccount } from '../../../services/profile/fetch_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon, PencilIcon } from 'lucide-react';
 
 function ProfileTab() {
