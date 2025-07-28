@@ -25,14 +25,15 @@ function ProfileTab() {
     name: account.name || '',
     surname: account.surname || '',
     phone: account.phone || '',
-    profile_img: account.profile_img || null
+    profile_img: account.profile_img || null,
   };
 
   const hasChanges =
     name !== originalData.name ||
     surname !== originalData.surname ||
     phone !== originalData.phone ||
-    (selectedFile !== null);
+    selectedFile !== null ||
+    profileImg !== originalData.profile_img;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,19 +45,29 @@ function ProfileTab() {
       if (selectedFile) base64Image = await toBase64(selectedFile);
 
       await editPatientProfile(name, surname, phone, account.email, base64Image);
-      const updatedAccount = await fetchUpdatedAccount();
-      setAccount(updatedAccount);
-      setProfileImg(updatedAccount.profile_img);
+
+      // 🔥 Aggiorna direttamente il contesto auth
+      setAccount(prev => ({
+        ...prev,
+        name,
+        surname,
+        phone,
+        profile_img: base64Image,
+      }));
+
       setSuccessMsg('Dati aggiornati con successo');
+      setErrorMsg('');
       setIsEditing(false);
       navigate(location.pathname, { replace: true });
     } catch (err) {
       console.error(err);
       setErrorMsg("Errore durante l'aggiornamento");
+      setSuccessMsg('');
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -88,12 +99,13 @@ function ProfileTab() {
       setPhone(originalData.phone);
       setProfileImg(originalData.profile_img);
       setSelectedFile(null);
+      setSuccessMsg('');
+      setErrorMsg('');
     }
   }, [isEditing]);
 
   return (
     <div className="max-w-5xl mx-auto p-4">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Profilo Personale</h2>
         <button
@@ -104,9 +116,7 @@ function ProfileTab() {
         </button>
       </div>
 
-      {/* Form + Foto */}
       <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-8 items-start">
-        {/* FOTO */}
         <div className="flex flex-col items-center">
           <div
             className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer group"
@@ -146,7 +156,6 @@ function ProfileTab() {
           </div>
         </div>
 
-        {/* CAMPI */}
         <div className="flex-1 w-full">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
             <label className="text-sm font-medium text-right sm:col-span-1">Nome</label>
@@ -196,16 +205,12 @@ function ProfileTab() {
         </div>
       </form>
 
-      {/* INFO NON MODIFICABILI - UNA SOLA RIGA */}
       <div className="mt-10 pt-6 border-t">
         <div className="flex flex-wrap gap-x-12 gap-y-4">
-          {/* EMAIL */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-600">Email:</span>
             <span className="text-sm">{account.email}</span>
           </div>
-
-          {/* DATA CREAZIONE */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-600">Creazione account:</span>
             <span className="text-sm">10 luglio 2024</span>

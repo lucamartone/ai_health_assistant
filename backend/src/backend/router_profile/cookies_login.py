@@ -33,24 +33,36 @@ def create_refresh_token(data: dict) -> str:
 
 router_cookies_login = APIRouter()
 
-def get_current_account(access_token: str = Cookie(None)) -> Optional[dict]:
+def get_current_account(access_token: str = Cookie(None)) -> dict:
     if not access_token:
         raise HTTPException(status_code=401, detail="Token mancante")
-    
+
     try:
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("id")
+
+        # 🔽 Carica l'account aggiornato dal DB
+        query = "SELECT id, email, name, surname, phone, role FROM account WHERE id = %s"
+        result = execute_query(query, (user_id,))
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Account non trovato")
+
+        row = result[0]
         return {
-            "email": payload.get("sub"),
-            "id": payload.get("id"),
-            "name": payload.get("name"),
-            "surname": payload.get("surname"),
-            "phone": payload.get("phone"),
-            "role": payload.get("role")
+            "id": row[0],
+            "email": row[1],
+            "name": row[2],
+            "surname": row[3],
+            "phone": row[4],
+            "role": row[5]
         }
+
     except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token scaduto")
     except JWTError:
         raise HTTPException(status_code=403, detail="Token non valido")
+
 
 @router_cookies_login.get("/me")
 async def get_me(account=Depends(get_current_account)):

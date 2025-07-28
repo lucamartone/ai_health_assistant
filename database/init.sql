@@ -13,6 +13,7 @@ CREATE TABLE account (
     birth_date DATE CHECK (birth_date < CURRENT_DATE),
     profile_img BYTEA,
     phone VARCHAR(20) DEFAULT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'doctor', 'patient')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login_attempt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     failed_attempts INT DEFAULT 0,

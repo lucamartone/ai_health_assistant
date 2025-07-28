@@ -32,13 +32,13 @@ async def register(data: RegisterDoctorRequest):
 
         reg_query = """
         INSERT INTO account (
-            name, surname, email, password, sex,
+            name, surname, email, password, sex, role,
             created_at, last_login_attempt, failed_attempts
-        ) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
+        ) VALUES (%s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
         RETURNING id
         """
         
-        params = (data.name, data.surname, data.email, hashed_password, data.sex)
+        params = (data.name, data.surname, data.email, hashed_password, data.sex, "doctor")
         result = execute_query(reg_query, params, commit=True)
 
         if not result or not result[0]:

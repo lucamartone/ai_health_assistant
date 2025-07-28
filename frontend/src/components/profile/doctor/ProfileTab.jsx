@@ -1,8 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { editDoctorProfile } from '../../../services/profile/fetch_doctor_profile';
-import { fetchUpdatedAccount } from '../../../services/profile/fetch_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon, PencilIcon } from 'lucide-react';
 import AddressAutocomplete from '../../../components/AddressAutocomplete';
 
@@ -12,6 +11,7 @@ function ProfileTab() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [phone, setPhone] = useState('');
@@ -24,25 +24,38 @@ function ProfileTab() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 🧠 Salva i dati originali per confrontarli
+  const originalData = useMemo(() => ({
+    name: account?.name || '',
+    surname: account?.surname || '',
+    phone: account?.phone || '',
+    specialization: account?.specialization || '',
+    addresses: account?.addresses || [],
+    profile_img: account?.profile_img || null,
+  }), [account]);
+
   useEffect(() => {
     if (account && !isEditing) {
-      setName(account.name || '');
-      setSurname(account.surname || '');
-      setPhone(account.phone || '');
-      setProfileImg(account.profile_img || null);
-      setSpecialization(account.specialization || '');
-      setAddresses(account.addresses || []);
+      setName(originalData.name);
+      setSurname(originalData.surname);
+      setPhone(originalData.phone);
+      setSpecialization(originalData.specialization);
+      setAddresses(originalData.addresses);
+      setProfileImg(originalData.profile_img);
       setSelectedFile(null);
+      setSuccessMsg('');
+      setErrorMsg('');
     }
-  }, [account, isEditing]);
+  }, [isEditing, originalData]);
 
   const hasChanges =
-    name !== (account?.name || '') ||
-    surname !== (account?.surname || '') ||
-    phone !== (account?.phone || '') ||
-    specialization !== (account?.specialization || '') ||
-    JSON.stringify(addresses) !== JSON.stringify(account?.addresses || []) ||
-    selectedFile !== null;
+    name !== originalData.name ||
+    surname !== originalData.surname ||
+    phone !== originalData.phone ||
+    specialization !== originalData.specialization ||
+    JSON.stringify(addresses) !== JSON.stringify(originalData.addresses) ||
+    selectedFile !== null ||
+    (profileImg || '') !== (originalData.profile_img || '');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,11 +67,20 @@ function ProfileTab() {
       if (selectedFile) base64Image = await toBase64(selectedFile);
 
       await editDoctorProfile(name, surname, phone, account.email, base64Image, specialization, addresses);
-      const updatedAccount = await fetchUpdatedAccount();
-      setAccount(updatedAccount);
 
-      setIsEditing(false);
+      // 🔄 Aggiorna solo i campi modificati nel contesto auth
+      setAccount(prev => ({
+        ...prev,
+        name,
+        surname,
+        phone,
+        specialization,
+        profile_img: base64Image,
+        addresses,
+      }));
+
       setSuccessMsg('Dati aggiornati con successo');
+      setIsEditing(false);
       navigate(location.pathname, { replace: true });
     } catch (err) {
       console.error(err);
@@ -183,7 +205,7 @@ function ProfileTab() {
               className="sm:col-span-2 px-4 py-2 border rounded-lg w-full"
             />
 
-            {/* 🔵 INDIRIZZI */}
+            {/* Indirizzi */}
             <label className="text-sm font-medium text-right sm:col-span-1">Indirizzi</label>
             <div className="sm:col-span-2 flex flex-col gap-2">
               {addresses.map((entry, index) => (
