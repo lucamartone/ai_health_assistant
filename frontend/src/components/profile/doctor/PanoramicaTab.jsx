@@ -9,54 +9,31 @@ function PanoramicaTab() {
   };
 
   const features = [
-    {
-      icon: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-        />
-      ),
-      title: 'Chat AI',
-      description: 'Assistenza immediata per qualsiasi domanda sulla salute.',
-      buttonText: 'Inizia a chattare',
-      gradient: 'from-violet-500 to-violet-600 text-violet-50',
-      onClick: () => navigate('/chat'),
-    },
-    {
-      icon: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-        />
-      ),
-      title: 'Prenotazioni',
-      description:
-        'Prenota le tue visite mediche in pochi click. Scegli data e ora più comode per te.',
-      buttonText: 'Prenota ora',
-      gradient: 'from-rose-500 to-rose-600 text-rose-50',
-      onClick: () => navigate('/book'),
-    },
-    {
-      icon: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 7h18M3 12h18M3 17h18"
-        />
-      ),
-      title: 'Cartella Clinica',
-      description:
-        'Consulta i tuoi documenti sanitari, diagnosi, prescrizioni e referti in modo semplice.',
-      buttonText: 'Apri cartella',
-      gradient: 'from-amber-500 to-amber-600 text-amber-50',
-      onClick: () => navigate('/profile/clinical-folder'),
-    },
-  ];
+        {
+            icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />,
+            title: "Gestione Appuntamenti",
+            description: "Visualizza e gestisci il tuo calendario di appuntamenti.",
+            buttonText: "Gestisci appuntamenti",
+            gradient: "from-blue-500 to-blue-600 text-blue-50",
+            onClick: () => navigate('/doctor/appointments')
+        },
+        {
+            icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />,
+            title: "Profilo Professionale",
+            description: "Gestisci le tue informazioni professionali, specializzazioni e sedi di lavoro.",
+            buttonText: "Modifica profilo",
+            gradient: "from-emerald-500 to-emerald-600 text-emerald-50",
+            onClick: handleProfileClick
+        },
+        {
+            icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />,
+            title: "Cartelle Cliniche",
+            description: "Accedi e gestisci le cartelle cliniche dei tuoi pazienti in modo sicuro e organizzato.",
+            buttonText: "Visualizza cartelle",
+            gradient: "from-violet-500 to-violet-600 text-violet-50",
+            onClick: () => navigate('/doctor/patients')
+        }
+    ];
 
   const FeatureCard = ({ icon, title, description, buttonText, gradient, onClick }) => (
     <div
@@ -87,6 +64,31 @@ function PanoramicaTab() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pt-2 sm:pb-20">
+      <motion.h1 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+        className="text-4xl sm:text-5xl md:text-6xl font-bold text-blue-900 mb-6 sm:mb-8 leading-tight"
+    >
+        Benvenuto nella tua{' '}
+        <motion.span 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+            className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800"
+        >
+            Area Medica
+        </motion.span>
+      </motion.h1>
+      <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+          className="text-lg sm:text-xl text-blue-700 max-w-3xl mb-12 mx-auto leading-relaxed px-4"
+      >
+          Tutto ciò di cui hai bisogno per gestire la tua attività medica, in un unico posto.
+          Organizza al meglio il tuo lavoro medico grazie a strumenti semplici e intuitivi.
+      </motion.p>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

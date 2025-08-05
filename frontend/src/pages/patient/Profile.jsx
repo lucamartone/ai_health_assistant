@@ -67,12 +67,6 @@ function Profile() {
     fetchStats();
   }, [account]);
 
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-blue-800 font-medium">

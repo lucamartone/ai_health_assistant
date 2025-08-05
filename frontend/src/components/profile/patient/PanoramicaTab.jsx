@@ -109,8 +109,8 @@ function PanoramicaTab() {
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           className="text-lg sm:text-xl text-blue-500 max-w-3xl mb-12 mx-auto leading-relaxed px-4"
       >
-          Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
-          dal nostro chatbot AI. La tua salute è nelle mani giuste.
+          Tutti i servizi di cui hai bisogno per la tua salute, sempre a portata di mano.
+          Un unico spazio per gestire la tua salute con semplicità e sicurezza.
         </motion.p>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
