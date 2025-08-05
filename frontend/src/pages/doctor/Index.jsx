@@ -1,11 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
 import FeatureCard from '../../components/FeatureCard';
 import { useAuth } from '../../contexts/AuthContext';
 
 function Index() {
     const navigate = useNavigate();
-    const { account } = useAuth();
+    const { account, loading } = useAuth();
+
+    useEffect(() => {
+        if (!loading && account) {
+            navigate('/doctor/profile');
+        }
+    }, [account, loading, navigate]);
 
     const handleProfileClick = () => {
         if (account) {
@@ -94,30 +101,6 @@ function Index() {
                     {features.map((feature, index) => (
                         <FeatureCard key={index} {...feature} />
                     ))}
-                </motion.div>
-            </div>
-
-            {/* Quick Stats Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    viewport={{ once: true }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6"
-                >
-                    <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-                        <h3 className="text-2xl font-bold text-blue-900 mb-2">Appuntamenti Oggi</h3>
-                        <p className="text-4xl font-bold text-blue-600">0</p>
-                    </div>
-                    <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-                        <h3 className="text-2xl font-bold text-blue-900 mb-2">Pazienti Totali</h3>
-                        <p className="text-4xl font-bold text-blue-600">0</p>
-                    </div>
-                    <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-                        <h3 className="text-2xl font-bold text-blue-900 mb-2">Visite Completate</h3>
-                        <p className="text-4xl font-bold text-blue-600">0</p>
-                    </div>
                 </motion.div>
             </div>
         </div>
