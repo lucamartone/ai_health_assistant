@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { User } from 'lucide-react';
 import { logout } from '../services/profile/fetch_profile';
@@ -7,8 +7,8 @@ import { logout } from '../services/profile/fetch_profile';
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isDoctorApp = location.pathname.startsWith('/doctor');
   const { account, loading, setAccount } = useAuth();
+  let isDoctorApp = null;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -20,6 +20,10 @@ function Header() {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    if(account) isDoctorApp = account.role ==="doctor" || false;
+  }, [account]);
 
   const navLinkStyle =
     'px-5 py-2 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all duration-200 shadow-sm hover:shadow active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20';

@@ -191,16 +191,6 @@ function Profile() {
           {activeTab === 'security' && <SecurityTab />}
           {activeTab === 'preferences' && <PreferencesTab />}
         </motion.div>
-
-        {/* Logout */}
-        <div className="text-center mt-8">
-          <button
-            onClick={handleLogout}
-            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Logout
-          </button>
-        </div>
       </div>
     </div>
   );

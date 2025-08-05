@@ -2,8 +2,8 @@
 
 -- Account (con ID esplicito)
 INSERT INTO account (id, name, surname, email, password, sex, birth_date, role) VALUES
-(10, 'Dottore', 'Test', 'dottore@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'M', '1980-01-01', 'patient'),
-(20, 'Paziente', 'Test', 'paziente@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'F', '1990-01-01', 'doctor')
+(10, 'Dottore', 'Test', 'dottore@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'M', '1980-01-01', 'doctor'),
+(20, 'Paziente', 'Test', 'paziente@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'F', '1990-01-01', 'patient')
 ON CONFLICT (email) DO NOTHING;
 
 -- Dottore e paziente
