@@ -5,7 +5,7 @@ function OverviewTab() {
   const navigate = useNavigate();
 
   const handleProfileClick = () => {
-    navigate('/profile?tab=profile');
+    navigate('/doctor/hub/profile');
   };
 
   const features = [

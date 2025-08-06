@@ -37,7 +37,7 @@ function Hub() {
 
     const fetchStats = async () => {
       try {
-        const stats = await getStats(account.id); // se hai fetchDoctorStatistics usalo qui
+        const stats = await getStats(account.id);
         setStats({
           totalAppointments: stats.numberOfAppointments,
           completedAppointments: stats.numberOfCompletedAppointments,
