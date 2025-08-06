@@ -10,14 +10,14 @@ function Index() {
 
     useEffect(() => {
         if (!loading && account) {
-            navigate('/doctor/profile');
+            navigate('/doctor/hub/overview');
         }
     }, [account, loading, navigate]);
 
     const handleProfileClick = () => {
         if (account) {
             // Se il dottore è autenticato, vai al profilo
-            navigate('/doctor/profile');
+            navigate('/doctor/hub/profile');
         } else {
             // Se il dottore non è autenticato, vai al login
             navigate('/doctor/login');

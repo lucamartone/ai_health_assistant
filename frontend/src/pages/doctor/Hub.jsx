@@ -1,19 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// pages/doctor/DoctorHub.jsx
+import { useEffect, useState } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { motion } from 'framer-motion';
+import { getPatientStatistics } from '../../services/profile/fetch_patient_profile'; // usa un fetch analogo per dottore se necessario
 import {
-  BarChart3, User, Calendar, Stethoscope, MessageCircle, Star,
-  Heart, Shield, Settings
+  BarChart3, User, Calendar, Stethoscope, Shield, Settings
 } from 'lucide-react';
-import { getPatientStatistics } from '../../services/profile/fetch_patient_profile';
-
-import PanoramicaTab from '../../components/profile/doctor/PanoramicaTab';
-import ProfileTab from '../../components/profile/doctor/ProfileTab';
-import AppointmentsTab from '../../components/profile/doctor/AppointmentsTab';
-import HistoryTab from '../../components/profile/doctor/HistoryTab';
-import SecurityTab from '../../components/profile/doctor/SecurityTab';
-import PreferencesTab from '../../components/profile/doctor/PreferencesTab';
 
 const TABS = [
   { key: 'overview', label: 'Panoramica', icon: <BarChart3 className="h-5 w-5" /> },
@@ -24,10 +16,9 @@ const TABS = [
   { key: 'preferences', label: 'Preferenze', icon: <Settings className="h-5 w-5" /> },
 ];
 
-function Profile() {
+function Hub() {
   const navigate = useNavigate();
-  const { account, loading, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const { account, loading } = useAuth();
 
   const [stats, setStats] = useState({
     totalAppointments: 0,
@@ -40,14 +31,14 @@ function Profile() {
   useEffect(() => {
     if (!loading && !account) navigate('/login');
     window.scrollTo(0, 0);
-  }, [loading, account, navigate]);
+  }, [loading, account]);
 
   useEffect(() => {
     if (!account?.id) return;
 
     const fetchStats = async () => {
       try {
-        const stats = await getPatientStatistics(account.id);
+        const stats = await getPatientStatistics(account.id); // se hai fetchDoctorStatistics usalo qui
         setStats({
           totalAppointments: stats.numberOfAppointments,
           completedAppointments: stats.numberOfCompletedAppointments,
@@ -77,7 +68,7 @@ function Profile() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 pt-20">
       <div className="max-w-7xl mx-auto px-4 py-8">
 
-        {/* 🟦 Statistiche sempre visibili in alto */}
+        {/* Statistiche */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
             <div className="text-2xl font-bold">{stats.totalAppointments}</div>
@@ -101,88 +92,78 @@ function Profile() {
           </div>
         </div>
 
-        {/* Tabs raggruppati con separazione visiva */}
+        {/* Tab nav */}
         <div className="bg-white rounded-2xl shadow-xl mb-8 overflow-x-auto">
           <div className="flex justify-center items-center space-x-6 px-4 py-2">
-            
             {/* Gruppo sinistra */}
             <div className="flex space-x-1 pr-4 border-r border-gray-200">
-              {TABS.filter(tab => ['overview', 'profile', 'health'].includes(tab.key)).map((tab) => (
-                <button
+              {TABS.filter(tab => ['overview', 'profile'].includes(tab.key)).map((tab) => (
+                <NavLink
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg whitespace-nowrap transition ${
-                    activeTab === tab.key
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                  }`}
+                  to={`/doctor/hub/${tab.key}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg transition ${
+                      isActive
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                    }`
+                  }
                 >
                   {tab.icon}
                   {tab.label}
-                </button>
+                </NavLink>
               ))}
             </div>
 
             {/* Gruppo centro */}
             <div className="flex space-x-1 px-4 border-r border-gray-200">
-              {TABS.filter(tab => ['appointments', 'history', 'rank'].includes(tab.key)).map((tab) => (
-                <button
+              {TABS.filter(tab => ['appointments', 'history'].includes(tab.key)).map((tab) => (
+                <NavLink
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg whitespace-nowrap transition ${
-                    activeTab === tab.key
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                  }`}
+                  to={`/doctor/hub/${tab.key}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg transition ${
+                      isActive
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                    }`
+                  }
                 >
                   {tab.icon}
                   {tab.label}
-                </button>
+                </NavLink>
               ))}
             </div>
 
             {/* Gruppo destra */}
             <div className="flex space-x-1 pl-4">
               {TABS.filter(tab => ['security', 'preferences'].includes(tab.key)).map((tab) => (
-                <button
+                <NavLink
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg whitespace-nowrap transition ${
-                    activeTab === tab.key
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                  }`}
+                  to={`/doctor/hub/${tab.key}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg transition ${
+                      isActive
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                    }`
+                  }
                 >
                   {tab.icon}
                   {tab.label}
-                </button>
+                </NavLink>
               ))}
             </div>
-
           </div>
         </div>
 
-
-
         {/* Tab content */}
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-white rounded-2xl shadow-xl p-8"
-        >
-          {activeTab === 'overview' && <PanoramicaTab/>}
-          {activeTab === 'profile' && <ProfileTab />}
-          {activeTab === 'appointments' && <AppointmentsTab account={account}/>}
-          {activeTab === 'history' && <HistoryTab account={account}/>}
-          {activeTab === 'security' && <SecurityTab />}
-          {activeTab === 'preferences' && <PreferencesTab />}
-        </motion.div>
-        
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
 }
 
-export default Profile;
+export default Hub;
