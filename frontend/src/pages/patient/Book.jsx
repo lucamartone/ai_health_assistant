@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getAllDoctors, bookAppointment } from '../../services/book/fetch_book';
-import { getCoordinatesFromAddress } from '../../services/maps/fetch_maps';
+import { getAllDoctors, bookAppointment } from '../../services/booking/book';
+import { getCoordinatesFromAddress } from '../../services/maps/maps';
 import BookingCalendar from '../../components/BookingCalendar';
 import MapView from '../../components/MapView';
 import { useAuth } from '../../contexts/AuthContext';

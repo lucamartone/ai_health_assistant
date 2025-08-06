@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getHistory } from '../../../services/appointments/fetch_appointments';
+import { getHistory } from '../../../services/booking/appointments';
 
 function HistoryTab({ account }) {
   const [appointments, setAppointments] = useState([]);

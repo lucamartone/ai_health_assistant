@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { get_booked_appointments } from '../../../services/appointments/fetch_appointments';
+import { get_booked_appointments } from '../../../services/booking/appointments';
 
 function AppointmentsTab({ account }) {
   const [appointments, setAppointments] = useState([]);

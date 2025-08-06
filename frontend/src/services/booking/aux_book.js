@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getFreeSlots } from './fetch_book';
+import { getFreeSlots } from './book';
 
 export function getSlots(doctor) {
   const [slots, setSlots] = useState({});

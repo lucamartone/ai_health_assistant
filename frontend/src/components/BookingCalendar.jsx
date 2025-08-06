@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { getSlots, getNewDate } from '../services/book/aux_book';
+import { useState } from 'react';
+import { getSlots, getNewDate } from '../services/booking/aux_book';
 
 function BookingCalendar({ onSlotSelect, doctor }) {
   console.log(doctor);
