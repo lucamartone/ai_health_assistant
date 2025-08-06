@@ -1,8 +1,8 @@
 // pages/patient/Hub.jsx
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { getPatientStatistics } from '../../services/profile/fetch_patient_profile';
+import { getStats } from '../../services/profile/fetch_patient_profile';
 import {
   BarChart3, User, Calendar, Stethoscope, Star, Heart, Shield, Settings,
 } from 'lucide-react';
@@ -20,7 +20,6 @@ const TABS = [
 
 function Hub() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { account, loading } = useAuth();
 
   const [stats, setStats] = useState({
@@ -41,13 +40,13 @@ function Hub() {
 
     const fetchStats = async () => {
       try {
-        const stats = await getPatientStatistics(account.id);
+        const stats = await getStats(account.id);
         setStats({
-          totalAppointments: stats.numberOfAppointments,
-          completedAppointments: stats.numberOfCompletedAppointments,
-          upcomingAppointments: stats.numberOfPendingAppointments,
-          doctorsVisited: stats.numberOfDoctorsVisited,
-          lastVisit: stats.lastVisitDate || 'N/A',
+          totalAppointments: stats.total_appointments,
+          completedAppointments: stats.completed_appointments,
+          upcomingAppointments: stats.upcoming_appointments,
+          doctorsVisited: stats.doctors_visited,
+          lastVisit: stats.last_visit || 'N/A',
         });
       } catch (error) {
         console.error('Errore nel recupero delle statistiche:', error);

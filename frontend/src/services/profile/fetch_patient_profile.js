@@ -78,40 +78,16 @@ export async function editPatientProfile(name, surname, phone, email, profile_im
   return await response.json();
 };
 
-export async function getPatientStatistics(accountId) {
-  const baseUrl = import.meta.env.VITE_BACKEND_URL;
-
-  const endpoints = {
-    numberOfPendingAppointments: `/profile/patient/number_of_pending_appointments?patient_id=${accountId}`,
-    numberOfCompletedAppointments: `/profile/patient/number_of_completed_appointments?patient_id=${accountId}`,
-    numberOfAppointments: `/profile/patient/number_of_appointments?patient_id=${accountId}`,
-    numberOfDoctorsVisited: `/profile/patient/number_of_doctors_visited?patient_id=${accountId}`,
-    lastVisitDate: `/profile/patient/last_visit_date?patient_id=${accountId}`,
-  };
-
-  try {
-    const results = await Promise.all(
-      Object.entries(endpoints).map(async ([key, endpoint]) => {
-        const response = await fetch(`${baseUrl}${endpoint}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.detail || `Errore nel recupero di ${key}`);
-        }
-
-        const data = await response.json();
-        return [key, key === 'lastVisitDate' ? data.last_visit_date : data.count];
-      })
-    );
-
-    return Object.fromEntries(results);
-  } catch (error) {
-    console.error('Errore nel recupero delle statistiche del paziente:', error);
-    throw error;
+export async function getStats(patientId) {
+  const response = await fetchWithRefresh(`${import.meta.env.VITE_BACKEND_URL}/profile/patient/get_stats?patient_id=${patientId}`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Errore recupero statistiche');
   }
+
+  return await response.json();
 };
 
 

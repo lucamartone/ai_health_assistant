@@ -192,64 +192,6 @@ async def edit_profile(data: ModifyProfileRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore durante l'aggiornamento: {str(e)}")
 
-@router_patient_profile.get("/number_of_pending_appointments")
-async def number_of_pending_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
-    try:
-        query = """
-        SELECT COUNT(*) FROM appointment
-        WHERE patient_id = %s AND status = 'booked'
-        """
-        result = execute_query(query, (patient_id,))
-        if not result:
-            return {"count": 0}
-        return {"count": result[0][0]}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore durante il conteggio degli appuntamenti: {str(e)}")
-    
-@router_patient_profile.get("/number_of_completed_appointments")
-async def number_of_completed_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
-    try:
-        query = """
-        SELECT COUNT(*) FROM appointment
-        WHERE patient_id = %s AND status = 'completed'
-        """
-        result = execute_query(query, (patient_id,))
-        if not result:
-            return {"count": 0}
-        return {"count": result[0][0]}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore durante il conteggio degli appuntamenti: {str(e)}")
-    
-@router_patient_profile.get("/number_of_appointments")
-async def number_of_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
-    try:
-        query = """
-        SELECT COUNT(*) FROM appointment
-        WHERE patient_id = %s
-        """
-        result = execute_query(query, (patient_id,))
-        if not result:
-            return {"count": 0}
-        return {"count": result[0][0]}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore durante il conteggio degli appuntamenti: {str(e)}")
-    
-@router_patient_profile.get("/number_of_doctors_visited")
-async def number_of_doctors_visited(patient_id: int = Query(..., gt=0, description="ID del paziente")):
-    try:
-        query = """
-        SELECT COUNT(DISTINCT doctor_id) FROM appointment
-        WHERE patient_id = %s AND status = 'completed'
-        """
-        result = execute_query(query, (patient_id,))
-        if not result:
-            return {"count": 0}
-        return {"count": result[0][0]}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore durante il conteggio dei medici visitati: {str(e)}")
-    
-@router_patient_profile.get("/last_visit_date")
-async def last_visit_date(patient_id: int = Query(..., gt=0, description="ID del paziente")):
     try:
         query = """
         SELECT MAX(date_time) FROM appointment
@@ -308,3 +250,37 @@ async def get_health_data(patient_id: int = Query(..., gt=0, description="ID del
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore durante il recupero dei dati sanitari: {str(e)}")
+    
+@router_patient_profile.get("/get_stats")
+async def get_stats(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    try:
+        query = """
+            SELECT 
+                COUNT(*) AS total_appointments,
+                COUNT(*) FILTER (WHERE status = 'booked') AS pending_appointments,
+                COUNT(*) FILTER (WHERE status = 'completed') AS completed_appointments,
+                COUNT(DISTINCT doctor_id) AS doctors_visited,
+                MAX(date_time) FILTER (WHERE status = 'completed') AS last_completed_visit
+            FROM appointment
+            WHERE patient_id = %s;
+        """
+        result = execute_query(query, (patient_id,))
+        if not result:
+            return {
+                "total_appointments": 0,
+                "completed_appointments": 0,
+                "upcoming_appointments": 0,
+                "doctors_visited": 0,
+                "last_visit": None
+            }
+        
+        stats = result[0]
+        return {
+            "total_appointments": stats[0],
+            "completed_appointments": stats[1],
+            "upcoming_appointments": stats[2],
+            "doctors_visited": stats[3],
+            "last_visit": stats[4] or "N/A"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante il recupero delle statistiche: {str(e)}")

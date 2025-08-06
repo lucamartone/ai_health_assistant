@@ -1,8 +1,7 @@
-// pages/doctor/DoctorHub.jsx
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { getPatientStatistics } from '../../services/profile/fetch_patient_profile'; // usa un fetch analogo per dottore se necessario
+import { getStats } from '../../services/profile/fetch_patient_profile';
 import {
   BarChart3, User, Calendar, Stethoscope, Shield, Settings
 } from 'lucide-react';
@@ -38,7 +37,7 @@ function Hub() {
 
     const fetchStats = async () => {
       try {
-        const stats = await getPatientStatistics(account.id); // se hai fetchDoctorStatistics usalo qui
+        const stats = await getStats(account.id); // se hai fetchDoctorStatistics usalo qui
         setStats({
           totalAppointments: stats.numberOfAppointments,
           completedAppointments: stats.numberOfCompletedAppointments,
