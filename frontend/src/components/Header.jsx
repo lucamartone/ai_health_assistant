@@ -92,7 +92,7 @@ function Header() {
                 Benvenuto, {account.name} {account.surname}
               </span>
               <button
-                onClick={() => navigate(isDoctorApp ? '/doctor/profile' : '/profile')}
+                onClick={() => navigate(isDoctorApp ? '/doctor/hub/profile' : '/hub/profile')}
                 className="p-2 rounded-full hover:bg-white/20 transition-all active:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
                 title="Profilo"
               >

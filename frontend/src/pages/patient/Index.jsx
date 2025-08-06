@@ -11,14 +11,14 @@ function Index() {
     // Reindirizza al profilo se l'utente è già autenticato
     useEffect(() => {
         if (!loading && account) {
-            navigate('/hub');
+            navigate('/hub/overview');
         }
     }, [account, loading, navigate]);
 
     const handleProfileClick = () => {
         if (account) {
             // Se l'utente è autenticato, vai al profilo
-            navigate('/hub');
+            navigate('/hub/overview');
         } else {
             // Se l'utente non è autenticato, vai al login
             navigate('/login');

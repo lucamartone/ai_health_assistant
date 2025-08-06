@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-function PanoramicaTab() {
+function OverviewTab() {
   const navigate = useNavigate();
 
   const handleProfileClick = () => {
@@ -128,4 +128,4 @@ function PanoramicaTab() {
   );
 }
 
-export default PanoramicaTab;
+export default OverviewTab;

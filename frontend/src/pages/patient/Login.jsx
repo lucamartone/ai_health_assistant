@@ -18,7 +18,7 @@ function Login() {
     try {
       const data = await login_patient(email, password);
       setAccount(data.account);
-      navigate('/hub');
+      navigate('/hub/overview');
     } catch (err) {
       if (err.message === 'Account non registrato') {
         setModalMessage('Nessun account trovato con questa email. Per favore, registrati.');
