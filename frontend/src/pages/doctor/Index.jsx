@@ -54,7 +54,7 @@ function Index() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
             {/* Hero Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-16 sm:pb-20 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-32 sm:pt-40 pb-20 sm:pb-25 relative overflow-hidden">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -67,7 +67,7 @@ function Index() {
                         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                         className="text-4xl sm:text-5xl md:text-6xl font-bold text-blue-900 mb-6 sm:mb-8 leading-tight"
                     >
-                        Benvenuto nella tua{' '}
+                        Inizia a gestire la tua{' '}
                         <motion.span 
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -84,7 +84,7 @@ function Index() {
                         className="text-lg sm:text-xl text-blue-700 max-w-3xl mx-auto leading-relaxed px-4"
                     >
                         Gestisci appuntamenti, cartelle cliniche e il tuo profilo professionale in un unico posto.
-                        Tutto ciò di cui hai bisogno per la tua pratica medica.
+                        Tutto ciò di cui hai bisogno per la tua professione medica.
                     </motion.p>
                 </motion.div>
             </div>

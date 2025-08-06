@@ -68,14 +68,14 @@ function Index() {
                         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                         className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 sm:mb-8 leading-tight"
                     >
-                        La tua salute è la nostra{' '}
+                        Inizia a prenderti cura della tua{' '}
                         <motion.span 
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
                             className="text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-green-100"
                         >
-                            priorità
+                            salute
                         </motion.span>
                     </motion.h1>
                     <motion.p 
@@ -87,41 +87,6 @@ function Index() {
                         Prenota visite mediche, consulta specialisti e ricevi assistenza immediata 
                         dal nostro chatbot AI. La tua salute è nelle mani giuste.
                     </motion.p>
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-                        className="mt-8 sm:mt-12 flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 px-4"
-                    >
-                        <motion.button
-                            whileHover={{ 
-                                scale: 1.05,
-                                transition: { duration: 0.2, ease: "easeOut" }
-                            }}
-                            whileTap={{ 
-                                scale: 0.95,
-                                transition: { duration: 0.1, ease: "easeIn" }
-                            }}
-                            onClick={() => navigate('/register')}
-                            className="w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 bg-white text-blue-600 text-base sm:text-lg font-semibold rounded-xl hover:bg-blue-50 transition-all duration-500 shadow-lg hover:shadow-xl"
-                        >
-                            Inizia Ora
-                        </motion.button>
-                        <motion.button
-                            whileHover={{ 
-                                scale: 1.05,
-                                transition: { duration: 0.2, ease: "easeOut" }
-                            }}
-                            whileTap={{ 
-                                scale: 0.95,
-                                transition: { duration: 0.1, ease: "easeIn" }
-                            }}
-                            onClick={() => navigate('/login')}
-                            className="w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 bg-transparent text-white text-base sm:text-lg border-2 border-white rounded-xl hover:bg-white/10 transition-all duration-500"
-                        >
-                            Accedi
-                        </motion.button>
-                    </motion.div>
                 </motion.div>
             </div>
 
