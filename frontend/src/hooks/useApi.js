@@ -3,6 +3,9 @@ import { useCallback } from 'react';
 const API_BASE_URL = 'http://localhost:8001';
 
 const apiCall = async (url, options = {}) => {
+
+  const retry = options.skipRefresh === true ? false : true;
+
   const defaultOptions = {
     credentials: 'include',
     headers: {
@@ -13,25 +16,35 @@ const apiCall = async (url, options = {}) => {
 
   const finalOptions = { ...defaultOptions, ...options };
 
-  // Se il body è FormData, rimuovi il Content-Type per permettere al browser di gestirlo
   if (finalOptions.body instanceof FormData) {
     delete finalOptions.headers['Content-Type'];
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}${url}`, finalOptions);
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+  const response = await fetch(`${API_BASE_URL}${url}`, finalOptions);
+
+  // Se non autorizzato, prova il refresh
+  if (response.status === 401 && retry) {
+    const refreshRes = await fetch(`${API_BASE_URL}/profile/cookies/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (refreshRes.ok) {
+      // Riprova la richiesta originale una volta
+      return apiCall(url, options, false);
+    } else {
+      throw new Error('Sessione scaduta. Effettua di nuovo il login.');
     }
-    
-    return response.json();
-  } catch (error) {
-    console.error('Errore nella chiamata API:', error);
-    throw error;
   }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
 };
+
 
 // Istanza diretta dell'API (per uso fuori dai componenti React)
 const api = {

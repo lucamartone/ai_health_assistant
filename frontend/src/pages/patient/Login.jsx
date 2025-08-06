@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import { login_patient } from '../../services/profile/fetch_patient_profile';
+import { login } from '../../services/profile/patient_profile';
 import { useAuth } from '../../contexts/AuthContext';
 import SimpleModal from '../../components/SimpleModal';
 
@@ -16,7 +16,7 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const data = await login_patient(email, password);
+      const data = await login(email, password);
       setAccount(data.account);
       navigate('/hub/overview');
     } catch (err) {

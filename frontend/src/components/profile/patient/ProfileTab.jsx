@@ -1,8 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { editPatientProfile } from '../../../services/profile/fetch_patient_profile';
-import { fetchUpdatedAccount } from '../../../services/profile/fetch_profile';
+import { editProfile } from '../../../services/profile/patient_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon, PencilIcon } from 'lucide-react';
 
 function ProfileTab() {
@@ -44,9 +43,8 @@ function ProfileTab() {
       let base64Image = profileImg;
       if (selectedFile) base64Image = await toBase64(selectedFile);
 
-      await editPatientProfile(name, surname, phone, account.email, base64Image);
+      await editProfile(name, surname, phone, account.email, base64Image);
 
-      // 🔥 Aggiorna direttamente il contesto auth
       setAccount(prev => ({
         ...prev,
         name,

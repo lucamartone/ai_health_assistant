@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { getStats } from '../../services/profile/fetch_patient_profile';
+import { getStats } from '../../services/profile/patient_profile';
 import {
   BarChart3, User, Calendar, Stethoscope, Shield, Settings
 } from 'lucide-react';

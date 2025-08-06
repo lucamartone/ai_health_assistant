@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { register_patient } from '../../services/profile/fetch_patient_profile';
+import { register } from '../../services/profile/patient_profile';
 import SimpleModal from '../../components/SimpleModal';
 
 function Register() {
@@ -33,7 +33,7 @@ function Register() {
     e.preventDefault();
     if (passwordError) return; // sicurezza in più
     try {
-      const data = await register_patient(name, surname, email, password, sex);
+      const data = await register(name, surname, email, password, sex);
       console.log('Registrazione riuscita:', data);
       navigate('/login');
     } catch (err) {

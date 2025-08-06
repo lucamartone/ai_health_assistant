@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { changePassword, logout } from '../../../services/profile/fetch_profile';
+import { changePassword, logout } from '../../../services/profile/profile';
 import { useAuth } from '../../../contexts/AuthContext';
 import SimpleModal from '../../SimpleModal';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getHealthData, updateHealthData } from '../../../services/profile/fetch_health';
+import { getHealthData, updateHealthData } from '../../../services/profile/health';
 import { useAuth } from '../../../contexts/AuthContext';
 
 function HealthTab() {

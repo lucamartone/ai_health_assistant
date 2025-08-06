@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchClinicalFolder, createMedicalRecord, createMedicalDocument, uploadMedicalDocument, downloadMedicalDocument, createPrescription, getPrescriptionsForRecord } from '../../services/profile/fetch_clinical_folders';
+import { fetchClinicalFolder, createMedicalRecord, createMedicalDocument, uploadMedicalDocument, downloadMedicalDocument, createPrescription, getPrescriptionsForRecord } from '../../services/profile/clinical_folders';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';

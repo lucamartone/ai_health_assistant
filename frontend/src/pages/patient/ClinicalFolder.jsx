@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { FolderOpen, User, FileText, ArrowLeft, Stethoscope, Calendar, MapPin } from 'lucide-react';
-import { fetchClinicalFolderByDoctor } from '../../services/profile/fetch_clinical_folders';
-import { getPatientDoctors } from '../../services/profile/fetch_patient_profile';
+import { fetchClinicalFolderByDoctor } from '../../services/profile/clinical_folders';
+import { getDoctors } from '../../services/profile/patient_profile';
 
 const ClinicalFolder = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const ClinicalFolder = () => {
     
     setLoadingDoctors(true);
     try {
-      const data = await getPatientDoctors(account.id);
+      const data = await getDoctors(account.id);
       setDoctors(data.doctors || []);
     } catch (err) {
       console.error('Errore caricamento dottori:', err);

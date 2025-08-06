@@ -7,7 +7,7 @@ import {
   setMinutes
 } from 'date-fns';
 import { getAppointments, getLocations, insertAppointment, removeAppointment, reload } from '../../services/appointments/fetch_appointments';
-import { me } from '../../services/profile/fetch_profile';
+import { me } from '../../services/profile/profile';
 import { Pencil, Check, Calendar, Clock, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 

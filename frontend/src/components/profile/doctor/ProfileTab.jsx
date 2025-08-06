@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { editDoctorProfile } from '../../../services/profile/fetch_doctor_profile';
+import { editProfile } from '../../../services/profile/doctor_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon, PencilIcon } from 'lucide-react';
 import AddressAutocomplete from '../../../components/AddressAutocomplete';
 
@@ -66,9 +66,8 @@ function ProfileTab() {
       let base64Image = profileImg;
       if (selectedFile) base64Image = await toBase64(selectedFile);
 
-      await editDoctorProfile(name, surname, phone, account.email, base64Image, specialization, addresses);
+      await editProfile(name, surname, phone, account.email, base64Image, specialization, addresses);
 
-      // 🔄 Aggiorna solo i campi modificati nel contesto auth
       setAccount(prev => ({
         ...prev,
         name,

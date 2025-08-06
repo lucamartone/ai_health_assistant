@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { register_doctor } from '../../services/profile/fetch_doctor_profile';
+import { register } from '../../services/profile/doctor_profile';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
 import SimpleModal from '../../components/SimpleModal';
 
@@ -45,7 +45,7 @@ function Register() {
     e.preventDefault();
     if (passwordError) return;
     try {
-      const data = await register_doctor(name, surname, email, password, sex, locations, specialization);
+      const data = await register(name, surname, email, password, sex, locations, specialization);
       console.log('Registrazione riuscita:', data);
       navigate('/doctor/login');
     } catch (err) {

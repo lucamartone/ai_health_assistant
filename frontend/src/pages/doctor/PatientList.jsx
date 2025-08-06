@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchDoctorPatients } from '../../services/profile/fetch_clinical_folders';
+import { fetchDoctorPatients } from '../../services/profile/clinical_folders';
 import { motion } from 'framer-motion';
 import { Users, User, ArrowLeft, Calendar, FolderOpen, Heart } from 'lucide-react';
 

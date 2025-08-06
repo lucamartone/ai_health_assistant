@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { use, useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { User } from 'lucide-react';
-import { logout } from '../services/profile/fetch_profile';
+import { logout } from '../services/profile/profile';
 
 function Header() {
   const navigate = useNavigate();
