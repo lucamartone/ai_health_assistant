@@ -133,7 +133,7 @@ const ClinicalFolder = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate('/hub')}
                 className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />

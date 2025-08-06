@@ -28,9 +28,9 @@ const TABS = [
   { key: 'preferences', label: 'Preferenze', icon: <Settings className="h-5 w-5" /> },
 ];
 
-function Profile() {
+function Hub() {
   const navigate = useNavigate();
-  const { account, loading, logout } = useAuth();
+  const { account, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
 
   const [stats, setStats] = useState({
@@ -190,4 +190,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default Hub;

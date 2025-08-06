@@ -64,14 +64,14 @@ function PanoramicaTab() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pt-2 sm:pb-20">
-      <motion.h1 
+      <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
         className="text-4xl sm:text-5xl md:text-6xl font-bold text-blue-900 mb-6 sm:mb-8 leading-tight"
     >
         Benvenuto nella tua{' '}
-        <motion.span 
+        <motion.span
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
@@ -80,7 +80,7 @@ function PanoramicaTab() {
             Area Medica
         </motion.span>
       </motion.h1>
-      <motion.p 
+      <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
