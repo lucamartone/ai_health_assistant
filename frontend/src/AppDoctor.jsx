@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css'
 import Login from './pages/doctor/Login';
+import ForgotPassword from './pages/ForgotPassword';
 import Index from './pages/doctor/Index';
 import Hub from './pages/doctor/Hub';
 import OverviewTab from './pages/doctor/hub/OverviewTab';
@@ -27,6 +28,7 @@ function AppDoctor() {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/hub" element={<Hub />}>
           <Route path="overview" element={<OverviewTab />} />
           <Route path="profile" element={<ProfileTab />} />

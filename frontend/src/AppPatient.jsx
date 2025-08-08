@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css'
 import Login from './pages/patient/Login';
 import Index from './pages/patient/Index';
+import ForgotPassword from './pages/ForgotPassword';
 import Hub from './pages/patient/Hub';
 import ProfileTab from './pages/patient/hub/ProfileTab';
 import OverviewTab from './pages/patient/hub/OverviewTab';
@@ -32,6 +33,7 @@ function AppPatient() {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/hub" element={<Hub />}>
           <Route path="overview" element={<OverviewTab />} />
           <Route path="profile" element={<ProfileTab />} />

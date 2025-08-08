@@ -21,3 +21,8 @@ export async function getProfile(){
 export async function logout(){
   await api.post('/profile/account/logout', null, { skipRefresh: true });
 };
+
+export async function requestPasswordReset(email) {
+  const data = { email };
+  return await api.post('/profile/account/request_password_reset', data);
+};

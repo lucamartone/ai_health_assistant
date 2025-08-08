@@ -1,20 +1,19 @@
+# account
+- cambio password                                                ✅
+- recupero password (pagina dedicata)
+- modifica profilo                                               ✅
+- (implementazione preferenze)
+
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti
-- cambio password
-- recupero password
-- modifica profilo
 - cronologia appuntamenti
 
 # paziente
 - cronologia appuntamenti                                        ✅                                                  
 - recensione appuntamenti                                        ✅
 - modale di prenotazione effettuata                              ✅
-- cambio password                                                ✅
-- modifica profilo                                               ✅
 - elenco calendario / prossimi appuntamenti                      ✅
 - salute ampliare db                                             ✅
-- (implementazione preferenze)
-- (recupero password)
 - controllare bug cartella clinica
 
 # chat

@@ -123,3 +123,26 @@ async def change_password(data: ChangePasswordRequest):
         raise he
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Errore durante il cambio password: {str(e)}")
+    
+@router_account_profile.post("/request_password_reset")
+async def request_password_reset(email: EmailStr):
+    """Endpoint per richiedere il reset della password."""
+    try:
+        # Check if the account exists
+        query = "SELECT id FROM account WHERE email = %s"
+        result = execute_query(query, (email,))
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="Utente non trovato")
+
+        # Generate reset token (for simplicity, using a timestamp here)
+        reset_token = create_access_token(data={"email": email}, expires_delta=timedelta(hours=1))
+
+        # Here you would typically send the reset token via email
+        # For this example, we will just return it
+        return {"reset_token": reset_token}
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore durante la richiesta di reset password: {str(e)}")
