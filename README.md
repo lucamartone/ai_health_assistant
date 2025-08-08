@@ -1,6 +1,6 @@
 # account
 - cambio password                                                ✅
-- recupero password (pagina dedicata)
+- recupero password (pagina react dedicata)
 - modifica profilo                                               ✅
 - (implementazione preferenze)
 
