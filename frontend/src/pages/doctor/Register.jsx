@@ -27,6 +27,8 @@ function Register() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [sex, setSex] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [phone, setPhone] = useState('');
   const [specialization, setSpecialization] = useState('');
   const [locations, setLocations] = useState([{ address: '', latitude: null, longitude: null }]);
   const [documents, setDocuments] = useState([]);
@@ -87,6 +89,18 @@ function Register() {
       return;
     }
 
+    // Validazione campi obbligatori
+    if (!name || !surname || !email || !password || !sex || !birthDate || !phone || !specialization) {
+      setModalMessage('Compila tutti i campi obbligatori');
+      return;
+    }
+
+    // Validazione locations
+    if (locations.length === 0 || locations[0].address === '') {
+      setModalMessage('Inserisci almeno una sede di lavoro');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -95,6 +109,8 @@ function Register() {
       formData.append('email', email);
       formData.append('password', password);
       formData.append('sex', sex);
+      formData.append('birth_date', birthDate);
+      formData.append('phone', phone);
       formData.append('specialization', specialization);
       formData.append('locations', JSON.stringify(locations));
       
@@ -103,13 +119,22 @@ function Register() {
         formData.append('documents', doc.file);
       });
 
+      // Debug log
+      console.log('Invio richiesta con dati:', {
+        name, surname, email, sex, birthDate, phone, specialization,
+        locations, documentsCount: documents.length
+      });
+
       const response = await fetch('http://localhost:8001/doctor/registration/request', {
         method: 'POST',
         body: formData
       });
 
+      console.log('Risposta ricevuta:', response.status, response.statusText);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Dati risposta:', data);
         setModalMessage(`Richiesta inviata con successo! ID richiesta: ${data.request_id}. Riceverai una notifica via email quando la richiesta verrà esaminata.`);
         
         // Reset form
@@ -119,6 +144,8 @@ function Register() {
           setEmail('');
           setPassword('');
           setSex('');
+          setBirthDate('');
+          setPhone('');
           setSpecialization('');
           setLocations([{ address: '', latitude: null, longitude: null }]);
           setDocuments([]);
@@ -126,9 +153,11 @@ function Register() {
         }, 3000);
       } else {
         const error = await response.json();
+        console.error('Errore risposta:', error);
         setModalMessage(error.detail || 'Errore durante l\'invio della richiesta');
       }
     } catch (err) {
+      console.error('Errore di rete:', err);
       setModalMessage('Errore di rete. Riprova più tardi.');
     } finally {
       setIsSubmitting(false);
@@ -218,6 +247,25 @@ function Register() {
                 <p className="text-sm text-red-500 mt-1">{passwordError}</p>
               )}
             </div>
+          </div>
+
+          {/* Data di nascita + Telefono */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Telefono"
+              required
+              className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
 
           {/* Specializzazione + Sesso */}

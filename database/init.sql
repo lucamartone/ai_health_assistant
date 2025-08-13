@@ -12,7 +12,7 @@ CREATE TABLE account (
     sex CHAR(1) CHECK (sex IN ('M', 'F')),
     birth_date DATE CHECK (birth_date < CURRENT_DATE),
     profile_img BYTEA,
-    phone VARCHAR(20) DEFAULT NULL,
+    phone VARCHAR(50) DEFAULT NULL,
     role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'doctor', 'patient')),
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'pending', 'suspended', 'rejected')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -128,6 +128,8 @@ CREATE TABLE doctor_registration_request (
     email VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
     sex CHAR(1) CHECK (sex IN ('M', 'F')),
+    birth_date DATE CHECK (birth_date < CURRENT_DATE),
+    phone VARCHAR(50) DEFAULT NULL,
     specialization VARCHAR(50) NOT NULL,
     locations JSONB NOT NULL, -- Array di oggetti con address, latitude, longitude
     documents JSONB, -- Array di documenti (CV, laurea, abilitazione, etc.)
@@ -142,9 +144,10 @@ CREATE TABLE doctor_registration_request (
 -- Tabella doctor_document (documenti dottore)
 CREATE TABLE doctor_document (
     id SERIAL PRIMARY KEY,
-    doctor_id INT NOT NULL REFERENCES doctor(id) ON DELETE CASCADE,
+    doctor_id INT REFERENCES doctor(id) ON DELETE CASCADE,
+    request_id INT REFERENCES doctor_registration_request(id) ON DELETE CASCADE,
     document_type VARCHAR(50) NOT NULL CHECK (document_type IN ('cv', 'laurea', 'abilitazione', 'specializzazione', 'altro')),
-    file_name VARCHAR(255) NOT NULL,
+    filename VARCHAR(255) NOT NULL,
     file_data BYTEA NOT NULL,
     mime_type VARCHAR(100),
     file_size BIGINT,
