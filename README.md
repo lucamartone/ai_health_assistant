@@ -19,14 +19,14 @@
 # chat
 - integrazione chat ai con database
 - indirizzamento verso prenotazione / specialista con filtro di categoria
-- formattazione risposte
+- formattazione risposte                                        ✅
 - modifica prompt per far ritornare un solo specialista
 
 # ranking dottori nelle prenotazioni
 - trovare dei parametri per ordinare i dottori (localizzazione, valutazioni, anni di attività)
 
 # autenticazione
-- modifica registrazione dottore
-- aggiunta caricamento documento nel profilo
-- pagina accettazione richieste
+- modifica registrazione dottore                                               ✅
+- aggiunta caricamento documento nel profilo                                  ✅
+- pagina accettazione e autenticazione richieste nuovi dottori                ✅
 

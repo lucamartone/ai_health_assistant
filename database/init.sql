@@ -14,6 +14,7 @@ CREATE TABLE account (
     profile_img BYTEA,
     phone VARCHAR(20) DEFAULT NULL,
     role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'doctor', 'patient')),
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'pending', 'suspended', 'rejected')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login_attempt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     failed_attempts INT DEFAULT 0,
@@ -24,7 +25,10 @@ CREATE TABLE account (
 CREATE TABLE doctor (
     id INT PRIMARY KEY REFERENCES account(id),
     specialization VARCHAR(50) NOT NULL,
-    rank REAL DEFAULT 0 CHECK (rank BETWEEN 0 AND 1)
+    rank REAL DEFAULT 0 CHECK (rank BETWEEN 0 AND 1),
+    is_verified BOOLEAN DEFAULT FALSE,
+    verification_date TIMESTAMP,
+    verification_admin_id INT REFERENCES account(id)
 );
 
 -- Tabella patient (deriva da account)
@@ -114,6 +118,40 @@ CREATE TABLE review (
     appointment_id INT NOT NULL REFERENCES appointment(id),
     report TEXT,
     stars INT CHECK (stars IS NULL OR (stars BETWEEN 1 AND 5))
+);
+
+-- Tabella doctor_registration_request (richieste di registrazione dottori)
+CREATE TABLE doctor_registration_request (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    surname VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    sex CHAR(1) CHECK (sex IN ('M', 'F')),
+    specialization VARCHAR(50) NOT NULL,
+    locations JSONB NOT NULL, -- Array di oggetti con address, latitude, longitude
+    documents JSONB, -- Array di documenti (CV, laurea, abilitazione, etc.)
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    admin_notes TEXT,
+    admin_id INT REFERENCES account(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP,
+    expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '30 days')
+);
+
+-- Tabella doctor_document (documenti dottore)
+CREATE TABLE doctor_document (
+    id SERIAL PRIMARY KEY,
+    doctor_id INT NOT NULL REFERENCES doctor(id) ON DELETE CASCADE,
+    document_type VARCHAR(50) NOT NULL CHECK (document_type IN ('cv', 'laurea', 'abilitazione', 'specializzazione', 'altro')),
+    file_name VARCHAR(255) NOT NULL,
+    file_data BYTEA NOT NULL,
+    mime_type VARCHAR(100),
+    file_size BIGINT,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_verified BOOLEAN DEFAULT FALSE,
+    verified_by INT REFERENCES account(id),
+    verified_at TIMESTAMP
 );
 
 -- =========================================

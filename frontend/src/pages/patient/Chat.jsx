@@ -20,6 +20,7 @@ const Chat = () => {
   const textareaRef = useRef(null);
   const navigate = useNavigate();
   const [visibleMessages, setVisibleMessages] = useState([]);
+  const [lastSuggestions, setLastSuggestions] = useState([]);
 
   // Example static user context (replace with dynamic source)
   const userContext = {

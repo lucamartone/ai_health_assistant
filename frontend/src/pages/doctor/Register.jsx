@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
-import { register } from '../../services/profile/doctor_profile';
+import { Trash2, Upload, File, X } from 'lucide-react';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
 import SimpleModal from '../../components/SimpleModal';
 
@@ -13,6 +12,14 @@ const SPECIALIZATIONS = [
   "Radiologia", "Urologia"
 ];
 
+const DOCUMENT_TYPES = [
+  { value: 'cv', label: 'Curriculum Vitae' },
+  { value: 'laurea', label: 'Laurea' },
+  { value: 'abilitazione', label: 'Abilitazione' },
+  { value: 'specializzazione', label: 'Specializzazione' },
+  { value: 'altro', label: 'Altro' }
+];
+
 function Register() {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
@@ -22,9 +29,10 @@ function Register() {
   const [sex, setSex] = useState('');
   const [specialization, setSpecialization] = useState('');
   const [locations, setLocations] = useState([{ address: '', latitude: null, longitude: null }]);
+  const [documents, setDocuments] = useState([]);
   const [passwordError, setPasswordError] = useState('');
   const [modalMessage, setModalMessage] = useState('');
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
@@ -41,22 +49,89 @@ function Register() {
     setPasswordError(validatePassword(value));
   };
 
-  const handleRegister = async (e) => {
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        setModalMessage('Il file è troppo grande. Dimensione massima: 10MB');
+        return;
+      }
+      
+      const newDocument = {
+        id: Date.now(),
+        file: file,
+        type: 'altro', // Default type
+        name: file.name
+      };
+      
+      setDocuments(prev => [...prev, newDocument]);
+    }
+  };
+
+  const removeDocument = (documentId) => {
+    setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+  };
+
+  const updateDocumentType = (documentId, newType) => {
+    setDocuments(prev => prev.map(doc => 
+      doc.id === documentId ? { ...doc, type: newType } : doc
+    ));
+  };
+
+  const handleSubmitRequest = async (e) => {
     e.preventDefault();
     if (passwordError) return;
+    
+    if (documents.length === 0) {
+      setModalMessage('Carica almeno un documento per procedere con la richiesta');
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      const data = await register(name, surname, email, password, sex, locations, specialization);
-      console.log('Registrazione riuscita:', data);
-      navigate('/doctor/login');
-    } catch (err) {
-      if (err.message === "Email già registrata") {
-        setModalMessage("Email già registrata. Prova con un'altra email.");
-      }
-      else if (err.message === "Errore durante la creazione dell'utente") {
-        setModalMessage("Si è verificato un errore durante la creazione dell'utente. Riprova più tardi.");
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('surname', surname);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('sex', sex);
+      formData.append('specialization', specialization);
+      formData.append('locations', JSON.stringify(locations));
+      
+      // Add documents
+      documents.forEach(doc => {
+        formData.append('documents', doc.file);
+      });
+
+      const response = await fetch('http://localhost:8001/doctor/registration/request', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setModalMessage(`Richiesta inviata con successo! ID richiesta: ${data.request_id}. Riceverai una notifica via email quando la richiesta verrà esaminata.`);
+        
+        // Reset form
+        setTimeout(() => {
+          setName('');
+          setSurname('');
+          setEmail('');
+          setPassword('');
+          setSex('');
+          setSpecialization('');
+          setLocations([{ address: '', latitude: null, longitude: null }]);
+          setDocuments([]);
+          setModalMessage('');
+        }, 3000);
       } else {
-        setModalMessage("Fornisci tutti i campi.");
+        const error = await response.json();
+        setModalMessage(error.detail || 'Errore durante l\'invio della richiesta');
       }
+    } catch (err) {
+      setModalMessage('Errore di rete. Riprova più tardi.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -76,13 +151,13 @@ function Register() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
-      <div className="bg-white px-8 py-8 rounded-2xl shadow-xl w-full max-w-4xl text-blue-900 max-h-[80vh] mt-24 mb-12 overflow-y-auto">
-        <h2 className="text-3xl font-bold text-center mb-2">Registrati come dottore</h2>
-        <p className="text-center text-sm text-blue-600 mb-4">
-          Crea un nuovo profilo per fornire i tuoi servizi
+      <div className="bg-white px-8 py-8 rounded-2xl shadow-xl w-full max-w-4xl text-blue-900 max-h-[90vh] mt-16 mb-12 overflow-y-auto">
+        <h2 className="text-3xl font-bold text-center mb-2">Richiesta di Registrazione Dottore</h2>
+        <p className="text-center text-sm text-blue-600 mb-6">
+          Invia la tua richiesta di registrazione. Verrà esaminata da un amministratore.
         </p>
 
-        <form onSubmit={handleRegister} className="space-y-4">
+        <form onSubmit={handleSubmitRequest} className="space-y-6">
           {/* Nome + Cognome */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
@@ -90,6 +165,7 @@ function Register() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nome"
+              required
               className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
@@ -97,6 +173,7 @@ function Register() {
               value={surname}
               onChange={(e) => setSurname(e.target.value)}
               placeholder="Cognome"
+              required
               className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -108,6 +185,7 @@ function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
+              required
               className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div className="relative w-full">
@@ -116,6 +194,7 @@ function Register() {
                 value={password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
                 placeholder="Password"
+                required
                 className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
               />
               <button
@@ -146,6 +225,7 @@ function Register() {
             <select
               value={specialization}
               onChange={(e) => setSpecialization(e.target.value)}
+              required
               className="w-full px-4 py-3 rounded-md bg-blue-50 text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Seleziona Specializzazione</option>
@@ -159,19 +239,25 @@ function Register() {
               <div className="flex items-center space-x-6">
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="sex"
+                    value="M"
                     checked={sex === 'M'}
                     onChange={() => setSex('M')}
-                    className="form-checkbox h-5 w-5 text-blue-600"
+                    required
+                    className="form-radio h-5 w-5 text-blue-600"
                   />
                   <span className="text-sm font-medium">Maschio</span>
                 </label>
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="sex"
+                    value="F"
                     checked={sex === 'F'}
                     onChange={() => setSex('F')}
-                    className="form-checkbox h-5 w-5 text-blue-600"
+                    required
+                    className="form-radio h-5 w-5 text-blue-600"
                   />
                   <span className="text-sm font-medium">Femmina</span>
                 </label>
@@ -180,45 +266,112 @@ function Register() {
           </div>
 
           {/* Indirizzi */}
-          {locations.map((address, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <AddressAutocomplete
-                value={address}
-                onChange={(val) => handleLocationsChange(index, val)}
-              />
-              {index > 0 && (
-                <button
-                  type="button"
-                  onClick={() => removeLocationsField(index)}
-                  className="text-blue-600 hover:text-red-500"
-                  title="Rimuovi sede"
-                >
-                  <Trash2 size={18} />
-                </button>
-              )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sedi di lavoro
+            </label>
+            {locations.map((address, index) => (
+              <div key={index} className="flex items-center gap-2 mb-2">
+                <AddressAutocomplete
+                  value={address}
+                  onChange={(val) => handleLocationsChange(index, val)}
+                />
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => removeLocationsField(index)}
+                    className="text-blue-600 hover:text-red-500"
+                    title="Rimuovi sede"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
+              </div>
+            ))}
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={addLocationsField}
+                className="text-sm font-medium text-blue-600 hover:text-blue-800"
+              >
+                + Aggiungi sede
+              </button>
             </div>
-          ))}
+          </div>
 
-          <div className="text-right">
-            <button
-              type="button"
-              onClick={addLocationsField}
-              className="text-sm font-medium text-blue-600 hover:text-blue-800"
-            >
-              + Aggiungi sede
-            </button>
+          {/* Documenti */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Documenti richiesti *
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <input
+                type="file"
+                onChange={handleFileSelect}
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                className="hidden"
+                id="file-upload"
+              />
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
+              >
+                <Upload className="h-5 w-5 mr-2" />
+                Carica Documento
+              </label>
+              <p className="mt-2 text-sm text-gray-500">
+                PDF, DOC, DOCX, JPG, PNG (max 10MB)
+              </p>
+            </div>
+
+            {/* Lista documenti caricati */}
+            {documents.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {documents.map((doc) => (
+                  <div key={doc.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                    <div className="flex items-center space-x-3">
+                      <File className="h-5 w-5 text-blue-500" />
+                      <span className="text-sm font-medium text-gray-900">{doc.name}</span>
+                      <span className="text-xs text-gray-500">
+                        ({(doc.file.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <select
+                        value={doc.type}
+                        onChange={(e) => updateDocumentType(doc.id, e.target.value)}
+                        className="text-xs border border-gray-300 rounded px-2 py-1"
+                      >
+                        {DOCUMENT_TYPES.map(type => (
+                          <option key={type.value} value={type.value}>
+                            {type.label}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => removeDocument(doc.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={!!passwordError}
+            disabled={!!passwordError || isSubmitting}
             className={`w-full py-3 rounded-md font-semibold transition ${
-              passwordError
+              passwordError || isSubmitting
                 ? 'bg-blue-300 text-white cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
           >
-            Registrati
+            {isSubmitting ? 'Invio in corso...' : 'Invia Richiesta di Registrazione'}
           </button>
         </form>
 
