@@ -7,6 +7,7 @@
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti
 - cronologia appuntamenti
+- modifica profilo -> non funziona l'aggiunta degli indirizzi
 
 # paziente
 - cronologia appuntamenti                                        ✅                                                  
@@ -26,7 +27,7 @@
 - trovare dei parametri per ordinare i dottori (localizzazione, valutazioni, anni di attività)
 
 # autenticazione
-- modifica registrazione dottore                                               ✅
+- modifica registrazione dottore                                              ✅
 - aggiunta caricamento documento nel profilo                                  ✅
 - pagina accettazione e autenticazione richieste nuovi dottori                ✅
 
