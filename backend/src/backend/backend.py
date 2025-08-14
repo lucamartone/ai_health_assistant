@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
@@ -12,6 +13,8 @@ from backend.router_profile.router_profile import router_profile
 from backend.router_patient.router_patient import router_patient
 from backend.router_doctor.router_doctor import router_doctor
 from backend.router_admin import router_admin
+
+load_dotenv()
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8001")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
@@ -27,17 +30,9 @@ app = FastAPI(
 # ✅ CORS - DEVE ESSERE L'ULTIMO middleware per funzionare correttamente
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost",          # Localhost porta 80
-        "http://localhost:3000",     # Vite dev
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",     # Vite default
-        "https://yourdomain.com",    # Produzione
-    ] if ENVIRONMENT == "development" else [
-        "https://yourdomain.com",
-    ],
+    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["Set-Cookie"],
     max_age=3600,

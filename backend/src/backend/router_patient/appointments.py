@@ -2,23 +2,20 @@ from fastapi import APIRouter, HTTPException, Query, Body
 from typing import Optional, List
 from datetime import datetime
 from backend.connection import execute_query
-from backend.router_patient.pydantic.schemas import Appointment
+from backend.router_patient.pydantic.schemas import Appointment, BookAppointmentRequest
 
 
 router_appointments = APIRouter()
 
 @router_appointments.post("/book_appointment")
-async def book_appointment(
-    appointment_id: int = Query(..., gt=0, description="ID of the appointment to book"),
-    patient_id: int = Query(..., gt=0, description="ID of the patient booking the appointment")
-):
+async def book_appointment(data: BookAppointmentRequest):
     try:
         check_query = """
         SELECT status, patient_id
         FROM appointment
         WHERE id = %s
         """
-        check_result = execute_query(check_query, (appointment_id,))
+        check_result = execute_query(check_query, (data.appointment_id,))
 
         if not check_result:
             raise HTTPException(status_code=404, detail="Appointment not found")
@@ -34,15 +31,15 @@ async def book_appointment(
         WHERE id = %s AND status = 'waiting' AND patient_id IS NULL
         RETURNING id
         """
-        result = execute_query(update_query, (patient_id, appointment_id), commit=True)
+        result = execute_query(update_query, (data.patient_id, data.appointment_id), commit=True)
 
         if not result:
             raise HTTPException(status_code=400, detail="Failed to book appointment - it may have been booked by someone else")
 
         return {
             "message": "Appointment booked successfully",
-            "appointment_id": appointment_id,
-            "patient_id": patient_id,
+            "appointment_id": data.appointment_id,
+            "patient_id": data.patient_id,
             "status": "booked"
         }
 
@@ -205,7 +202,7 @@ async def history(patient_id: int = Query(..., gt=0, description="ID del pazient
         raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti: {str(e)}")
     
 
-@router_appointments.get("/booked_appointments")
+@router_appointments.get("/get_booked_appointments")
 async def get_booked_appointment(patient_id: int = Query(..., gt=0, description="ID del paziente")):
     try:
         query =   """
