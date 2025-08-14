@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { getToRankAppointments, reviewAppointment } from '../../../services/booking/reviews';
+import { useAuth } from '../../../contexts/AuthContext';
 import { Star } from 'lucide-react';
 
-function RankTab({ account }) {
+function RankTab() {
   const [appointments, setAppointments] = useState([]);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [error, setError] = useState('');
+  const { account } = useAuth();
 
   const openModalForRank = (appointmentId) => {
     setSelectedAppointmentId(appointmentId);
