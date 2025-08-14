@@ -40,28 +40,55 @@ def get_current_account(access_token: str = Cookie(None)) -> dict:
     try:
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("id")
+        if not user_id:
+            raise HTTPException(status_code=403, detail="Token non valido: id mancante")
 
-        # 🔽 Carica l'account aggiornato dal DB
-        query = "SELECT id, email, name, surname, phone, role FROM account WHERE id = %s"
-        result = execute_query(query, (user_id,))
-
-        if not result:
+        # 1) Account base (sempre)
+        query_account = """
+            SELECT id, email, name, surname, phone, role
+            FROM account
+            WHERE id = %s
+        """
+        result_account = execute_query(query_account, (user_id,))
+        if not result_account:
             raise HTTPException(status_code=404, detail="Account non trovato")
 
-        row = result[0]
+        id_, email, name, surname, phone, role = result_account[0]
+
+        specialization = None
+        addresses = []
+
+        # 2) Dati extra solo se è un dottore
+        if role == 'doctor':
+            # Prendi id del dottore + specialization usando la chiave esterna corretta
+            query_doctor = "SELECT id, specialization FROM doctor WHERE id = %s"
+            result_doctor = execute_query(query_doctor, (id_,))
+
+            if result_doctor:
+                doctor_id, specialization = result_doctor[0]
+
+                # Locations collegate al dottore (chiave corretta: doctor_id)
+                query_locations = "SELECT address FROM location WHERE doctor_id = %s"
+                result_locations = execute_query(query_locations, (doctor_id,))
+                addresses = [row[0] for row in (result_locations or [])]
+
         return {
-            "id": row[0],
-            "email": row[1],
-            "name": row[2],
-            "surname": row[3],
-            "phone": row[4],
-            "role": row[5]
+            "id": id_,
+            "email": email,
+            "name": name,
+            "surname": surname,
+            "phone": phone,
+            "role": role,
+            "specialization": specialization,
+            "addresses": addresses
         }
 
     except ExpiredSignatureError:
+        # Token scaduto -> 401: il frontend può usare il refresh
         raise HTTPException(status_code=401, detail="Token scaduto")
     except JWTError:
         raise HTTPException(status_code=403, detail="Token non valido")
+
 
 
 @router_cookies_login.get("/me")
@@ -104,6 +131,8 @@ async def refresh_token(refresh_token: str = Cookie(None)):
             "name": payload.get("name"),
             "surname": payload.get("surname"),
             "phone": payload.get("phone"),
+            "specialization": payload.get("specialization"),
+            "addresses": payload.get("addresses"),
             "role": payload.get("role")
         })
         return {"access_token": new_access_token}

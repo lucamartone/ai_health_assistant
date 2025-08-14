@@ -24,7 +24,6 @@ function ProfileTab() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🧠 Salva i dati originali per confrontarli
   const originalData = useMemo(() => ({
     name: account?.name || '',
     surname: account?.surname || '',
@@ -79,6 +78,7 @@ function ProfileTab() {
       }));
 
       setSuccessMsg('Dati aggiornati con successo');
+      console.log('Dati aggiornati con successo');
       setIsEditing(false);
       navigate(location.pathname, { replace: true });
     } catch (err) {
