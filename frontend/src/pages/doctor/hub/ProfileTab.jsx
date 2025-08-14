@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { editProfile } from '../../../services/profile/doctor_profile';
 import { UploadIcon, PlusIcon, Trash2Icon, UserIcon, PencilIcon } from 'lucide-react';
@@ -24,37 +24,29 @@ function ProfileTab() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const originalData = useMemo(() => ({
-    name: account?.name || '',
-    surname: account?.surname || '',
-    phone: account?.phone || '',
-    specialization: account?.specialization || '',
-    addresses: account?.addresses || [],
-    profile_img: account?.profile_img || null,
-  }), [account]);
-
+  // Popola i campi quando cambia account o quando si esce dalla modalità modifica
   useEffect(() => {
     if (account && !isEditing) {
-      setName(originalData.name);
-      setSurname(originalData.surname);
-      setPhone(originalData.phone);
-      setSpecialization(originalData.specialization);
-      setAddresses(originalData.addresses);
-      setProfileImg(originalData.profile_img);
+      setName(account.name || '');
+      setSurname(account.surname || '');
+      setPhone(account.phone || '');
+      setSpecialization(account.specialization || '');
+      setAddresses(account.addresses || []);
+      setProfileImg(account.profile_img || null);
       setSelectedFile(null);
       setSuccessMsg('');
       setErrorMsg('');
     }
-  }, [isEditing, originalData]);
+  }, [account, isEditing]);
 
   const hasChanges =
-    name !== originalData.name ||
-    surname !== originalData.surname ||
-    phone !== originalData.phone ||
-    specialization !== originalData.specialization ||
-    JSON.stringify(addresses) !== JSON.stringify(originalData.addresses) ||
+    name !== (account?.name || '') ||
+    surname !== (account?.surname || '') ||
+    phone !== (account?.phone || '') ||
+    specialization !== (account?.specialization || '') ||
+    JSON.stringify(addresses) !== JSON.stringify(account?.addresses || []) ||
     selectedFile !== null ||
-    (profileImg || '') !== (originalData.profile_img || '');
+    (profileImg || '') !== (account?.profile_img || '');
 
   const handleSubmit = async (e) => {
     e.preventDefault();

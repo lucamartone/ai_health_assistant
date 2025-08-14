@@ -43,34 +43,41 @@ def get_current_account(access_token: str = Cookie(None)) -> dict:
         if not user_id:
             raise HTTPException(status_code=403, detail="Token non valido: id mancante")
 
-        # 1) Account base (sempre)
-        query_account = """
+        # Account
+        q_acc = """
             SELECT id, email, name, surname, phone, role
             FROM account
             WHERE id = %s
         """
-        result_account = execute_query(query_account, (user_id,))
-        if not result_account:
+        ra = execute_query(q_acc, (user_id,))
+        if not ra:
             raise HTTPException(status_code=404, detail="Account non trovato")
 
-        id_, email, name, surname, phone, role = result_account[0]
+        id_, email, name, surname, phone, role = ra[0]
 
         specialization = None
         addresses = []
 
-        # 2) Dati extra solo se è un dottore
-        if role == 'doctor':
-            # Prendi id del dottore + specialization usando la chiave esterna corretta
-            query_doctor = "SELECT id, specialization FROM doctor WHERE id = %s"
-            result_doctor = execute_query(query_doctor, (id_,))
+        if role == "doctor":
+            # doctor.id = account.id
+            rd = execute_query("SELECT specialization FROM doctor WHERE id = %s", (id_,))
+            specialization = rd[0][0] if rd else None
 
-            if result_doctor:
-                doctor_id, specialization = result_doctor[0]
-
-                # Locations collegate al dottore (chiave corretta: doctor_id)
-                query_locations = "SELECT address FROM location WHERE doctor_id = %s"
-                result_locations = execute_query(query_locations, (doctor_id,))
-                addresses = [row[0] for row in (result_locations or [])]
+            # location.doctor_id = doctor.id = account.id
+            rl = execute_query("""
+                SELECT address, latitude, longitude
+                FROM location
+                WHERE doctor_id = %s
+                ORDER BY id
+            """, (id_,))
+            addresses = [
+                {
+                    "address": r[0],
+                    "latitude": float(r[1]) if r[1] is not None else None,
+                    "longitude": float(r[2]) if r[2] is not None else None
+                }
+                for r in (rl or [])
+            ]
 
         return {
             "id": id_,
@@ -84,7 +91,6 @@ def get_current_account(access_token: str = Cookie(None)) -> dict:
         }
 
     except ExpiredSignatureError:
-        # Token scaduto -> 401: il frontend può usare il refresh
         raise HTTPException(status_code=401, detail="Token scaduto")
     except JWTError:
         raise HTTPException(status_code=403, detail="Token non valido")
