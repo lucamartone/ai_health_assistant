@@ -7,7 +7,8 @@
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti
 - cronologia appuntamenti
-- modifica profilo -> non funziona l'aggiunta degli indirizzi
+- modifica profilo (funzione edit) -> non funziona l'aggiunta degli indirizzi, specializzazione
+- aggionra conteggio 
 
 # paziente
 - cronologia appuntamenti                                        ✅                                                  

@@ -157,7 +157,7 @@ async def get_free_slots(
         raise HTTPException(status_code=400, detail=f"Error retrieving free appointments: {str(e)}")
 
 
-@router_appointments.get("/history")
+@router_appointments.get("/get_history")
 async def history(patient_id: int = Query(..., gt=0, description="ID del paziente")):
     try:
         #query
