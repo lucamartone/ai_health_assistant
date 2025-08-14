@@ -25,7 +25,7 @@ def get_locations(data: AppointmentsRequest = Query(..., description="ID of the 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving locations number: {str(e)}")
 
-@router_appointments.get("/get_appointments")
+@router_appointments.get("/get_appointments")    # 
 def get_appointments(data: AppointmentsRequest = Query(..., description="ID of the doctor")):
     """Recupera gli appuntamenti futuri di un dottore specifico."""
     try:
