@@ -9,6 +9,8 @@
 - cronologia appuntamenti
 - terminare le statistiche dell'hub
 - modifica profilo -> non funziona l'aggiunta degli indirizzi
+- hub -> appuntamenti 
+- hub -> crnolologia
 
 # paziente
 - cronologia appuntamenti                                        ✅                                                  
