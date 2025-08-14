@@ -9,7 +9,7 @@ export async function getFreeDoctors() {
 };
 
 export async function getFreeSlots(doctor_id, lat, lng){
-  return await api.get(`/patient/doctors/get_free_slots?doctor_id=${doctor_id}&lat=${lat}&lng=${lng}`);
+  return await api.get(`/patient/appointments/get_free_slots?doctor_id=${doctor_id}&lat=${lat}&lng=${lng}`);
 };
 
 export async function bookAppointment(appointment_id, patient_id) {
