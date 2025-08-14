@@ -168,7 +168,7 @@ function Book() {
                   </button>
                 </div>
                 <div className="min-w-[320px]">
-                  <BookingCalendar onSlotSelect={handleSlotSelect} doctor={doc} lat={doc.latitude} long={doc.longitude}/>
+                  <BookingCalendar onSlotSelect={handleSlotSelect} doctor={doc}/>
                 </div>
               </div>
             ))}

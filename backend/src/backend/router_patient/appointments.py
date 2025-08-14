@@ -103,7 +103,7 @@ async def cancel_appointment(
 async def get_free_slots(
     doctor_id: int = Query(..., gt=0, description="ID of the doctor"),
     lat: float = Query(..., ge=-90, le=90, description="Latitude coordinate"),
-    long: float = Query(..., ge=-180, le=180, description="Longitude coordinate"),
+    lng: float = Query(..., ge=-180, le=180, description="Longitude coordinate"),
     start_date: Optional[datetime] = Query(None, description="Start date for filtering slots (inclusive)"),
     end_date: Optional[datetime] = Query(None, description="End date for filtering slots (inclusive)"),
     limit: Optional[int] = Query(50, ge=1, le=100, description="Maximum number of slots to return")
@@ -124,7 +124,7 @@ async def get_free_slots(
           AND l.latitude = %s
           AND l.longitude = %s
         """
-        params = [doctor_id, lat, long]
+        params = [doctor_id, lat, lng]
 
         if start_date:
             query += " AND a.date_time >= %s"

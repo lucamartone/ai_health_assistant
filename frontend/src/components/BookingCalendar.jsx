@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { getSlots, getNewDate } from '../services/booking/aux_book';
 
-function BookingCalendar({ onSlotSelect, doctor, lat, long }) {
+function BookingCalendar({ onSlotSelect, doctor }) {
   console.log(doctor);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const slots = getSlots(doctor, lat, long);
+  const slots = getSlots(doctor);
 
   const dateKey = currentDate.toISOString().split('T')[0];
   const currentSlots = slots[dateKey] || [];
