@@ -264,3 +264,37 @@ async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description=
         return {"appointments": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero appuntamenti: {str(e)}")
+    
+@router_doctor_profile.get("/get_stats")
+async def get_stats(doctor_id: int = Query(..., gt=0, description="ID del paziente")):
+    try:
+        query = """
+            SELECT
+                COUNT(*) AS total_appointments,
+                COUNT(*) FILTER (WHERE status = 'booked') AS pending_appointments,
+                COUNT(*) FILTER (WHERE status = 'completed') AS completed_appointments,
+                COUNT(DISTINCT doctor_id) AS doctors_visited,
+                MAX(date_time) FILTER (WHERE status = 'completed') AS last_completed_visit
+            FROM appointment
+            WHERE patient_id = %s;
+        """
+        result = execute_query(query, (doctor_id,))
+        if not result:
+            return {
+                "total_appointments": 0,
+                "completed_appointments": 0,
+                "upcoming_appointments": 0,
+                "doctors_visited": 0,
+                "last_visit": None
+            }
+        
+        stats = result[0]
+        return {
+            "total_appointments": stats[0],
+            "completed_appointments": stats[1],
+            "upcoming_appointments": stats[2],
+            "doctors_visited": stats[3],
+            "last_visit": stats[4] or "N/A"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore durante il recupero delle statistiche: {str(e)}")

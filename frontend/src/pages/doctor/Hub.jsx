@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { getStats } from '../../services/profile/patient_profile';
+import { getStats } from '../../services/profile/doctor_profile';
 import {
   BarChart3, User, Calendar, Stethoscope, Shield, Settings
 } from 'lucide-react';
@@ -39,11 +39,11 @@ function Hub() {
       try {
         const stats = await getStats(account.id);
         setStats({
-          totalAppointments: stats.numberOfAppointments,
-          completedAppointments: stats.numberOfCompletedAppointments,
-          upcomingAppointments: stats.numberOfPendingAppointments,
-          doctorsVisited: stats.numberOfDoctorsVisited,
-          lastVisit: stats.lastVisitDate || 'N/A',
+          totalAppointments: stats.total_appointments,
+          completedAppointments: stats.completed_appointments,
+          upcomingAppointments: stats.upcoming_appointments,
+          doctorsVisited: stats.doctors_visited,
+          lastVisit: stats.last_visit || 'N/A',
         });
       } catch (error) {
         console.error('Errore nel recupero delle statistiche:', error);

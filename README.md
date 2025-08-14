@@ -6,10 +6,9 @@
 
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti
-- cronologia appuntamenti
 - terminare le statistiche dell'hub
 - modifica profilo -> non funziona l'aggiunta degli indirizzi e specializzazione
-- hub -> appuntamenti 
+- hub -> appuntamenti
 - hub -> cronolologia
 
 # paziente

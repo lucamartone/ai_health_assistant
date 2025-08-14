@@ -14,3 +14,7 @@ export async function login(email, password){
   const data = { email, password };
   return await api.post('/profile/doctor/login', data, { skipRefresh: true });
 };
+
+export async function getStats(doctorId){
+  return await api.get(`/profile/doctor/get_stats?doctor_id=${doctorId}`);
+};
