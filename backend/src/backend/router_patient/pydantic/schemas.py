@@ -17,3 +17,7 @@ class ReviewRequest(BaseModel):
     appointment_id: int
     stars: int
     report: Optional[str] = None
+
+class BookAppointmentRequest(BaseModel):
+    appointment_id: int
+    patient_id: int

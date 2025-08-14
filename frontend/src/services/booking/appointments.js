@@ -20,8 +20,8 @@ export async function reload() {
     return await api.get('/doctor/appointments/reload');
 };
 
-export async function get_booked_appointments(id_patient) {
-    return await api.get(`/patient/appointments/get_booked_appointments?id_patient=${id_patient}`);
+export async function get_booked_appointments(patient_id) {
+    return await api.get(`/patient/appointments/get_booked_appointments?patient_id=${patient_id}`);
 };
 
 export async function getHistory(patient_id) {

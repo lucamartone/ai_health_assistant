@@ -14,5 +14,5 @@ export async function getFreeSlots(doctor_id, lat, lng){
 
 export async function bookAppointment(appointment_id, patient_id) {
   const data = { appointment_id, patient_id };
-  return await api.post('/patient/doctors/book_appointment', data);
+  return await api.post('/patient/appointments/book_appointment', data);
 };

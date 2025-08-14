@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
 import { get_booked_appointments } from '../../../services/booking/appointments';
 
-function AppointmentsTab({ account }) {
+function AppointmentsTab() {
   const [appointments, setAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(false);
   const [error, setError] = useState('');
+  const { account } = useAuth();
 
   useEffect(() => {
     if (!account?.id) return;
 
     setLoadingAppointments(true);
     setError('');
-
     get_booked_appointments(account.id)
       .then(data => {
         const sorted = (data.appointments || []).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
