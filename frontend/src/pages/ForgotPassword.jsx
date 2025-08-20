@@ -9,6 +9,7 @@ function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [modalMessage, setModalMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,21 +19,56 @@ function ForgotPassword() {
     }
     try {
       setLoading(true);
-      await requestPasswordReset(email);
-      setModalMessage(
-        'Se l’email è registrata, ti abbiamo inviato un link per reimpostare la password. Controlla la casella di posta (e lo spam).'
-      );
+      const response = await requestPasswordReset(email);
+      setEmailSent(true);
+      setModalMessage(response.message || 'Email di reset inviata con successo. Controlla la tua casella di posta.');
     } catch (err) {
-      if (err?.message === 'Account non registrato') {
-        // Mantieni risposta “neutra” per non rivelare esistenza account, ma puoi anche essere esplicito se preferisci
-        setModalMessage('Se l’email è registrata, riceverai un link di reimpostazione.');
+      if (err?.message?.includes('Errore nell\'invio')) {
+        setModalMessage('Errore nell\'invio dell\'email. Riprova più tardi o contatta il supporto.');
       } else {
-        setModalMessage('Si è verificato un errore. Riprova più tardi.');
+        setModalMessage('Se l\'email è registrata, riceverai un link di reimpostazione.');
       }
     } finally {
       setLoading(false);
     }
   };
+
+  if (emailSent) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
+        <div className="bg-white px-6 py-6 rounded-2xl shadow-xl w-full max-w-md md:max-w-lg text-blue-900 mt-24 mb-12">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Mail className="h-8 w-8 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold mb-4">Email inviata!</h2>
+            <p className="text-gray-600 mb-6">
+              Abbiamo inviato un link di reimpostazione password al tuo indirizzo email.
+              Controlla la tua casella di posta (e la cartella spam).
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition"
+              >
+                Torna al login
+              </button>
+              <button
+                onClick={() => {
+                  setEmailSent(false);
+                  setEmail('');
+                  setModalMessage('');
+                }}
+                className="w-full bg-gray-100 text-gray-700 py-3 rounded-md font-semibold hover:bg-gray-200 transition"
+              >
+                Invia un'altra email
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 via-blue-400 to-blue-600 px-4">
@@ -67,31 +103,10 @@ function ForgotPassword() {
         <div className="flex items-center justify-between text-sm text-blue-600 mt-4">
           <button
             type="button"
-            onClick={() => navigate('/doctor/login')}
+            onClick={() => navigate('/login')}
             className="text-blue-800 font-medium underline hover:text-blue-900"
           >
             Torna al login
-          </button>
-          <button
-            type="button"
-            onClick={async () => {
-              if (!email) {
-                setModalMessage('Inserisci prima la tua email.');
-                return;
-              }
-              try {
-                setLoading(true);
-                await requestPasswordReset(email);
-                setModalMessage('Nuova email inviata (se l’account esiste).');
-              } catch {
-                setModalMessage('Errore nell’invio. Riprova più tardi.');
-              } finally {
-                setLoading(false);
-              }
-            }}
-            className="underline hover:text-blue-900"
-          >
-            Reinvia email
           </button>
         </div>
       </div>

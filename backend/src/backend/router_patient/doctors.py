@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from backend.connection import execute_query
+from datetime import datetime
 
 router_show_doctors = APIRouter()
 
@@ -40,6 +41,126 @@ async def get_all_doctors(
     
     except Exception as e:
         return {"error": str(e)}
+
+@router_show_doctors.get("/get_ranked_doctors")
+async def get_ranked_doctors(
+    latitude: Optional[float] = Query(None, ge=-90, le=90, description="Patient latitude for distance calculation"),
+    longitude: Optional[float] = Query(None, ge=-180, le=180, description="Patient longitude for distance calculation"),
+    specialization: Optional[str] = Query(None, min_length=2, max_length=50, description="Medical specialization filter"),
+    min_price: Optional[float] = Query(None, ge=0, description="Minimum price filter"),
+    max_price: Optional[float] = Query(None, ge=0, description="Maximum price filter"),
+    sort_by: Optional[str] = Query("comprehensive", description="Sorting criteria: distance, rating, experience, price, comprehensive"),
+    limit: Optional[int] = Query(default=50, ge=1, le=100, description="Maximum number of doctors to return")
+):
+    """
+    Get doctors with comprehensive ranking based on multiple factors:
+    - Distance from patient location
+    - Average rating from reviews
+    - Years of experience (based on account creation)
+    - Price
+    - Availability of appointments
+    """
+    try:
+        # Base query with all ranking factors
+        base_query = """
+        SELECT DISTINCT 
+            d.id AS doctor_id,
+            u.name,
+            u.surname,
+            d.specialization,
+            d.rank,
+            u.profile_img,
+            l.latitude,
+            l.longitude,
+            l.address,
+            l.city,
+            COALESCE(MIN(a.price), 50) as price,
+            EXTRACT(YEAR FROM AGE(CURRENT_DATE, u.created_at)) as years_experience,
+            COALESCE(AVG(r.stars), 0) as avg_rating,
+            COUNT(r.id) as review_count,
+            COUNT(CASE WHEN a.status = 'waiting' THEN 1 END) as available_slots
+        """
+        
+        # Distance calculation if coordinates provided
+        if latitude is not None and longitude is not None:
+            base_query += f""",
+            (6371 * acos(cos(radians({latitude})) * cos(radians(l.latitude)) * cos(radians(l.longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(l.latitude)))) AS distance_km
+            """
+        else:
+            base_query += ", NULL as distance_km"
+        
+        base_query += """
+        FROM doctor d
+        JOIN account u ON d.id = u.id
+        LEFT JOIN location l ON l.doctor_id = d.id
+        LEFT JOIN appointment a ON a.doctor_id = d.id
+        LEFT JOIN review r ON r.appointment_id = a.id
+        """
+        
+        # WHERE conditions
+        where_conditions = []
+        params = []
+        
+        if specialization:
+            where_conditions.append("d.specialization = %s")
+            params.append(specialization)
+        
+        if min_price is not None:
+            where_conditions.append("a.price >= %s")
+            params.append(min_price)
+        
+        if max_price is not None:
+            where_conditions.append("a.price <= %s")
+            params.append(max_price)
+        
+        if where_conditions:
+            base_query += " WHERE " + " AND ".join(where_conditions)
+        
+        base_query += """
+        GROUP BY d.id, u.name, u.surname, d.specialization, d.rank, u.profile_img, l.latitude, l.longitude, l.address, l.city, u.created_at
+        """
+        
+        # ORDER BY based on sort criteria
+        if sort_by == "distance" and latitude is not None and longitude is not None:
+            base_query += " ORDER BY distance_km ASC"
+        elif sort_by == "rating":
+            base_query += " ORDER BY avg_rating DESC, review_count DESC"
+        elif sort_by == "experience":
+            base_query += " ORDER BY years_experience DESC"
+        elif sort_by == "price":
+            base_query += " ORDER BY price ASC"
+        elif sort_by == "availability":
+            base_query += " ORDER BY available_slots DESC"
+        else:  # comprehensive ranking - use simple ordering
+            base_query += " ORDER BY avg_rating DESC, years_experience DESC, available_slots DESC"
+        
+        base_query += " LIMIT %s"
+        params.append(limit)
+        
+        raw_result = execute_query(base_query, tuple(params))
+        
+        # Define columns based on whether distance is calculated
+        if latitude is not None and longitude is not None:
+            columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude", "address", "city", "price", "years_experience", "avg_rating", "review_count", "available_slots", "distance_km"]
+        else:
+            columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude", "address", "city", "price", "years_experience", "avg_rating", "review_count", "available_slots", "distance_km"]
+        
+        result = []
+        for row in raw_result:
+            doctor = dict(zip(columns, row))
+            # Round numeric values for better display
+            if doctor.get("avg_rating") is not None:
+                doctor["avg_rating"] = round(float(doctor["avg_rating"]), 1)
+            if doctor.get("distance_km") is not None:
+                doctor["distance_km"] = round(float(doctor["distance_km"]), 1)
+            if doctor.get("years_experience") is not None:
+                doctor["years_experience"] = int(doctor["years_experience"])
+            result.append(doctor)
+        
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error retrieving ranked doctors: {str(e)}")
 
 @router_show_doctors.get("/get_free_doctors")
 async def get_free_doctors(

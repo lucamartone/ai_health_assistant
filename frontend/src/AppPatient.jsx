@@ -15,7 +15,9 @@ import PreferencesTab from './pages/patient/hub/PreferencesTab';
 import Chat from './pages/patient/Chat';
 import Book from './pages/patient/Book';
 import Register from './pages/patient/Register';
+import ResetPassword from './pages/ResetPassword';
 import ClinicalFolder from './pages/patient/ClinicalFolder';
+import Reviews from './pages/patient/Reviews';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import CookieConsent from './components/CookieConsent';
@@ -34,6 +36,7 @@ function AppPatient() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/hub" element={<Hub />}>
           <Route path="overview" element={<OverviewTab />} />
           <Route path="profile" element={<ProfileTab />} />
@@ -49,6 +52,7 @@ function AppPatient() {
         <Route path="/chat" element={<Chat />} />
         <Route path="/book" element={<Book />} />
         <Route path="/profile/clinical-folder" element={<ClinicalFolder />} />
+        <Route path="/reviews/:doctorId" element={<Reviews />} />
       </Routes>
 
       {!isChatPage && <Footer />}

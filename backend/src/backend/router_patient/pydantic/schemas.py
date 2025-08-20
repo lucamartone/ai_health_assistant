@@ -4,6 +4,8 @@ from datetime import datetime
 
 class Appointment(BaseModel):
     id: int
+    doctor_id: int
+    doctor_name: str
     doctor_surname: str
     specialization :str
     address : str

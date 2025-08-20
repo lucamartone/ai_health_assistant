@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { get_booked_appointments } from '../../../services/booking/appointments';
+import { doctorGetBooked } from '../../../services/booking/appointments';
 
 function AppointmentsTab({ account }) {
   const [appointments, setAppointments] = useState([]);
@@ -12,7 +12,7 @@ function AppointmentsTab({ account }) {
     setLoadingAppointments(true);
     setError('');
 
-    get_booked_appointments(account.id)
+    doctorGetBooked(account.id)
       .then(data => {
         const sorted = (data.appointments || []).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
         setAppointments(sorted);
@@ -64,7 +64,7 @@ function AppointmentsTab({ account }) {
                   {dayAppointments.map((apt, i) => (
                     <div key={i} className="bg-gray-50 p-3 rounded-lg border">
                       <p className="font-medium text-gray-800">
-                        Dott. {apt.doctor_surname} ({apt.specialization})
+                        Paziente: {apt.patient_name} {apt.patient_surname}
                       </p>
                       <p className="text-sm text-gray-500">Ore: {formatTime(apt.date_time)}</p>
                       <p className="text-sm text-gray-500">Luogo: {apt.address}, {apt.city}</p>

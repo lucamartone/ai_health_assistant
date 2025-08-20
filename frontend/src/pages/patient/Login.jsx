@@ -75,15 +75,26 @@ function Login() {
             Accedi
           </button>
         </form>
-        <p className="text-center text-sm text-blue-100 mt-6">
-          Non hai un account?{' '}
-          <a
-            onClick={() => navigate('/register')}
-            className="text-white font-medium underline hover:text-blue-300 cursor-pointer"
-          >
-            Registrati
-          </a>
-        </p>
+        
+        <div className="text-center text-sm text-blue-100 mt-6 space-y-2">
+          <p>
+            Non hai un account?{' '}
+            <a
+              onClick={() => navigate('/register')}
+              className="text-white font-medium underline hover:text-blue-300 cursor-pointer"
+            >
+              Registrati
+            </a>
+          </p>
+          <p>
+            <a
+              onClick={() => navigate('/forgot-password')}
+              className="text-blue-200 font-medium underline hover:text-blue-300 cursor-pointer"
+            >
+              Password dimenticata?
+            </a>
+          </p>
+        </div>
       </div>
       <SimpleModal message={modalMessage} onClose={() => setModalMessage('')} />
     </div>

@@ -2,8 +2,9 @@ from fastapi import APIRouter, HTTPException, Response, Depends, Query
 from datetime import datetime, timedelta
 from backend.connection import execute_query
 from pydantic import EmailStr
-from backend.router_profile.pydantic.schemas import ChangePasswordRequest
+from backend.router_profile.pydantic.schemas import ChangePasswordRequest, ResetPasswordRequest, PreferencesPayload
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token, get_current_account
+from backend.utils.email_service import send_password_reset_email
 from passlib.context import CryptContext
 import re
 
@@ -133,16 +134,92 @@ async def request_password_reset(email: EmailStr):
         result = execute_query(query, (email,))
         
         if not result:
-            raise HTTPException(status_code=404, detail="Utente non trovato")
+            # Don't reveal if email exists or not for security
+            return {"message": "Se l'email è registrata, riceverai un link di reimpostazione."}
 
-        # Generate reset token (for simplicity, using a timestamp here)
+        # Generate reset token
         reset_token = create_access_token(data={"email": email}, expires_delta=timedelta(hours=1))
 
-        # Here you would typically send the reset token via email
-        # For this example, we will just return it
-        return {"reset_token": reset_token}
+        # Send email
+        email_sent = await send_password_reset_email(email, reset_token)
+        
+        if email_sent:
+            return {"message": "Email di reset inviata con successo"}
+        else:
+            raise HTTPException(status_code=500, detail="Errore nell'invio dell'email")
 
     except HTTPException as he:
         raise he
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore durante la richiesta di reset password: {str(e)}")
+
+
+@router_account_profile.post("/reset_password")
+async def reset_password(payload: ResetPasswordRequest):
+    """Imposta una nuova password usando un token di reset valido."""
+    try:
+        # Decodifica token
+        from jose import jwt
+        from backend.router_profile.cookies_login import SECRET_KEY, ALGORITHM
+        data = jwt.decode(payload.token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = data.get("email")
+        if not email:
+            raise HTTPException(status_code=400, detail="Token non valido")
+
+        if not validate_password(payload.new_password):
+            raise HTTPException(status_code=400, detail="La nuova password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero")
+
+        hashed = pwd_context.hash(payload.new_password)
+        execute_query("UPDATE account SET password = %s WHERE email = %s", (hashed, email), commit=True)
+        return {"message": "Password reimpostata con successo"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore durante il reset password: {str(e)}")
+
+
+@router_account_profile.get('/preferences')
+async def get_preferences(account_id: int = Query(..., gt=0)):
+    try:
+        # Per semplicità, memorizziamo preferenze in una tabella JSON per account
+        create_table = """
+            CREATE TABLE IF NOT EXISTS account_preferences (
+                account_id INT PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
+                notifications JSONB,
+                privacy JSONB,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """
+        execute_query(create_table, commit=True)
+
+        res = execute_query("SELECT notifications, privacy FROM account_preferences WHERE account_id = %s", (account_id,))
+        if not res:
+            return {"notifications": {"reminders": True, "testResults": True, "newsletter": False}, "privacy": {"shareWithDoctors": True, "publicProfile": False}}
+        return {"notifications": res[0][0], "privacy": res[0][1]}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore nel recupero preferenze: {str(e)}")
+
+
+@router_account_profile.post('/preferences')
+async def save_preferences(account_id: int = Query(..., gt=0), payload: PreferencesPayload = None):
+    try:
+        create_table = """
+            CREATE TABLE IF NOT EXISTS account_preferences (
+                account_id INT PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
+                notifications JSONB,
+                privacy JSONB,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """
+        execute_query(create_table, commit=True)
+
+        upsert = """
+            INSERT INTO account_preferences(account_id, notifications, privacy, updated_at)
+            VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (account_id) DO UPDATE SET
+                notifications = EXCLUDED.notifications,
+                privacy = EXCLUDED.privacy,
+                updated_at = CURRENT_TIMESTAMP
+        """
+        execute_query(upsert, (account_id, payload.notifications, payload.privacy), commit=True)
+        return {"message": "Preferenze salvate"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore nel salvataggio preferenze: {str(e)}")

@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css'
 import Login from './pages/doctor/Login';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Index from './pages/doctor/Index';
 import Hub from './pages/doctor/Hub';
 import OverviewTab from './pages/doctor/hub/OverviewTab';
@@ -12,6 +13,7 @@ import SecurityTab from './pages/doctor/hub/SecurityTab';
 import PreferencesTab from './pages/doctor/hub/PreferencesTab';
 import Appointments from './pages/doctor/Appointments';
 import Register from './pages/doctor/Register';
+import Schedule from './pages/doctor/Schedule';
 import ClinicalFolder from './pages/doctor/ClinicalFolder';
 import PatientList from './pages/doctor/PatientList';
 import Header from './components/Header';
@@ -29,11 +31,13 @@ function AppDoctor() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/hub" element={<Hub />}>
           <Route path="overview" element={<OverviewTab />} />
           <Route path="profile" element={<ProfileTab />} />
           <Route path="appointments" element={<AppointmentsTab />} />
           <Route path="history" element={<HistoryTab />} />
+          <Route path="schedule" element={<Schedule />} />
           <Route path="security" element={<SecurityTab />} />
           <Route path="preferences" element={<PreferencesTab />} />
           {/* Default fallback */}

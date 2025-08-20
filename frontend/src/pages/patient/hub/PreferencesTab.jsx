@@ -1,16 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
+import { getPreferences, savePreferences } from '../../../services/profile/profile';
 
 function PreferencesTab() {
-  const [notifications, setNotifications] = useState({
-    reminders: true,
-    testResults: true,
-    newsletter: false,
-  });
+  const { account } = useAuth();
+  const [notifications, setNotifications] = useState({ reminders: true, testResults: true, newsletter: false });
+  const [privacy, setPrivacy] = useState({ shareWithDoctors: true, publicProfile: false });
+  const [saving, setSaving] = useState(false);
 
-  const [privacy, setPrivacy] = useState({
-    shareWithDoctors: true,
-    publicProfile: false,
-  });
+  useEffect(() => {
+    const load = async () => {
+      if (!account?.id) return;
+      try {
+        const data = await getPreferences(account.id);
+        if (data?.notifications) setNotifications(data.notifications);
+        if (data?.privacy) setPrivacy(data.privacy);
+      } catch {}
+    };
+    load();
+  }, [account]);
 
   const handleNotifChange = (key) => {
     setNotifications((prev) => ({
@@ -24,6 +32,15 @@ function PreferencesTab() {
       ...prev,
       [key]: !prev[key],
     }));
+  };
+
+  const onSave = async () => {
+    if (!account?.id) return;
+    try {
+      setSaving(true);
+      await savePreferences(account.id, notifications, privacy);
+    } catch {}
+    finally { setSaving(false); }
   };
 
   return (
@@ -82,6 +99,16 @@ function PreferencesTab() {
             <span>Profilo pubblico visibile</span>
           </label>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className={`px-4 py-2 rounded-md text-white ${saving ? 'bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'}`}
+        >
+          Salva preferenze
+        </button>
       </div>
     </div>
   );

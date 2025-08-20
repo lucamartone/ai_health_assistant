@@ -1,11 +1,11 @@
 # account
 - cambio password                                                ✅
-- recupero password (pagina react dedicata)
+- recupero password (pagina react dedicata)                      ✅
 - modifica profilo                                               ✅
 - (implementazione preferenze)
 
 # dottore
-- pagina configura orari -> inserimento automatico appuntamenti
+- pagina configura orari -> inserimento automatico appuntamenti  ✅
 - terminare le statistiche dell'hub                              ✅
 - modifica profilo -> non funziona l'aggiunta degli indirizzi e specializzazione
 - hub -> appuntamenti

@@ -234,15 +234,28 @@ async def edit_profile(data: ModifyProfileRequest):
         params = (data.specialization, data.email)
         execute_query(query, params, commit=True)
 
-        for address in data.addresses:
-                
-            query = """
-                UPDATE location
-                SET address = %s
-                WHERE doctor_id = (SELECT id FROM account WHERE email = %s)
+        # Sostituisci completamente le location del dottore con quelle fornite
+        if data.addresses is not None:
+            # Trova l'id del doctor
+            res = execute_query("SELECT id FROM account WHERE email = %s", (data.email,))
+            if not res:
+                raise HTTPException(status_code=404, detail="Utente non trovato")
+            doctor_id = res[0][0]
+
+            # Cancella le location esistenti
+            execute_query("DELETE FROM location WHERE doctor_id = %s", (doctor_id,), commit=True)
+
+            # Inserisci le nuove location
+            insert_loc = """
+                INSERT INTO location (doctor_id, address, latitude, longitude)
+                VALUES (%s, %s, %s, %s)
             """
-            params = (address, data.email)
-            execute_query(query, params, commit=True)
+            for loc in data.addresses:
+                execute_query(
+                    insert_loc,
+                    (doctor_id, loc.address, loc.latitude, loc.longitude),
+                    commit=True
+                )
 
         # Aggiorna l'immagine se presente
         if data.profile_img:

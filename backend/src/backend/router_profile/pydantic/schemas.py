@@ -38,7 +38,7 @@ class ModifyProfileRequest(BaseModel):
     phone: Optional[str] = None
     email: EmailStr
     specialization: Optional[str] = None
-    addresses: Optional[List[str]] = None
+    addresses: Optional[List[LocationData]] = None
     profile_img: Optional[str] = None
 
 class HealthDataInput(BaseModel):
@@ -46,3 +46,13 @@ class HealthDataInput(BaseModel):
     blood_type: Optional[str] = None
     allergies: Optional[List[str]] = None
     chronic_conditions: Optional[List[str]] = None
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+class PreferencesPayload(BaseModel):
+    notifications: Optional[dict] = None
+    privacy: Optional[dict] = None

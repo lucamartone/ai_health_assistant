@@ -4,6 +4,20 @@ export async function getAllDoctors(){
   return await api.get('/patient/doctors/get_all_doctors');
 };
 
+export async function getRankedDoctors(params = {}) {
+  const queryParams = new URLSearchParams();
+  
+  if (params.latitude !== undefined) queryParams.append('latitude', params.latitude);
+  if (params.longitude !== undefined) queryParams.append('longitude', params.longitude);
+  if (params.specialization) queryParams.append('specialization', params.specialization);
+  if (params.minPrice !== undefined) queryParams.append('min_price', params.minPrice);
+  if (params.maxPrice !== undefined) queryParams.append('max_price', params.maxPrice);
+  if (params.sortBy) queryParams.append('sort_by', params.sortBy);
+  if (params.limit) queryParams.append('limit', params.limit);
+  
+  return await api.get(`/patient/doctors/get_ranked_doctors?${queryParams.toString()}`);
+};
+
 export async function getFreeDoctors() {
   return await api.get('/patient/doctors/get_free_doctors');
 };

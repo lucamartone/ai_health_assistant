@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Literal, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, date
 
 class AppointmentsRequest(BaseModel):
     doctor_id: int
@@ -113,6 +113,14 @@ class MedicalDocumentResponse(BaseModel):
     doctor_surname: str
     download_url: Optional[str] = None
 
+class ReviewResponse(BaseModel):
+    id: int
+    appointment_id: int
+    stars: int
+    report: Optional[str]
+    created_at: datetime
+    appointment_date: datetime
+
 class ClinicalFolderResponse(BaseModel):
     id: int
     patient_id: int
@@ -124,4 +132,24 @@ class ClinicalFolderResponse(BaseModel):
     updated_at: datetime
     medical_records: List[MedicalRecordResponse] = []
     documents: List[MedicalDocumentResponse] = []
+    reviews: List[ReviewResponse] = []
+
+
+class BulkGenerateSlots(BaseModel):
+    doctor_id: int
+    location_ids: List[int]
+    start_date: date  # inclusive
+    end_date: date    # inclusive
+    weekdays: List[int]  # Python weekday indices: 0=Mon .. 6=Sun
+    start_time: str  # 'HH:MM'
+    end_time: str    # 'HH:MM'
+    slot_minutes: int = Field(60, ge=5, le=480)
+
+
+class BulkClearSlots(BaseModel):
+    doctor_id: int
+    location_ids: Optional[List[int]] = None
+    start_date: date
+    end_date: date
+    only_status: Optional[str] = 'waiting'
 

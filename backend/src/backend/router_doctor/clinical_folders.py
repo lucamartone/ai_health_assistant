@@ -238,6 +238,16 @@ async def get_patient_clinical_folder_by_doctor(
             """, (folder_id, doctor_id))
             documents = cursor.fetchall()
             
+            # Get reviews for this patient and doctor
+            cursor.execute("""
+                SELECT r.*, a.date_time as appointment_date
+                FROM review r
+                JOIN appointment a ON r.appointment_id = a.id
+                WHERE a.patient_id = %s AND a.doctor_id = %s AND r.stars IS NOT NULL
+                ORDER BY r.created_at DESC
+            """, (patient_id, doctor_id))
+            reviews = cursor.fetchall()
+            
             # Add download URLs to documents
             for doc in documents:
                 doc['download_url'] = f"/doctor/clinical_folders/download-document/{doc['id']}"
@@ -252,7 +262,8 @@ async def get_patient_clinical_folder_by_doctor(
                 created_at=folder_result['created_at'],
                 updated_at=folder_result['updated_at'],
                 medical_records=[MedicalRecordResponse(**record) for record in medical_records],
-                documents=[MedicalDocumentResponse(**doc) for doc in documents]
+                documents=[MedicalDocumentResponse(**doc) for doc in documents],
+                reviews=reviews
             )
             
     except psycopg2.Error as e:

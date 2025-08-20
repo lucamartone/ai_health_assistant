@@ -166,9 +166,18 @@ const AdminLogin = () => {
         </form>
 
         {/* Footer */}
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <p className="text-xs text-gray-500">
             Credenziali di default: admin@healthassistant.com / admin123
+          </p>
+          <p>
+            <button
+              type="button"
+              onClick={() => navigate('/forgot-password')}
+              className="text-sm text-red-600 hover:text-red-700 underline"
+            >
+              Password dimenticata?
+            </button>
           </p>
         </div>
       </div>

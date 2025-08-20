@@ -12,6 +12,8 @@ async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, descriptio
         #query
         query = ''' SELECT
                         a.id,
+                        a.doctor_id,
+                        acc.name AS doctor_name,
                         acc.surname AS doctor_surname,
                         d.specialization,
                         l.address,
@@ -38,14 +40,16 @@ async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, descriptio
         appointments: List[Appointment] = [
             Appointment(
                 id=row[0],
-                doctor_surname=row[1],
-                specialization=row[2],
-                address=row[3],
-                city=row[4],
-                date_time=row[5],
-                price=float(row[6]),
-                status=row[7],
-                created_at=row[8]
+                doctor_id=row[1],
+                doctor_name=row[2],
+                doctor_surname=row[3],
+                specialization=row[4],
+                address=row[5],
+                city=row[6],
+                date_time=row[7],
+                price=float(row[8]),
+                status=row[9],
+                created_at=row[10]
             )
             for row in raw_result
         ]

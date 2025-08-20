@@ -32,6 +32,14 @@ function OverviewTab() {
             buttonText: "Visualizza cartelle",
             gradient: "from-violet-500 to-violet-600 text-violet-50",
             onClick: () => navigate('/doctor/patients')
+        },
+        {
+            icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m4-4H8" />,
+            title: "Configura Orari",
+            description: "Genera o rimuovi slot disponibili per giorni e fasce orarie.",
+            buttonText: "Configura orari",
+            gradient: "from-cyan-500 to-blue-500 text-cyan-50",
+            onClick: () => navigate('/doctor/hub/schedule')
         }
     ];
 

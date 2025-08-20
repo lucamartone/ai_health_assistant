@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getHistory } from '../../../services/booking/appointments';
+import { doctorGetHistory } from '../../../services/booking/appointments';
 
 function HistoryTab({ account }) {
   const [appointments, setAppointments] = useState([]);
@@ -13,7 +13,7 @@ function HistoryTab({ account }) {
     setLoadingAppointments(true);
     setError('');
 
-    getHistory(account.id)
+    doctorGetHistory(account.id)
       .then(data =>{
         setAppointments(data.appointments || [])})
       .catch(err => {
@@ -55,9 +55,7 @@ function HistoryTab({ account }) {
               <div key={index} className="bg-gray-50 rounded-lg p-4 shadow-sm">
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-medium text-gray-800">
-                  Dott. {apt.doctor_surname} ({apt.specialization})
-                </p>
+                <p className="font-medium text-gray-800">Paziente: {apt.patient_name} {apt.patient_surname}</p>
                 <p className="text-sm text-gray-500">
                   {formattedDate} - {formattedTime}
                 </p>

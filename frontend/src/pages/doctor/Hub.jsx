@@ -3,7 +3,8 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getStats } from '../../services/profile/doctor_profile';
 import {
-  BarChart3, User, Calendar, Stethoscope, Shield, Settings
+  BarChart3, User, Calendar, Stethoscope, Shield, Settings, Clock,
+  Users, CheckCircle, CalendarDays
 } from 'lucide-react';
 
 const TABS = [
@@ -11,6 +12,7 @@ const TABS = [
   { key: 'profile', label: 'Profilo', icon: <User className="h-5 w-5" /> },
   { key: 'appointments', label: 'Appuntamenti', icon: <Calendar className="h-5 w-5" /> },
   { key: 'history', label: 'Cronologia', icon: <Stethoscope className="h-5 w-5" /> },
+  { key: 'schedule', label: 'Orari', icon: <Clock className="h-5 w-5" /> },
   { key: 'security', label: 'Sicurezza', icon: <Shield className="h-5 w-5" /> },
   { key: 'preferences', label: 'Preferenze', icon: <Settings className="h-5 w-5" /> },
 ];
@@ -38,12 +40,28 @@ function Hub() {
     const fetchStats = async () => {
       try {
         const stats = await getStats(account.id);
+        
+        // Formatta la data dell'ultima visita
+        let formattedLastVisit = 'N/A';
+        if (stats.last_visit && stats.last_visit !== 'N/A') {
+          try {
+            const date = new Date(stats.last_visit);
+            formattedLastVisit = date.toLocaleDateString('it-IT', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            });
+          } catch (e) {
+            formattedLastVisit = 'N/A';
+          }
+        }
+        
         setStats({
           totalAppointments: stats.total_appointments,
           completedAppointments: stats.completed_appointments,
           upcomingAppointments: stats.upcoming_appointments,
           doctorsVisited: stats.doctors_visited,
-          lastVisit: stats.last_visit || 'N/A',
+          lastVisit: formattedLastVisit,
         });
       } catch (error) {
         console.error('Errore nel recupero delle statistiche:', error);
@@ -70,22 +88,37 @@ function Hub() {
         {/* Statistiche */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <Calendar className="h-6 w-6" />
+            </div>
             <div className="text-2xl font-bold">{stats.totalAppointments}</div>
             <div className="text-sm opacity-90">Appuntamenti</div>
           </div>
           <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <CheckCircle className="h-6 w-6" />
+            </div>
             <div className="text-2xl font-bold">{stats.completedAppointments}</div>
             <div className="text-sm opacity-90">Completati</div>
           </div>
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <CalendarDays className="h-6 w-6" />
+            </div>
             <div className="text-2xl font-bold">{stats.upcomingAppointments}</div>
             <div className="text-sm opacity-90">Prossimi</div>
           </div>
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <Users className="h-6 w-6" />
+            </div>
             <div className="text-2xl font-bold">{stats.doctorsVisited}</div>
-            <div className="text-sm opacity-90">Medici</div>
+            <div className="text-sm opacity-90">Pazienti</div>
           </div>
           <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <Clock className="h-6 w-6" />
+            </div>
             <div className="text-xl font-semibold">{stats.lastVisit}</div>
             <div className="text-sm opacity-90">Ultima Visita</div>
           </div>
@@ -116,7 +149,7 @@ function Hub() {
 
             {/* Gruppo centro */}
             <div className="flex space-x-1 px-4 border-r border-gray-200">
-              {TABS.filter(tab => ['appointments', 'history'].includes(tab.key)).map((tab) => (
+              {TABS.filter(tab => ['appointments', 'history', 'schedule'].includes(tab.key)).map((tab) => (
                 <NavLink
                   key={tab.key}
                   to={`/doctor/hub/${tab.key}`}

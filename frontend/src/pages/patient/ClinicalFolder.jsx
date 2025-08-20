@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { FolderOpen, User, FileText, ArrowLeft, Stethoscope, Calendar, MapPin } from 'lucide-react';
+import { FolderOpen, User, FileText, ArrowLeft, Stethoscope, Calendar, MapPin, Star } from 'lucide-react';
 import { fetchClinicalFolderByDoctor } from '../../services/profile/clinical_folders';
 import { getDoctors } from '../../services/profile/patient_profile';
 
@@ -104,6 +104,25 @@ const ClinicalFolder = () => {
     } else {
       return { status: 'Iniziale', color: 'bg-blue-100 text-blue-800' };
     }
+  };
+
+  const handleReviewDoctor = (doctorId) => {
+    navigate(`/reviews/${doctorId}`);
+  };
+
+  const renderStars = (rating) => {
+    return (
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-4 w-4 ${
+              star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+            }`}
+          />
+        ))}
+      </div>
+    );
   };
 
   if (loading) {
@@ -217,11 +236,20 @@ const ClinicalFolder = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">
-                        {folderData.folder?.medical_records?.length || 0}
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="text-2xl font-bold">
+                          {folderData.folder?.medical_records?.length || 0}
+                        </div>
+                        <div className="text-blue-100 text-sm">Record medici</div>
                       </div>
-                      <div className="text-blue-100 text-sm">Record medici</div>
+                      <button
+                        onClick={() => handleReviewDoctor(folderData.doctor.id)}
+                        className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+                      >
+                        <Star className="h-4 w-4" />
+                        <span>Lascia Recensione</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -305,6 +333,33 @@ const ClinicalFolder = () => {
                           </div>
                         )}
                       </div>
+
+                      {/* Recensioni */}
+                      {folderData.folder.reviews && folderData.folder.reviews.length > 0 && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Star className="h-5 w-5" />
+                            Le tue Recensioni
+                          </h4>
+                          <div className="space-y-4">
+                            {folderData.folder.reviews.map((review, reviewIndex) => (
+                              <div key={reviewIndex} className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                                <div className="flex justify-between items-start mb-2">
+                                  <div className="flex items-center gap-2">
+                                    {renderStars(review.stars)}
+                                    <span className="text-sm text-gray-600">
+                                      {formatDate(review.created_at)}
+                                    </span>
+                                  </div>
+                                </div>
+                                {review.report && (
+                                  <p className="text-gray-700 text-sm">{review.report}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Documenti */}
                       {folderData.folder.documents && folderData.folder.documents.length > 0 && (

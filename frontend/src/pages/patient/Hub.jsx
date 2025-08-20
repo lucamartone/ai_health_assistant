@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getStats } from '../../services/profile/patient_profile';
 import {
   BarChart3, User, Calendar, Stethoscope, Star, Heart, Shield, Settings,
+  Clock, Users, CheckCircle, CalendarDays
 } from 'lucide-react';
 
 const TABS = [
@@ -41,12 +42,28 @@ function Hub() {
     const fetchStats = async () => {
       try {
         const stats = await getStats(account.id);
+        
+        // Formatta la data dell'ultima visita
+        let formattedLastVisit = 'N/A';
+        if (stats.last_visit && stats.last_visit !== 'N/A') {
+          try {
+            const date = new Date(stats.last_visit);
+            formattedLastVisit = date.toLocaleDateString('it-IT', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            });
+          } catch (e) {
+            formattedLastVisit = 'N/A';
+          }
+        }
+        
         setStats({
           totalAppointments: stats.total_appointments,
           completedAppointments: stats.completed_appointments,
           upcomingAppointments: stats.upcoming_appointments,
           doctorsVisited: stats.doctors_visited,
-          lastVisit: stats.last_visit || 'N/A',
+          lastVisit: formattedLastVisit,
         });
       } catch (error) {
         console.error('Errore nel recupero delle statistiche:', error);
@@ -72,24 +89,38 @@ function Hub() {
 
         {/* Statistiche */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          {/* ... identico */}
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <Calendar className="h-6 w-6" />
+            </div>
             <div className="text-2xl font-bold">{stats.totalAppointments}</div>
             <div className="text-sm opacity-90">Appuntamenti</div>
           </div>
           <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <CheckCircle className="h-6 w-6" />
+            </div>
             <div className="text-2xl font-bold">{stats.completedAppointments}</div>
             <div className="text-sm opacity-90">Completati</div>
           </div>
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <CalendarDays className="h-6 w-6" />
+            </div>
             <div className="text-2xl font-bold">{stats.upcomingAppointments}</div>
             <div className="text-sm opacity-90">Prossimi</div>
           </div>
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <Users className="h-6 w-6" />
+            </div>
             <div className="text-2xl font-bold">{stats.doctorsVisited}</div>
             <div className="text-sm opacity-90">Medici</div>
           </div>
           <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-1">
+              <Clock className="h-6 w-6" />
+            </div>
             <div className="text-xl font-semibold">{stats.lastVisit}</div>
             <div className="text-sm opacity-90">Ultima Visita</div>
           </div>
