@@ -80,10 +80,11 @@ async def login(data: LoginRequest, response: Response):
     try:
         # 1) Account base
         query_account = """
-        SELECT id, name, surname, email, password, profile_img,
-               last_login_attempt, failed_attempts, phone, role
-        FROM account
-        WHERE email = %s
+        SELECT a.id, a.name, a.surname, a.email, a.password, a.profile_img,
+               a.last_login_attempt, a.failed_attempts, a.phone, a.role
+        FROM account a
+        JOIN doctor d ON a.id = d.id
+        WHERE a.email = %s
         """
         results = execute_query(query_account, (data.email,))
         if not results:
