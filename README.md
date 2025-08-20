@@ -26,7 +26,7 @@
 - modifica prompt per far ritornare un solo specialista
 
 # ranking dottori nelle prenotazioni
-- trovare dei parametri per ordinare i dottori (localizzazione, valutazioni, anni di attività)
+- trovare dei parametri per ordinare i dottori (localizzazione, valutazioni, anni di attività)✅
 
 # autenticazione
 - modifica registrazione dottore                                              ✅
