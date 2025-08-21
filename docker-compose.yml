@@ -22,19 +22,28 @@ services:
     env_file:
       - .env
     depends_on:
-      - database
+      database:
+        condition: service_healthy
 
   database:
-    image: postgres:16
+    image: postgres:latest
     environment:
       POSTGRES_DB: HealthDB
       POSTGRES_USER: user
       POSTGRES_PASSWORD: userpwd
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
       - "5433:5432"
     volumes:
       - ./database/:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d HealthDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
 
 
