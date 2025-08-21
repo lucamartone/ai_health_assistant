@@ -211,8 +211,6 @@ async def get_past_appointments(patient_id: int = Query(..., gt=0, description="
 @router_appointments.get("/get_free_slots")
 async def get_free_slots(
     doctor_id: int = Query(..., gt=0, description="ID of the doctor"),
-    lat: float = Query(..., ge=-90, le=90, description="Latitude coordinate"),
-    lng: float = Query(..., ge=-180, le=180, description="Longitude coordinate"),
     start_date: Optional[datetime] = Query(None, description="Start date for filtering slots (inclusive)"),
     end_date: Optional[datetime] = Query(None, description="End date for filtering slots (inclusive)"),
     limit: Optional[int] = Query(50, ge=1, le=100, description="Maximum number of slots to return")
@@ -230,10 +228,9 @@ async def get_free_slots(
         WHERE a.doctor_id = %s
           AND a.patient_id IS NULL
           AND a.status = 'waiting'
-          AND l.latitude = %s
-          AND l.longitude = %s
+          AND a.date_time > NOW()
         """
-        params = [doctor_id, lat, lng]
+        params = [doctor_id]
 
         if start_date:
             query += " AND a.date_time >= %s"

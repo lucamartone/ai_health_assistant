@@ -229,7 +229,7 @@ function Appointments() {
                                             doctor_id: doctorId,
                                             location_id: addressToId[activeTab],
                                             date_time: slot.dateTime.toISOString(),
-                                            state: 'waiting',
+                                            status: 'waiting',
                                           });
                                         } catch (error) {
                                           console.error("Errore nell'inserimento:", error);

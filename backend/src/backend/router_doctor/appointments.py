@@ -148,8 +148,10 @@ def generate_slots(payload: BulkGenerateSlots):
 
                 dt = start_dt
                 while dt < end_dt:
-                    for location_id in payload.location_ids:
-                        slots_to_insert.append((payload.doctor_id, location_id, dt))
+                    # Controllo: non creare slot nel passato
+                    if dt > datetime.now():
+                        for location_id in payload.location_ids:
+                            slots_to_insert.append((payload.doctor_id, location_id, dt))
                     dt += timedelta(minutes=payload.slot_minutes)
             current_day += timedelta(days=1)
 
@@ -200,7 +202,7 @@ def clear_slots(payload: BulkClearSlots):
         raise HTTPException(status_code=500, detail=f"Errore nella rimozione degli slot: {str(e)}")
 
 @router_appointments.post("/insert_appointment")
-def insert_appointment(data: AppointmentInsert):
+def insert_appointment(data: dict):
     """Inserisce un nuovo appuntamento per un dottore specifico."""
     print("inserisco")
     try:
@@ -208,7 +210,7 @@ def insert_appointment(data: AppointmentInsert):
         INSERT INTO appointment (doctor_id, location_id, date_time, status)
         VALUES (%s, %s, %s, %s)
         """
-        params = (data.doctor_id, data.location_id, data.date_time, data.status)
+        params = (data["doctor_id"], data["location_id"], data["date_time"], data["status"])
         execute_query(query, params, commit=True)
         return {"message": "Appuntamento inserito con successo"}
     except Exception as e:

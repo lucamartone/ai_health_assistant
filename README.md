@@ -3,6 +3,7 @@
 - recupero password (pagina react dedicata)                      ✅
 - modifica profilo                                               ✅
 - (implementazione preferenze)
+- correggere statistiche counter per appuntamenti completati ecc. 
 
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti  ✅
@@ -10,6 +11,7 @@
 - modifica profilo -> non funziona l'aggiunta degli indirizzi e specializzazione
 - hub -> appuntamenti
 - hub -> cronolologia
+- creazione cartella clinica
 
 # paziente
 - cronologia appuntamenti                                        ✅                                                  
