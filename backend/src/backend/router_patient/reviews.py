@@ -78,15 +78,73 @@ async def review_appointment(data: ReviewRequest):
         if not raw_result:
             raise HTTPException(status_code=404, detail="Appointment not found or not completed.")
 
-        # Insert the review into the review table
-        update_query = """
-            UPDATE review
-            SET stars = %s, report = %s
-            WHERE appointment_id = %s
+        # Check if review already exists
+        check_review_query = """
+            SELECT id FROM review WHERE appointment_id = %s
         """
-        execute_query(update_query, (data.stars, data.report, data.appointment_id), commit=True)
+        review_result = execute_query(check_review_query, (data.appointment_id,))
+        
+        if review_result:
+            # Update existing review
+            update_query = """
+                UPDATE review
+                SET stars = %s, report = %s
+                WHERE appointment_id = %s
+            """
+            execute_query(update_query, (data.stars, data.report, data.appointment_id), commit=True)
+        else:
+            # Create new review
+            insert_query = """
+                INSERT INTO review (appointment_id, stars, report)
+                VALUES (%s, %s, %s)
+            """
+            execute_query(insert_query, (data.appointment_id, data.stars, data.report), commit=True)
 
         return {"message": "Review submitted successfully."}
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error submitting review: {str(e)}")
+
+
+@router_reviews.get("/patient_reviews")
+async def get_patient_reviews(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    """Ottieni tutte le recensioni del paziente"""
+    try:
+        query = """
+            SELECT
+                r.id,
+                r.appointment_id,
+                r.stars,
+                r.report,
+                a.date_time,
+                acc.name AS doctor_name,
+                acc.surname AS doctor_surname,
+                d.specialization
+            FROM review r
+            JOIN appointment a ON r.appointment_id = a.id
+            JOIN doctor d ON a.doctor_id = d.id
+            JOIN account acc ON d.id = acc.id
+            WHERE a.patient_id = %s AND r.stars IS NOT NULL
+            ORDER BY a.date_time DESC
+        """
+        
+        raw_result = execute_query(query, (patient_id,))
+        
+        reviews = [
+            {
+                "id": row[0],
+                "appointment_id": row[1],
+                "stars": row[2],
+                "report": row[3],
+                "appointment_date": row[4].isoformat() if row[4] else None,
+                "doctor_name": row[5],
+                "doctor_surname": row[6],
+                "specialization": row[7]
+            }
+            for row in raw_result
+        ]
+
+        return {"reviews": reviews}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore nel recupero delle recensioni: {str(e)}")

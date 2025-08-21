@@ -96,6 +96,118 @@ async def cancel_appointment(
         raise HTTPException(status_code=400, detail=f"Error canceling appointment: {str(e)}")
 
 
+@router_appointments.get("/upcoming_appointments")
+async def get_upcoming_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    """Ottieni gli appuntamenti prossimi del paziente"""
+    try:
+        query = """
+            SELECT
+                a.id,
+                a.doctor_id,
+                acc.name AS doctor_name,
+                acc.surname AS doctor_surname,
+                d.specialization,
+                l.address,
+                l.city,
+                a.date_time,
+                a.price,
+                a.status,
+                a.created_at
+            FROM appointment a
+            JOIN doctor d ON a.doctor_id = d.id
+            JOIN account acc ON d.id = acc.id
+            JOIN location l ON a.location_id = l.id
+            WHERE
+                a.patient_id = %s
+                AND a.date_time > NOW()
+                AND a.status IN ('booked', 'waiting')
+            ORDER BY a.date_time ASC
+        """
+        
+        raw_result = execute_query(query, (patient_id,))
+        
+        appointments = [
+            {
+                "id": row[0],
+                "doctor_id": row[1],
+                "doctor_name": row[2],
+                "doctor_surname": row[3],
+                "specialization": row[4],
+                "address": row[5],
+                "city": row[6],
+                "date_time": row[7].isoformat() if row[7] else None,
+                "price": float(row[8]) if row[8] else 0,
+                "status": row[9],
+                "created_at": row[10].isoformat() if row[10] else None
+            }
+            for row in raw_result
+        ]
+
+        return {"appointments": appointments}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti prossimi: {str(e)}")
+
+
+@router_appointments.get("/past_appointments")
+async def get_past_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    """Ottieni gli appuntamenti passati del paziente"""
+    try:
+        query = """
+            SELECT
+                a.id,
+                a.doctor_id,
+                acc.name AS doctor_name,
+                acc.surname AS doctor_surname,
+                d.specialization,
+                l.address,
+                l.city,
+                a.date_time,
+                a.price,
+                a.status,
+                a.created_at,
+                r.stars,
+                r.report
+            FROM appointment a
+            JOIN doctor d ON a.doctor_id = d.id
+            JOIN account acc ON d.id = acc.id
+            JOIN location l ON a.location_id = l.id
+            LEFT JOIN review r ON r.appointment_id = a.id
+            WHERE
+                a.patient_id = %s
+                AND a.date_time < NOW()
+                AND a.status = 'completed'
+            ORDER BY a.date_time DESC
+        """
+        
+        raw_result = execute_query(query, (patient_id,))
+        
+        appointments = [
+            {
+                "id": row[0],
+                "doctor_id": row[1],
+                "doctor_name": row[2],
+                "doctor_surname": row[3],
+                "specialization": row[4],
+                "address": row[5],
+                "city": row[6],
+                "date_time": row[7].isoformat() if row[7] else None,
+                "price": float(row[8]) if row[8] else 0,
+                "status": row[9],
+                "created_at": row[10].isoformat() if row[10] else None,
+                "review_stars": row[11],
+                "review_report": row[12],
+                "has_review": row[11] is not None
+            }
+            for row in raw_result
+        ]
+
+        return {"appointments": appointments}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti passati: {str(e)}")
+
+
 @router_appointments.get("/get_free_slots")
 async def get_free_slots(
     doctor_id: int = Query(..., gt=0, description="ID of the doctor"),
