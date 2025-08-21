@@ -6,6 +6,7 @@ import WelcomeMessage from '../../components/chat/WelcomeMessage';
 import MessageList from '../../components/chat/MessageList';
 import ChatInput from '../../components/chat/ChatInput';
 import ChatStyles from '../../components/chat/ChatStyles';
+import { Bot, AlertCircle, CheckCircle } from 'lucide-react';
 
 const Chat = () => {
   const [conversations, setConversations] = useState([]);
@@ -21,6 +22,7 @@ const Chat = () => {
   const navigate = useNavigate();
   const [visibleMessages, setVisibleMessages] = useState([]);
   const [lastSuggestions, setLastSuggestions] = useState([]);
+  const [ollamaStatus, setOllamaStatus] = useState({ status: 'checking' });
 
   // Example static user context (replace with dynamic source)
   const userContext = {
@@ -33,6 +35,33 @@ const Chat = () => {
     if (conversations.length === 0) {
       createNewChat();
     }
+  }, []);
+
+  useEffect(() => {
+    // Check Ollama status on component mount
+    const checkOllamaStatus = async () => {
+      try {
+        const status = await llmService.checkOllamaStatus();
+        setOllamaStatus(status);
+        console.log('🤖 Stato Ollama:', status);
+      } catch (error) {
+        console.error('❌ Errore nel controllo dello stato Ollama:', error);
+        setOllamaStatus({ status: 'error', error: error.message });
+      }
+    };
+    
+    checkOllamaStatus();
+    
+    // Controlla lo stato ogni 10 secondi finché non è pronto
+    const interval = setInterval(async () => {
+      const status = await llmService.checkOllamaStatus();
+      setOllamaStatus(status);
+      if (status.status === 'ready') {
+        clearInterval(interval);
+      }
+    }, 10000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -142,13 +171,35 @@ const Chat = () => {
     setIsFirstMessage(false);
 
     try {
+      // Prepara la cronologia dei messaggi per il contesto
+      const messageHistory = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
       const response = await llmService.askHealthQuestion(
         input.trim(),
         activeConversation,
-        userContext  // ✅ qui passa il contesto al backend
+        userContext,  // ✅ qui passa il contesto al backend
+        messageHistory  // ✅ qui passa la cronologia dei messaggi
       );
 
-      const aiMessage = { role: 'assistant', content: response.response };
+      const aiMessage = { 
+        role: 'assistant', 
+        content: response.response,
+        metadata: {
+          provider: response.provider,
+          model: response.model,
+          confidence: response.confidence,
+          usage: response.usage
+        }
+      };
+      
+      // Update suggestions if available
+      if (response.suggestions && response.suggestions.length > 0) {
+        setLastSuggestions(response.suggestions);
+      }
+      
       const finalMessages = [...updatedMessages, aiMessage];
 
       setConversations(prev =>
@@ -160,9 +211,10 @@ const Chat = () => {
       );
       setMessages(finalMessages);
     } catch (error) {
+      console.error('❌ Errore nella chat:', error);
       const errorMessage = {
         role: 'error',
-        content: 'Mi dispiace, si è verificato un errore. Riprova più tardi.'
+        content: `Mi dispiace, si è verificato un errore: ${error.message}. Riprova più tardi.`
       };
       const finalMessages = [...updatedMessages, errorMessage];
 
@@ -210,6 +262,44 @@ const Chat = () => {
       />
 
       <main className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
+        {/* Ollama Status Header */}
+        {!isFirstMessage && (
+          <div className="bg-white border-b border-gray-200 px-4 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Bot className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium text-gray-700">Assistente AI</span>
+                {ollamaStatus.status === 'ready' ? (
+                  <div className="flex items-center space-x-1 text-green-600">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-xs">Pronto</span>
+                  </div>
+                ) : ollamaStatus.status === 'downloading' ? (
+                  <div className="flex items-center space-x-1 text-yellow-600">
+                    <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-xs">Download modello...</span>
+                  </div>
+                ) : ollamaStatus.status === 'error' ? (
+                  <div className="flex items-center space-x-1 text-red-600">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="text-xs">Errore</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-1 text-yellow-600">
+                    <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-xs">Controllo...</span>
+                  </div>
+                )}
+              </div>
+              {ollamaStatus.model && (
+                <div className="text-xs text-gray-500">
+                  {ollamaStatus.model}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className={`flex-1 flex flex-col transition-all duration-500 ease-in-out ${isFirstMessage ? 'opacity-100' : 'opacity-0'}`}>
           <div className="flex-1 flex flex-col items-center justify-center p-4">
             <WelcomeMessage
@@ -220,6 +310,7 @@ const Chat = () => {
               isLoading={isLoading}
               textareaRef={textareaRef}
               handleKeyDown={handleKeyDown}
+              ollamaStatus={ollamaStatus}
             />
           </div>
         </div>
@@ -240,6 +331,7 @@ const Chat = () => {
             isLoading={isLoading}
             textareaRef={textareaRef}
             handleKeyDown={handleKeyDown}
+            ollamaStatus={ollamaStatus}
           />
         </div>
       </main>

@@ -6,7 +6,10 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_started
+      ollama:
+        condition: service_healthy
     env_file:
       - .env
 
@@ -33,43 +36,28 @@ services:
       - ./database/:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
 
-  ai_service:
+
+
+  ollama:
     build:
-      context: ./ai_service
+      context: ./ollama
       dockerfile: Dockerfile
     ports:
-      - "8002:8002"
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
     environment:
-      # AI Provider Configuration
-      - AI_PROVIDER=${AI_PROVIDER:-google}
-      
-      # Google AI Studio Configuration
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - GOOGLE_MODEL=${GOOGLE_MODEL:-gemini-pro}
-      - GOOGLE_MAX_TOKENS=${GOOGLE_MAX_TOKENS:-1000}
-      - GOOGLE_TEMPERATURE=${GOOGLE_TEMPERATURE:-0.7}
-      
-     
-      # Server Configuration
-      - HOST=0.0.0.0
-      - PORT=8002
-      - DEBUG=${DEBUG:-false}
-      
-      # Database Configuration
-      - POSTGRES_HOST=database
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=HealthDB
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=userpwd
-      
-      # Logging
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-    env_file:
-      - .env
-    depends_on:
-      - database
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
 
 volumes:
   postgres_data:
+  ollama_data:
  

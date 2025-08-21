@@ -1,6 +1,8 @@
 import os
 import re
 import time
+import httpx
+import asyncio
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -96,6 +98,43 @@ async def health_check():
         "environment": ENVIRONMENT,
         "timestamp": time.time()
     }
+
+# ✅ Endpoint per verificare lo stato di Ollama
+@app.get("/ollama/status")
+async def ollama_status():
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            # Verifica che Ollama risponda
+            response = await client.get("http://ollama:11434/api/tags")
+            if response.status_code == 200:
+                data = response.json()
+                models = data.get("models", [])
+                
+                # Cerca il modello llama3.2
+                llama_model = next((model for model in models if "llama3.2" in model.get("name", "")), None)
+                
+                if llama_model:
+                    return {
+                        "status": "ready",
+                        "model": llama_model["name"],
+                        "size": llama_model.get("size", 0),
+                        "message": "Modello AI pronto per l'uso"
+                    }
+                else:
+                    return {
+                        "status": "downloading",
+                        "message": "Modello AI in fase di download..."
+                    }
+            else:
+                return {
+                    "status": "error",
+                    "message": "Ollama non risponde"
+                }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Errore nella connessione a Ollama: {str(e)}"
+        }
 
 # ✅ Include i router
 app.include_router(router_profile, prefix="/profile", tags=["generic"])
