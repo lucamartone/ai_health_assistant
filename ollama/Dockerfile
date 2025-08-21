@@ -14,5 +14,5 @@ RUN dos2unix /init-ollama.sh && chmod +x /init-ollama.sh
 # (facoltativo) debug: verifica che il file esista
 # RUN ls -l /init-ollama.sh && head -n 2 /init-ollama.sh
 
-ENTRYPOINT ["/init-ollama.sh"]
+ENTRYPOINT ["sh", "/init-ollama.sh"]
 
