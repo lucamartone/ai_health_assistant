@@ -23,7 +23,7 @@ async def health_check():
         health_status = {
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
-            "service": "AI Health Assistant",
+            "service": "MediFlow",
             "version": settings.api_version,
             "system": {
                 "cpu_usage": f"{cpu_percent}%",
@@ -84,7 +84,7 @@ async def liveness_check():
     return {
         "alive": True,
         "timestamp": datetime.now().isoformat(),
-        "service": "AI Health Assistant"
+        "service": "MediFlow"
     }
 
 @router.get("/metrics")

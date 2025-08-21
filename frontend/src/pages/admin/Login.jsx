@@ -83,7 +83,7 @@ const AdminLogin = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="appearance-none relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
-                  placeholder="admin@healthassistant.com"
+                  placeholder="admin@mediflow.com"
                 />
               </div>
             </div>
@@ -168,7 +168,7 @@ const AdminLogin = () => {
         {/* Footer */}
         <div className="text-center space-y-2">
           <p className="text-xs text-gray-500">
-            Credenziali di default: admin@healthassistant.com / admin123
+                          Credenziali di default: admin@mediflow.com / admin123
           </p>
           <p>
             <button

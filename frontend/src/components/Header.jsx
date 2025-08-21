@@ -38,11 +38,11 @@ function Header() {
           >
             <img 
               src="/favicon.png" 
-              alt="AI Health Assistant Logo"
+              alt="MediFlow Logo"
               className="w-8 h-8 sm:w-10 sm:h-10"
             />
             <h1 className="text-xl sm:text-2xl font-bold whitespace-nowrap bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent focus:outline-none">
-              AI Health Assistant
+              MediFlow
             </h1>
           </div>
 

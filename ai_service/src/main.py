@@ -17,7 +17,7 @@ load_dotenv()
 
 # Create FastAPI app
 app = FastAPI(
-    title="AI Health Assistant",
+    title="MediFlow",
     description="Microservizio AI per assistenza sanitaria intelligente",
     version="1.0.0",
     docs_url="/docs",
@@ -43,7 +43,7 @@ app.include_router(diagnosis_router, prefix="/ai/diagnosis", tags=["Diagnosi AI"
 async def root():
     """Root endpoint"""
     return {
-        "message": "AI Health Assistant Microservice",
+        "message": "MediFlow Microservice",
         "version": "1.0.0",
         "status": "running",
         "timestamp": datetime.now().isoformat()
@@ -53,7 +53,7 @@ async def root():
 async def info():
     """Service information"""
     return {
-        "service": "AI Health Assistant",
+        "service": "MediFlow",
         "version": "1.0.0",
         "description": "Microservizio AI per assistenza sanitaria",
         "endpoints": {

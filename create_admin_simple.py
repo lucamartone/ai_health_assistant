@@ -43,7 +43,7 @@ def create_admin():
             return
         
         # Verifica se l'admin esiste già
-        check_admin = "SELECT id, name, email FROM admin WHERE email = 'admin@healthassistant.com'"
+        check_admin = "SELECT id, name, email FROM admin WHERE email = 'admin@mediflow.com'"
         cursor.execute(check_admin)
         existing_admin = cursor.fetchone()
         
@@ -69,7 +69,7 @@ def create_admin():
         admin_data = (
             'Admin', 
             'Sistema', 
-            'admin@healthassistant.com', 
+            'admin@mediflow.com', 
             hashed_password,
             'admin'
         )
@@ -81,10 +81,10 @@ def create_admin():
         print("✅ Admin creato con successo!")
         print(f"   ID: {admin_id}")
         print(f"   Nome: Admin Sistema")
-        print(f"   Email: admin@healthassistant.com")
+        print(f"   Email: admin@mediflow.com")
         print(f"   Ruolo: admin")
         print(f"\n🔑 Credenziali di accesso:")
-        print(f"   Email: admin@healthassistant.com")
+        print(f"   Email: admin@mediflow.com")
         print(f"   Password: admin123")
         print(f"\n🌐 URL di accesso:")
         print(f"   http://localhost/admin/")

@@ -4,7 +4,7 @@ import os
 
 class Settings(BaseSettings):
     # API Configuration
-    api_title: str = "AI Health Assistant"
+    api_title: str = "MediFlow"
     api_version: str = "1.0.0"
     api_description: str = "Microservizio AI per assistenza sanitaria"
     

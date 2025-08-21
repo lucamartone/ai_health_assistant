@@ -9,7 +9,7 @@ MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "your-app-password")
 MAIL_FROM = os.getenv("MAIL_FROM", "your-email@gmail.com")
 MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
 MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
-MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "AI Health Assistant")
+MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "MediFlow")
 
 conf = ConnectionConfig(
     MAIL_USERNAME=MAIL_USERNAME,
@@ -30,13 +30,13 @@ async def send_password_reset_email(email: EmailStr, reset_token: str, frontend_
         reset_url = f"{frontend_url}/reset-password?token={reset_token}"
         
         message = MessageSchema(
-            subject="Reset Password - AI Health Assistant",
+            subject="Reset Password - MediFlow",
             recipients=[email],
             body=f"""
             <html>
                 <body>
                     <h2>Reset della Password</h2>
-                    <p>Hai richiesto il reset della password per il tuo account AI Health Assistant.</p>
+                    <p>Hai richiesto il reset della password per il tuo account MediFlow.</p>
                     <p>Clicca sul link seguente per reimpostare la tua password:</p>
                     <p><a href="{reset_url}" style="background-color: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Reimposta Password</a></p>
                     <p>Oppure copia questo link nel browser:</p>
@@ -44,7 +44,7 @@ async def send_password_reset_email(email: EmailStr, reset_token: str, frontend_
                     <p><strong>Attenzione:</strong> Questo link scade tra 1 ora per motivi di sicurezza.</p>
                     <p>Se non hai richiesto tu questo reset, ignora questa email.</p>
                     <br>
-                    <p>Cordiali saluti,<br>Team AI Health Assistant</p>
+                    <p>Cordiali saluti,<br>Team MediFlow</p>
                 </body>
             </html>
             """,

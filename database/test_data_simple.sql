@@ -1,4 +1,4 @@
--- Dati di test semplici per la health assistant
+-- Dati di test semplici per MediFlow
 
 -- Account (con ID esplicito)
 INSERT INTO account (id, name, surname, email, password, sex, birth_date, role, created_at) VALUES

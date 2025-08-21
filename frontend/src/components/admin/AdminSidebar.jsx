@@ -88,7 +88,7 @@ const AdminSidebar = () => {
                   <p className="text-sm font-medium text-red-200">
                     {admin?.name || 'Admin'} {admin?.surname || 'Sistema'}
                   </p>
-                  <p className="text-xs text-red-300">{admin?.email || 'admin@healthassistant.com'}</p>
+                  <p className="text-xs text-red-300">{admin?.email || 'admin@mediflow.com'}</p>
                 </div>
               </div>
               
