@@ -141,7 +141,7 @@ const Reviews = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate('/clinical-folder')}
+                onClick={() => navigate('/profile/clinical-folder')}
                 className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -204,7 +204,7 @@ const Reviews = () => {
                 Non ci sono appuntamenti completati con questo dottore che richiedono una recensione.
               </p>
               <button
-                onClick={() => navigate('/clinical-folder')}
+                onClick={() => navigate('/profile/clinical-folder')}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Torna alle Cartelle Cliniche

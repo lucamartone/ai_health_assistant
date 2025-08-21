@@ -5,7 +5,7 @@ from backend.router_patient.pydantic.schemas import Appointment, ReviewRequest
 
 router_reviews = APIRouter()
 
-#appuntamenti del panziente completati ma non ancora valutati
+#appuntamenti del paziente completati ma non ancora valutati
 @router_reviews.get("/appointments_to_rank")
 async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, description="ID del paziente")):
     try:
@@ -58,6 +58,12 @@ async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, descriptio
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti da valutare: {str(e)}")
+
+# Alias per compatibilità con il frontend
+@router_reviews.get("/get_to_rank_appointments")
+async def get_to_rank_appointments(id_patient: int = Query(..., gt=0, description="ID del paziente")):
+    """Alias per get_appointments_to_rank per compatibilità con il frontend"""
+    return await get_appointments_to_rank(id_patient)
 
 @router_reviews.post("/review_appointment")
 async def review_appointment(data: ReviewRequest):

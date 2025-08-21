@@ -385,11 +385,9 @@ async def get_patient_doctors(
             u.name,
             u.surname,
             d.specialization,
-            u.email,
-            GROUP_CONCAT(DISTINCT l.address) as locations
+            u.email
         FROM doctor d
         JOIN account u ON d.id = u.id
-        LEFT JOIN location l ON l.doctor_id = d.id
         WHERE d.id IN (
             -- Dottori con cui il paziente ha avuto appuntamenti
             SELECT DISTINCT doctor_id 
@@ -398,21 +396,20 @@ async def get_patient_doctors(
             UNION
             -- Dottori che hanno cartelle cliniche del paziente
             SELECT DISTINCT doctor_id 
-            FROM clinical_folder 
-            WHERE patient_id = %s
+            FROM medical_record 
+            WHERE clinical_folder_id IN (
+                SELECT id FROM clinical_folder WHERE patient_id = %s
+            )
         )
-        GROUP BY d.id, u.name, u.surname, d.specialization, u.email
         ORDER BY u.name, u.surname;
         """
 
         raw_result = execute_query(query, (patient_id, patient_id))
 
-        columns = ["id", "name", "surname", "specialization", "email", "locations"]
+        columns = ["id", "name", "surname", "specialization", "email"]
         result = []
         for row in raw_result:
             doctor = dict(zip(columns, row))
-            # Converti la stringa delle locations in array
-            doctor["locations"] = doctor["locations"].split(",") if doctor["locations"] else []
             result.append(doctor)
         
         return {"doctors": result}

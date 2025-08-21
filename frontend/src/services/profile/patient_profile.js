@@ -11,7 +11,7 @@ export async function login(email, password){
 };
 
 export async function getDoctors(patientId){
-  return await api.get(`/profile/patient/doctors/patient_doctors?patient_id=${patientId}`);
+  return await api.get(`/patient/doctors/patient_doctors?patient_id=${patientId}`);
 };
 
 export async function editProfile(name, surname, phone, email, profile_img){

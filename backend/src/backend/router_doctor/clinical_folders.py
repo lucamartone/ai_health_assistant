@@ -240,11 +240,11 @@ async def get_patient_clinical_folder_by_doctor(
             
             # Get reviews for this patient and doctor
             cursor.execute("""
-                SELECT r.*, a.date_time as appointment_date
+                SELECT r.id, r.appointment_id, r.stars, r.report, a.date_time as appointment_date
                 FROM review r
                 JOIN appointment a ON r.appointment_id = a.id
                 WHERE a.patient_id = %s AND a.doctor_id = %s AND r.stars IS NOT NULL
-                ORDER BY r.created_at DESC
+                ORDER BY a.date_time DESC
             """, (patient_id, doctor_id))
             reviews = cursor.fetchall()
             

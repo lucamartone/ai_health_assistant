@@ -118,7 +118,7 @@ class ReviewResponse(BaseModel):
     appointment_id: int
     stars: int
     report: Optional[str]
-    created_at: datetime
+    created_at: Optional[datetime] = None
     appointment_date: datetime
 
 class ClinicalFolderResponse(BaseModel):
