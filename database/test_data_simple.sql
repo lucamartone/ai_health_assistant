@@ -14,39 +14,36 @@ ON CONFLICT (email) DO NOTHING;
 
 -- Dottori con diverse specializzazioni e anni di esperienza
 INSERT INTO doctor (id, specialization, rank) VALUES 
-(10, 'Medicina Generale', 0.8),
-(11, 'Cardiologia', 0.9),
-(12, 'Dermatologia', 0.7),
-(13, 'Pediatria', 0.6),
-(14, 'Ortopedia', 0.85)
+(1, 'Medicina Generale', 0.8),
+(3, 'Cardiologia', 0.9),
+(4, 'Dermatologia', 0.7),
+(5, 'Pediatria', 0.6),
+(6, 'Ortopedia', 0.85)
 ON CONFLICT (id) DO NOTHING;
 
 -- Pazienti
 INSERT INTO patient (id) VALUES 
-(20), (21), (22)
+(2), (7), (8)
 ON CONFLICT (id) DO NOTHING;
 
 -- Locations diverse per i dottori
 INSERT INTO location (doctor_id, address, city, province, latitude, longitude) VALUES
-(10, 'Via Roma 123', 'Milano', 'MI', 45.4642, 9.1900),
-(11, 'Corso Italia 45', 'Milano', 'MI', 45.4642, 9.1900),
-(12, 'Via Torino 67', 'Roma', 'RM', 41.9028, 12.4964),
-(13, 'Piazza Navona 89', 'Roma', 'RM', 41.8986, 12.4731),
-(14, 'Via Garibaldi 12', 'Torino', 'TO', 45.0703, 7.6869)
+(1, 'Via Roma 123', 'Milano', 'MI', 45.4642, 9.1900),
+(3, 'Corso Italia 45', 'Milano', 'MI', 45.4642, 9.1900),
+(4, 'Via Torino 67', 'Roma', 'RM', 41.9028, 12.4964),
+(5, 'Piazza Navona 89', 'Roma', 'RM', 41.8986, 12.4731),
+(6, 'Via Garibaldi 12', 'Torino', 'TO', 45.0703, 7.6869)
 ON CONFLICT (id) DO NOTHING;
 
 -- Appuntamenti con diversi stati e prezzi (alcuni completati per le recensioni)
 INSERT INTO appointment (doctor_id, patient_id, location_id, date_time, price, status) VALUES
-(10, 20, 1, NOW() - INTERVAL '7 days', 50, 'completed'),
-(11, 21, 2, NOW() - INTERVAL '3 days', 80, 'completed'),
-(12, 22, 3, NOW() - INTERVAL '5 days', 60, 'completed'),
-(4, 13, 20, 4, NOW() - INTERVAL '10 days', 45, 'completed'),
-(5, 14, 21, 5, NOW() - INTERVAL '2 days', 70, 'completed'),
-(6, 10, 22, 1, NOW() + INTERVAL '1 day', 50, 'waiting'),
-(7, 11, 20, 2, NOW() + INTERVAL '4 days', 80, 'waiting'),
-(8, 12, 21, 3, NOW() + INTERVAL '6 days', 60, 'waiting'),
-(9, 13, 22, 4, NOW() + INTERVAL '8 days', 45, 'waiting'),
-(10, 14, 20, 5, NOW() + INTERVAL '12 days', 70, 'waiting')
+(1, 2, 1, NOW() - INTERVAL '7 days', 50, 'completed'),
+(3, 7, 2, NOW() - INTERVAL '3 days', 80, 'completed'),
+(1, 8, 3, NOW() - INTERVAL '5 days', 60, 'completed'),
+(1, 7, 20, 4, NOW() - INTERVAL '10 days', 45, 'completed'),
+(5, 8, 21, 5, NOW() - INTERVAL '2 days', 70, 'completed'),
+(6, 7, 22, 1, NOW() + INTERVAL '1 day', 50, 'waiting'),
+(4, 2, 20, 2, NOW() + INTERVAL '4 days', 80, 'waiting')
 ON CONFLICT (id) DO NOTHING;
 
 -- Reviews per testare il sistema di valutazioni (alcune già esistenti)
@@ -60,12 +57,12 @@ ON CONFLICT DO NOTHING;
 
 -- Cartelle cliniche
 INSERT INTO clinical_folder (patient_id) VALUES 
-(20), (21), (22)
+(2), (7), (8)
 ON CONFLICT (id) DO NOTHING;
 
 -- Record medici
 INSERT INTO medical_record (clinical_folder_id, doctor_id, appointment_id, symptoms, diagnosis, treatment_plan, notes) VALUES
-(1, 10, 1, 'Mal di testa', 'Cefalea', 'Paracetamolo', 'Nessuna nota'),
-(2, 11, 2, 'Dolore al petto', 'Controllo cardiologico', 'ECG e analisi', 'Monitoraggio continuo'),
-(3, 12, 3, 'Eruzione cutanea', 'Dermatite', 'Cremma antistaminico', 'Evitare allergeni')
+(1, 1, 1, 'Mal di testa', 'Cefalea', 'Paracetamolo', 'Nessuna nota'),
+(2, 3, 2, 'Dolore al petto', 'Controllo cardiologico', 'ECG e analisi', 'Monitoraggio continuo'),
+(3, 5, 3, 'Eruzione cutanea', 'Dermatite', 'Cremma antistaminico', 'Evitare allergeni')
 ON CONFLICT DO NOTHING;
