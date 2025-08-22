@@ -277,8 +277,8 @@ async def get_stats(patient_id: int = Query(..., gt=0, description="ID del pazie
         stats = result[0]
         return {
             "total_appointments": stats[0],
-            "completed_appointments": stats[1],
-            "upcoming_appointments": stats[2],
+            "upcoming_appointments": stats[1],
+            "completed_appointments": stats[2],
             "doctors_visited": stats[3],
             "last_visit": stats[4] or "N/A"
         }

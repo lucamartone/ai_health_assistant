@@ -204,8 +204,18 @@ def clear_slots(payload: BulkClearSlots):
 @router_appointments.post("/insert_appointment")
 def insert_appointment(data: dict):
     """Inserisce un nuovo appuntamento per un dottore specifico."""
-    print("inserisco")
     try:
+        # Check if appointment already exists
+        check_query = """
+        SELECT id FROM appointment 
+        WHERE doctor_id = %s AND location_id = %s AND date_time = %s
+        """
+        existing = execute_query(check_query, (data["doctor_id"], data["location_id"], data["date_time"]))
+        
+        if existing:
+            return {"message": "Appuntamento già esistente"}
+        
+        # Insert new appointment
         query = """
         INSERT INTO appointment (doctor_id, location_id, date_time, status)
         VALUES (%s, %s, %s, %s)
