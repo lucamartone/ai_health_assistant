@@ -311,17 +311,17 @@ async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description=
         raise HTTPException(status_code=400, detail=f"Errore nel recupero appuntamenti: {str(e)}")
     
 @router_doctor_profile.get("/get_stats")
-async def get_stats(doctor_id: int = Query(..., gt=0, description="ID del paziente")):
+async def get_stats(doctor_id: int = Query(..., gt=0, description="ID del dottore")):
     try:
         query = """
             SELECT
                 COUNT(*) AS total_appointments,
-                COUNT(*) FILTER (WHERE status = 'booked') AS pending_appointments,
-                COUNT(*) FILTER (WHERE status = 'completed') AS completed_appointments,
-                COUNT(DISTINCT doctor_id) AS doctors_visited,
-                MAX(date_time) FILTER (WHERE status = 'completed') AS last_completed_visit
-            FROM appointment
-            WHERE patient_id = %s;
+                COUNT(*) FILTER (WHERE status IN ('terminated', 'completed')) AS completed_appointments,
+                COUNT(*) FILTER (WHERE status = 'booked' AND date_time > NOW()) AS upcoming_appointments,
+                COUNT(DISTINCT patient_id) AS patients_count
+                FROM appointment
+            WHERE doctor_id = %s;
+
         """
         result = execute_query(query, (doctor_id,))
         if not result:
@@ -329,7 +329,7 @@ async def get_stats(doctor_id: int = Query(..., gt=0, description="ID del pazien
                 "total_appointments": 0,
                 "completed_appointments": 0,
                 "upcoming_appointments": 0,
-                "doctors_visited": 0,
+                "patient_visited": 0,
                 "last_visit": None
             }
         
@@ -338,8 +338,8 @@ async def get_stats(doctor_id: int = Query(..., gt=0, description="ID del pazien
             "total_appointments": stats[0],
             "completed_appointments": stats[1],
             "upcoming_appointments": stats[2],
-            "doctors_visited": stats[3],
-            "last_visit": stats[4] or "N/A"
+            "patient_visited": stats[3],
+            "last_visit": "N/A"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore durante il recupero delle statistiche: {str(e)}")

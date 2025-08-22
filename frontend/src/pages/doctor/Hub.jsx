@@ -60,7 +60,7 @@ function Hub() {
           totalAppointments: stats.total_appointments,
           completedAppointments: stats.completed_appointments,
           upcomingAppointments: stats.upcoming_appointments,
-          doctorsVisited: stats.doctors_visited,
+          doctorsVisited: stats.patient_visited,
           lastVisit: formattedLastVisit,
         });
       } catch (error) {
