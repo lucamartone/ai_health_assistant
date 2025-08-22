@@ -3,12 +3,11 @@
 - recupero password (pagina react dedicata)                      ✅
 - modifica profilo                                               ✅
 - (implementazione preferenze)
-- correggere statistiche counter per appuntamenti completati ecc. 
 
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti  ✅
 - terminare le statistiche dell'hub                              ✅
-- modifica profilo -> non funziona l'aggiunta degli indirizzi e specializzazione
+- modifica profilo -> non funziona rimozione degli indirizzi
 - hub -> appuntamenti
 - hub -> cronolologia
 - creazione cartella clinica
@@ -19,7 +18,6 @@
 - modale di prenotazione effettuata                              ✅
 - elenco calendario / prossimi appuntamenti                      ✅
 - salute ampliare db                                             ✅
-- controllare bug cartella clinica
 
 # chat
 - integrazione chat ai con database
@@ -35,4 +33,4 @@
 - aggiunta caricamento documento nel profilo                                  ✅
 - pagina accettazione e autenticazione richieste nuovi dottori                ✅
 
-NOTA: controllare se qunado un paziente prenota un appuntamento questo passa a booked
+NOTA: controllare se quando un paziente prenota un appuntamento questo passa a booked
