@@ -2,7 +2,6 @@
 CREATE ROLE admin WITH LOGIN PASSWORD 'userpwd';
 GRANT ALL PRIVILEGES ON DATABASE "HealthDB" TO admin;
 
-
 -- Tabella account
 CREATE TABLE account (
     id SERIAL PRIMARY KEY,
