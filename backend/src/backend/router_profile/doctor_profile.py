@@ -211,7 +211,6 @@ async def login(data: LoginRequest, response: Response):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore interno: {str(e)}")
 
-
 @router_doctor_profile.post("/edit_profile")
 async def edit_profile(data: ModifyProfileRequest):
     try:

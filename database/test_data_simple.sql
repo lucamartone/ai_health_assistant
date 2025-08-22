@@ -39,11 +39,11 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO appointment (doctor_id, patient_id, location_id, date_time, price, status) VALUES
 (1, 2, 1, NOW() - INTERVAL '7 days', 50, 'completed'),
 (3, 7, 2, NOW() - INTERVAL '3 days', 80, 'completed'),
-(1, 8, 3, NOW() - INTERVAL '5 days', 60, 'completed'),
-(1, 7, 20, 4, NOW() - INTERVAL '10 days', 45, 'completed'),
-(5, 8, 21, 5, NOW() - INTERVAL '2 days', 70, 'completed'),
-(6, 7, 22, 1, NOW() + INTERVAL '1 day', 50, 'waiting'),
-(4, 2, 20, 2, NOW() + INTERVAL '4 days', 80, 'waiting')
+(1, 8, 1, NOW() - INTERVAL '5 days', 60, 'completed'),
+(1, 7, 1, 4, NOW() - INTERVAL '10 days', 45, 'completed'),
+(5, 8, 4, 5, NOW() - INTERVAL '2 days', 70, 'completed'),
+(6, 7, 5, 1, NOW() + INTERVAL '1 day', 50, 'booked'),
+(4, 2, 3, 2, NOW() + INTERVAL '4 days', 80, 'booked')
 ON CONFLICT (id) DO NOTHING;
 
 -- Reviews per testare il sistema di valutazioni (alcune già esistenti)
