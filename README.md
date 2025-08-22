@@ -35,3 +35,4 @@
 - aggiunta caricamento documento nel profilo                                  ✅
 - pagina accettazione e autenticazione richieste nuovi dottori                ✅
 
+NOTA: controllare se qunado un paziente prenota un appuntamento questo passa a booked
