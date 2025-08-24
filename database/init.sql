@@ -47,7 +47,7 @@ CREATE TABLE location (
     city VARCHAR(100),
     province VARCHAR(100),
     latitude NUMERIC(10,8) CHECK (latitude BETWEEN -90 AND 90),
-    longitude NUMERIC(11,8) CHECK (longitude BETWEEN -180 AND 180),
+    longitude NUMERIC(11,8) CHECK (longitude BETWEEN -180 AND 180)
 );
 
 -- Tabella appointment

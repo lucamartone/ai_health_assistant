@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { doctorGetBooked } from '../../../services/booking/appointments';
+import { useAuth } from '../../../contexts/AuthContext';
 
-function AppointmentsTab({ account }) {
+function AppointmentsTab() {
   const [appointments, setAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(false);
   const [error, setError] = useState('');
+  const { account } = useAuth();
 
   useEffect(() => {
     if (!account?.id) return;
@@ -14,8 +16,10 @@ function AppointmentsTab({ account }) {
 
     doctorGetBooked(account.id)
       .then(data => {
+        console.log("APPUNTAMENTI FUTURI DOC", data.appointments);
         const sorted = (data.appointments || []).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
         setAppointments(sorted);
+        console.log("APPUNTAMENTI SORTED", appointments);
       })
       .catch(err => setError(err.message))
       .finally(() => setLoadingAppointments(false));
