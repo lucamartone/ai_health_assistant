@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { doctorGetHistory } from '../../../services/booking/appointments';
+import { useAuth } from '../../../contexts/AuthContext';
 
-function HistoryTab({ account }) {
+function HistoryTab() {
   const [appointments, setAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(false);
   const [error, setError] = useState('');
+  const { account } = useAuth();
 
   useEffect(() => {
     if (!account?.id) {
