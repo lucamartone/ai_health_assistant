@@ -39,12 +39,22 @@ function ProfileTab() {
     }
   }, [account, isEditing]);
 
+  // Verifica se ci sono nuove sedi da aggiungere
+  const originalAddresses = account?.addresses || [];
+  const hasNewAddresses = addresses.some(newAddr => {
+    return !originalAddresses.some(origAddr => 
+      origAddr.address === newAddr.address && 
+      origAddr.latitude === newAddr.latitude && 
+      origAddr.longitude === newAddr.longitude
+    );
+  });
+
   const hasChanges =
     name !== (account?.name || '') ||
     surname !== (account?.surname || '') ||
     phone !== (account?.phone || '') ||
     specialization !== (account?.specialization || '') ||
-    JSON.stringify(addresses) !== JSON.stringify(account?.addresses || []) ||
+    hasNewAddresses ||
     selectedFile !== null ||
     (profileImg || '') !== (account?.profile_img || '');
 
@@ -57,7 +67,18 @@ function ProfileTab() {
       let base64Image = profileImg;
       if (selectedFile) base64Image = await toBase64(selectedFile);
 
-      await editProfile(name, surname, phone, account.email, base64Image, specialization, addresses);
+      // Filtra solo le nuove sedi (quelle che non esistevano nell'account originale)
+      const originalAddresses = account?.addresses || [];
+      const newAddresses = addresses.filter(newAddr => {
+        // Verifica se l'indirizzo è nuovo (non presente nell'account originale)
+        return !originalAddresses.some(origAddr => 
+          origAddr.address === newAddr.address && 
+          origAddr.latitude === newAddr.latitude && 
+          origAddr.longitude === newAddr.longitude
+        );
+      });
+
+      await editProfile(name, surname, phone, account.email, base64Image, specialization, newAddresses);
 
       setAccount(prev => ({
         ...prev,
@@ -66,7 +87,7 @@ function ProfileTab() {
         phone,
         specialization,
         profile_img: base64Image,
-        addresses,
+        addresses: [...originalAddresses, ...newAddresses],
       }));
 
       setSuccessMsg('Dati aggiornati con successo');
@@ -196,33 +217,77 @@ function ProfileTab() {
               className="sm:col-span-2 px-4 py-2 border rounded-lg w-full"
             />
 
-            {/* Indirizzi */}
-            <label className="text-sm font-medium text-right sm:col-span-1">Indirizzi</label>
+            {/* Sedi di lavoro */}
+            <label className="text-sm font-medium text-right sm:col-span-1">Sedi di lavoro</label>
             <div className="sm:col-span-2 flex flex-col gap-2">
-              {addresses.map((entry, index) => (
-                <div key={index} className="flex items-center gap-2">
+              {isEditing && (
+                <p className="text-xs text-gray-600 mb-2">
+                  Puoi aggiungere nuove sedi, ma non rimuovere quelle esistenti
+                </p>
+              )}
+              
+              {/* Mostra le sedi esistenti (solo lettura) */}
+              {account?.addresses && account.addresses.map((existingAddr, index) => (
+                <div key={`existing-${index}`} className="flex items-center gap-2">
                   <AddressAutocomplete
-                    value={entry}
-                    onChange={(newEntry) => {
+                    value={existingAddr}
+                    onChange={() => {}} // Non modificabile
+                    disabled={true}
+                  />
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    Esistente
+                  </span>
+                </div>
+              ))}
+              
+              {/* Mostra le nuove sedi da aggiungere */}
+              {addresses.filter(addr => 
+                !account?.addresses?.some(existing => 
+                  existing.address === addr.address && 
+                  existing.latitude === addr.latitude && 
+                  existing.longitude === addr.longitude
+                )
+              ).map((newAddr, index) => (
+                <div key={`new-${index}`} className="flex items-center gap-2">
+                  <AddressAutocomplete
+                    value={newAddr}
+                    onChange={(updatedAddr) => {
                       const updated = [...addresses];
-                      updated[index] = newEntry;
-                      setAddresses(updated);
+                      const newIndex = addresses.findIndex(addr => 
+                        !account?.addresses?.some(existing => 
+                          existing.address === addr.address && 
+                          existing.latitude === addr.latitude && 
+                          existing.longitude === addr.longitude
+                        )
+                      );
+                      if (newIndex !== -1) {
+                        updated[newIndex] = updatedAddr;
+                        setAddresses(updated);
+                      }
                     }}
+                    disabled={!isEditing}
                   />
                   {isEditing && (
                     <button
                       type="button"
                       onClick={() => {
-                        const updated = addresses.filter((_, i) => i !== index);
+                        const updated = addresses.filter(addr => 
+                          !(addr.address === newAddr.address && 
+                            addr.latitude === newAddr.latitude && 
+                            addr.longitude === newAddr.longitude)
+                        );
                         setAddresses(updated);
                       }}
                       className="text-red-500 hover:text-red-700"
+                      title="Rimuovi nuova sede"
                     >
                       <Trash2Icon size={18} />
                     </button>
                   )}
                 </div>
               ))}
+              
+              {/* Pulsante per aggiungere nuova sede */}
               {isEditing && (
                 <button
                   type="button"
@@ -231,7 +296,7 @@ function ProfileTab() {
                   }
                   className="text-blue-600 hover:underline text-sm mt-1 flex items-center gap-1"
                 >
-                  <PlusIcon size={16} /> Aggiungi indirizzo
+                  <PlusIcon size={16} /> Aggiungi nuova sede
                 </button>
               )}
             </div>

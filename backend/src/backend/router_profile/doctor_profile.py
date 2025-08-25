@@ -233,28 +233,42 @@ async def edit_profile(data: ModifyProfileRequest):
         params = (data.specialization, data.email)
         execute_query(query, params, commit=True)
 
-        # Sostituisci completamente le location del dottore con quelle fornite
-        if data.addresses is not None:
+        # Aggiungi solo le nuove location (non rimuovere quelle esistenti)
+        if data.addresses is not None and len(data.addresses) > 0:
             # Trova l'id del doctor
             res = execute_query("SELECT id FROM account WHERE email = %s", (data.email,))
             if not res:
                 raise HTTPException(status_code=404, detail="Utente non trovato")
             doctor_id = res[0][0]
 
-            # Cancella le location esistenti
-            execute_query("DELETE FROM location WHERE doctor_id = %s", (doctor_id,), commit=True)
+            # Ottieni le location esistenti
+            existing_locations = execute_query(
+                "SELECT address, latitude, longitude FROM location WHERE doctor_id = %s",
+                (doctor_id,)
+            )
+            existing_addresses = set()
+            for loc in existing_locations or []:
+                existing_addresses.add((loc[0], loc[1], loc[2]))
 
-            # Inserisci le nuove location
+            # Inserisci solo le nuove location (non duplicate)
             insert_loc = """
                 INSERT INTO location (doctor_id, address, latitude, longitude)
                 VALUES (%s, %s, %s, %s)
             """
             for loc in data.addresses:
-                execute_query(
-                    insert_loc,
-                    (doctor_id, loc.address, loc.latitude, loc.longitude),
-                    commit=True
-                )
+                # Verifica che l'indirizzo non sia vuoto e non sia già presente
+                if (loc.address and loc.address.strip() and 
+                    (loc.address, loc.latitude, loc.longitude) not in existing_addresses):
+                    try:
+                        execute_query(
+                            insert_loc,
+                            (doctor_id, loc.address, loc.latitude, loc.longitude),
+                            commit=True
+                        )
+                    except Exception as e:
+                        # Se c'è un errore di duplicato, ignoralo
+                        print(f"DEBUG: Errore inserimento location (probabilmente duplicato): {e}")
+                        pass
 
         # Aggiorna l'immagine se presente
         if data.profile_img:
