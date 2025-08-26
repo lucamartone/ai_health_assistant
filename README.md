@@ -7,9 +7,9 @@
 # dottore
 - pagina configura orari -> inserimento automatico appuntamenti  ✅
 - terminare le statistiche dell'hub                              ✅
-- modifica profilo -> non funziona rimozione degli indirizzi
-- hub -> appuntamenti
-- hub -> cronolologia
+- modifica profilo ->  indirizzi                                 ✅
+- hub -> appuntamenti                                            ✅
+- hub -> cronolologia                                            ✅
 - creazione cartella clinica
 
 # paziente
