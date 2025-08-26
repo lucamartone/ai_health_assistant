@@ -45,8 +45,6 @@ services:
       start_period: 30s
     restart: unless-stopped
 
-
-
   ollama:
     build:
       context: ./ollama
