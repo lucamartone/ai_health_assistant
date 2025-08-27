@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkLLMStatus } from '../../services/ollama/status';
+import { llmService } from '../../services/llmService';
 import Sidebar from '../../components/Sidebar';
 import WelcomeMessage from '../../components/chat/WelcomeMessage';
 import MessageList from '../../components/chat/MessageList';
@@ -41,7 +41,7 @@ const Chat = () => {
     // Check Ollama status on component mount
     const checkOllamaStatus = async () => {
       try {
-        const status = await checkLLMStatus();
+        const status = await llmService.checkOllamaStatus();
         setOllamaStatus(status);
         console.log('🤖 Stato Ollama:', status);
       } catch (error) {
@@ -54,7 +54,7 @@ const Chat = () => {
     
     // Controlla lo stato ogni 10 secondi finché non è pronto
     const interval = setInterval(async () => {
-      const status = await checkOllamaStatus();
+      const status = await llmService.checkOllamaStatus();
       setOllamaStatus(status);
       if (status.status === 'ready') {
         clearInterval(interval);
@@ -180,8 +180,8 @@ const Chat = () => {
       const response = await llmService.askHealthQuestion(
         input.trim(),
         activeConversation,
-        userContext,  // ✅ qui passa il contesto al backend
-        messageHistory  // ✅ qui passa la cronologia dei messaggi
+        userContext,
+        messageHistory
       );
 
       const aiMessage = { 

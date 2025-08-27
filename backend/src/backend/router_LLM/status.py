@@ -23,15 +23,15 @@ class answer (BaseModel):
 @router_LLM_status.get("/get_status")
 async def get_status():
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient() as client:
             # Verifica che Ollama risponda
-            response = await client.get(f"{OLLAMA_URL}/api/models")
+            response = await client.get(f"{OLLAMA_URL}/api/tags")
             if response.status_code == 200:
                 data = response.json()
                 models = data.get("models", [])
                 
                 # Cerca il modello llama3.2
-                llama_model = next((model for model in models if "llama3.2" in model.get("name", "")), None)
+                llama_model = next((model for model in models if "llama3.2:latest" in model.get("name", "")), None)
                 
                 if llama_model:
                     return {
