@@ -238,6 +238,21 @@ const Chat = () => {
     }
   };
 
+  const handleSuggestionClick = (suggestion) => {
+    if (suggestion.type === 'BOOK_APPOINTMENT') {
+      // Navigate to booking page with filters
+      navigate('/book', { 
+        state: { 
+          specialization: suggestion.specialization,
+          city: suggestion.city 
+        } 
+      });
+    } else {
+      // Handle text suggestions
+      setInput(suggestion.text);
+    }
+  };
+
   useEffect(() => {
     adjustTextareaHeight();
   }, [input]);
@@ -321,6 +336,8 @@ const Chat = () => {
               messages={messages}
               isLoading={isLoading}
               messagesEndRef={messagesEndRef}
+              suggestions={lastSuggestions}
+              onSuggestionClick={handleSuggestionClick}
             />
           </div>
 

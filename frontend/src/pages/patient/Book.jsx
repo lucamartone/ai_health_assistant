@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getAllDoctors, getRankedDoctors, bookAppointment } from '../../services/booking/book';
 import { getCoordinatesFromAddress } from '../../services/maps/maps';
 import BookingCalendar from '../../components/BookingCalendar';
@@ -26,6 +27,7 @@ const SORT_OPTIONS = [
 ];
 
 function Book() {
+  const location = useLocation();
   const [doctors, setDoctors] = useState([]);
   const [search, setSearch] = useState('');
   const [specialization, setSpecialization] = useState('');
@@ -39,6 +41,18 @@ function Book() {
   const [userLocation, setUserLocation] = useState(null);
   const [loading, setLoading] = useState(false);
   const { account } = useAuth();
+
+  // Handle state from chat suggestions
+  useEffect(() => {
+    if (location.state) {
+      if (location.state.specialization) {
+        setSpecialization(location.state.specialization);
+      }
+      if (location.state.city) {
+        setCity(location.state.city);
+      }
+    }
+  }, [location.state]);
 
   // Get user location on component mount
   useEffect(() => {

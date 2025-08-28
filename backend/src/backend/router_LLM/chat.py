@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import httpx
 import json
 
@@ -27,7 +27,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     confidence: float
-    suggestions: List[str]
+    suggestions: list
     provider: str
     model: str
     usage: Dict[str, int]
@@ -119,8 +119,10 @@ IMPORTANTE: Non fornire mai diagnosi definitive. Incoraggia sempre la consultazi
             data = response.json()
             print(f"✅ Risposta da Ollama ricevuta per conversazione {request.conversation_id}")
 
-            # Genera suggerimenti basati sulla risposta
-            suggestions = generate_suggestions(request.message, data.get("message", {}).get("content", ""))
+            # Genera solo suggerimenti di prenotazione
+            suggestions = generate_booking_suggestions(request.message)
+            print(f"🔍 Messaggio utente: '{request.message}'")
+            print(f"🔍 Suggerimenti generati: {suggestions}")
 
             return ChatResponse(
                 response=data.get("message", {}).get("content", "Mi dispiace, non ho ricevuto una risposta valida."),
@@ -152,41 +154,122 @@ IMPORTANTE: Non fornire mai diagnosi definitive. Incoraggia sempre la consultazi
             detail=f"Errore interno del server: {str(e)}"
         )
 
-def generate_suggestions(user_message: str, ai_response: str) -> List[str]:
+
+def generate_booking_suggestions(user_message: str) -> list:
     """
-    Genera suggerimenti di follow-up basati sul messaggio dell'utente e la risposta dell'AI
+    Genera solo suggerimenti di prenotazione basati sui sintomi/condizioni menzionati
     """
     suggestions = []
     
-    # Suggerimenti generici per domande di salute
-    if any(word in user_message.lower() for word in ["sintomi", "dolore", "mal di"]):
-        suggestions.extend([
-            "Quando hai notato questi sintomi per la prima volta?",
-            "I sintomi peggiorano in momenti specifici della giornata?",
-            "Hai altri sintomi associati?"
-        ])
+    # Mappa di sintomi/condizioni a specializzazioni
+    specialization_map = {
+        "cuore": "Cardiologia",
+        "cardiaca": "Cardiologia",
+        "pressione": "Cardiologia",
+        "ipertensione": "Cardiologia",
+        "aritmia": "Cardiologia",
+        "dolore al petto": "Cardiologia",
+        "pelle": "Dermatologia",
+        "eruzione": "Dermatologia",
+        "acne": "Dermatologia",
+        "psoriasi": "Dermatologia",
+        "eczema": "Dermatologia",
+        "stomaco": "Gastroenterologia",
+        "digestione": "Gastroenterologia",
+        "nausea": "Gastroenterologia",
+        "vomito": "Gastroenterologia",
+        "diarrea": "Gastroenterologia",
+        "stipsi": "Gastroenterologia",
+        "cervello": "Neurologia",
+        "testa": "Neurologia",
+        "mal di testa": "Neurologia",
+        "emicrania": "Neurologia",
+        "vertigini": "Neurologia",
+        "convulsioni": "Neurologia",
+        "occhi": "Oculistica",
+        "vista": "Oculistica",
+        "cecità": "Oculistica",
+        "cataratta": "Oculistica",
+        "glaucoma": "Oculistica",
+        "orecchie": "Otorinolaringoiatria",
+        "naso": "Otorinolaringoiatria",
+        "gola": "Otorinolaringoiatria",
+        "udito": "Otorinolaringoiatria",
+        "tinnito": "Otorinolaringoiatria",
+        "tonsille": "Otorinolaringoiatria",
+        "ossa": "Ortopedia",
+        "articolazioni": "Ortopedia",
+        "schiena": "Ortopedia",
+        "lombare": "Ortopedia",
+        "frattura": "Ortopedia",
+        "artrite": "Ortopedia",
+        "reumatismi": "Ortopedia",
+        "polmoni": "Pneumologia",
+        "respirazione": "Pneumologia",
+        "asma": "Pneumologia",
+        "bronchite": "Pneumologia",
+        "tosse": "Pneumologia",
+        "reni": "Nefrologia",
+        "urine": "Nefrologia",
+        "dialisi": "Nefrologia",
+        "tiroide": "Endocrinologia",
+        "diabete": "Endocrinologia",
+        "ormoni": "Endocrinologia",
+        "metabolismo": "Endocrinologia",
+        "bambini": "Pediatria",
+        "pediatrico": "Pediatria",
+        "infantile": "Pediatria",
+        "psiche": "Psichiatria",
+        "depressione": "Psichiatria",
+        "ansia": "Psichiatria",
+        "stress": "Psichiatria",
+        "panico": "Psichiatria",
+        "psicologico": "Psicologia",
+        "terapia": "Psicologia",
+        "counseling": "Psicologia",
+        "tumore": "Oncologia",
+        "cancro": "Oncologia",
+        "chemioterapia": "Oncologia",
+        "radioterapia": "Oncologia",
+        "vescica": "Urologia",
+        "prostata": "Urologia",
+        "genitale": "Urologia",
+        "ginecologico": "Ginecologia",
+        "gravidanza": "Ginecologia",
+        "mestruazioni": "Ginecologia",
+        "menopausa": "Ginecologia",
+        "allergia": "Allergologia",
+        "allergico": "Allergologia",
+        "anafilassi": "Allergologia",
+        "anestesia": "Anestesia e Rianimazione",
+        "chirurgia": "Chirurgia Generale",
+        "operazione": "Chirurgia Generale",
+        "radiografia": "Radiologia",
+        "risonanza": "Radiologia",
+        "tac": "Radiologia",
+        "ecografia": "Radiologia"
+    }
     
-    elif any(word in user_message.lower() for word in ["dieta", "alimentazione", "cibo"]):
-        suggestions.extend([
-            "Hai allergie o intolleranze alimentari?",
-            "Quali sono i tuoi obiettivi nutrizionali?",
-            "Hai problemi digestivi specifici?"
-        ])
+    user_message_lower = user_message.lower()
+    print(f"🔍 Messaggio in minuscolo: '{user_message_lower}'")
     
-    elif any(word in user_message.lower() for word in ["esercizio", "sport", "attività fisica"]):
-        suggestions.extend([
-            "Che tipo di attività fisica ti interessa?",
-            "Hai limitazioni fisiche da considerare?",
-            "Qual è il tuo livello di fitness attuale?"
-        ])
+    # Cerca specializzazioni nel messaggio
+    suggested_specializations = []
+    for keyword, specialization in specialization_map.items():
+        if keyword in user_message_lower:
+            suggested_specializations.append(specialization)
+            print(f"🔍 Trovata keyword '{keyword}' -> {specialization}")
     
-    else:
-        # Suggerimenti generici
-        suggestions.extend([
-            "Puoi fornire più dettagli sui tuoi sintomi?",
-            "Hai già consultato un medico per questo problema?",
-            "Ci sono altri fattori che potrebbero essere rilevanti?"
-        ])
+    # Rimuovi duplicati
+    suggested_specializations = list(set(suggested_specializations))
     
-    # Limita a 3 suggerimenti
-    return suggestions[:3]
+    # Aggiungi solo suggerimenti per specialisti se trovati
+    if suggested_specializations:
+        for spec in suggested_specializations[:2]:  # Massimo 2 specialisti
+            suggestions.append({
+                "type": "BOOK_APPOINTMENT",
+                "specialization": spec,
+                "text": f"Prenota visita di {spec}"
+            })
+    
+    return suggestions

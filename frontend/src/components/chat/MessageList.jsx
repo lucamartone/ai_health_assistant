@@ -87,13 +87,26 @@ const MessageList = ({ messages, isLoading, messagesEndRef, suggestions = [], on
                 <button
                   key={idx}
                   onClick={() => onSuggestionClick && onSuggestionClick(s)}
-                  className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm inline-flex items-center gap-2"
+                  className={`px-4 py-2 rounded-md text-sm inline-flex items-center gap-2 transition-colors ${
+                    s.type === 'BOOK_APPOINTMENT' 
+                      ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                   {s.type === 'BOOK_APPOINTMENT' ? (
-                    <>Prenota{s.specialization ? ` - ${s.specialization}` : ''}{s.city ? ` a ${s.city}` : ''}</>
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {s.text || `Prenota - ${s.specialization}`}
+                    </>
                   ) : (
-                    'Azione'
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      {s.text}
+                    </>
                   )}
                 </button>
               ))}
@@ -104,18 +117,19 @@ const MessageList = ({ messages, isLoading, messagesEndRef, suggestions = [], on
 
       {isLoading && (
         <div 
-          className="flex justify-start"
+          className="flex justify-center"
           style={{
             opacity: 0,
-            transform: 'translateX(-20px)',
+            transform: 'translateY(20px)',
             animation: 'messageAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
           }}
         >
           <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex space-x-2">
+            <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="text-sm text-gray-600 ml-2">Assistente AI pronto...</span>
             </div>
           </div>
         </div>
