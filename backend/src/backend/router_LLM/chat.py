@@ -33,7 +33,7 @@ class ChatResponse(BaseModel):
     usage: Dict[str, int]
 
 @router_LLM_chat.post("/ask", response_model=ChatResponse)
-async def ask_health_question(request: ChatRequest):
+async def ask(request: ChatRequest):
     """
     Endpoint per inviare una domanda di salute all'AI
     """
