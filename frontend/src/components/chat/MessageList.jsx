@@ -117,7 +117,7 @@ const MessageList = ({ messages, isLoading, messagesEndRef, suggestions = [], on
 
       {isLoading && (
         <div 
-          className="flex justify-center"
+          className="flex justify-start"
           style={{
             opacity: 0,
             transform: 'translateY(20px)',
@@ -129,7 +129,6 @@ const MessageList = ({ messages, isLoading, messagesEndRef, suggestions = [], on
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              <span className="text-sm text-gray-600 ml-2">Assistente AI pronto...</span>
             </div>
           </div>
         </div>
