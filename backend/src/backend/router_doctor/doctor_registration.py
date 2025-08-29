@@ -203,7 +203,9 @@ async def review_registration_request(
     try:
         # Verifica che la richiesta esista e sia pendente
         check_query = """
-        SELECT * FROM doctor_registration_request 
+        SELECT id, name, surname, email, password, sex, birth_date, phone, specialization, 
+               locations::text as locations, status, admin_notes, admin_id, created_at, reviewed_at, expires_at
+        FROM doctor_registration_request 
         WHERE id = %s AND status = 'pending'
         """
         request_data = execute_query(check_query, (request_id,))
@@ -225,7 +227,7 @@ async def review_registration_request(
             """
             
             account_result = execute_query(account_query, (
-                request[1], request[2], request[3], hashed_password, request[5], request[6], request[8]
+                request[1], request[2], request[3], hashed_password, request[5], request[6], request[7]
             ), commit=True)
             
             if not account_result or not account_result[0]:
@@ -238,41 +240,47 @@ async def review_registration_request(
             INSERT INTO doctor (id, specialization, is_verified, verification_date)
             VALUES (%s, %s, TRUE, CURRENT_TIMESTAMP)
             """
-            execute_query(doctor_query, (doctor_id, request[7]), commit=True)
+            execute_query(doctor_query, (doctor_id, request[8]), commit=True)
             
-            # Inserisci le locations
+            # Inserisci le locations - versione semplificata
             try:
                 print(f"Processing locations for doctor {doctor_id}")
                 print(f"Raw locations data: {request[9]}")
+                print(f"Type of locations data: {type(request[9])}")
                 
-                # Le locations potrebbero essere già una lista o una stringa JSON
-                if isinstance(request[9], str):
-                    locations_data = json.loads(request[9])
+                # Gestisci le locations in modo più semplice
+                if request[9] is not None:
+                    # Ora locations dovrebbe essere sempre una stringa JSON
+                    if isinstance(request[9], str):
+                        try:
+                            locations_data = json.loads(request[9])
+                        except:
+                            locations_data = []
+                    else:
+                        print(f"Unexpected type for locations: {type(request[9])}")
+                        locations_data = []
+                    
+                    print(f"Processed locations: {locations_data}")
+                    
+                    # Inserisci le locations
+                    if isinstance(locations_data, list):
+                        for location in locations_data:
+                            if isinstance(location, dict):
+                                location_query = """
+                                INSERT INTO location (doctor_id, address, latitude, longitude)
+                                VALUES (%s, %s, %s, %s)
+                                """
+                                execute_query(location_query, (
+                                    doctor_id, 
+                                    location.get('address', ''), 
+                                    location.get('latitude'), 
+                                    location.get('longitude')
+                                ), commit=True)
+                                print(f"Location inserted: {location}")
                 else:
-                    locations_data = request[9]
-                
-                print(f"Parsed locations data: {locations_data}")
-                
-                if isinstance(locations_data, list):
-                    for i, location in enumerate(locations_data):
-                        if isinstance(location, dict):
-                            print(f"Inserting location {i}: {location}")
-                            location_query = """
-                            INSERT INTO location (doctor_id, address, latitude, longitude)
-                            VALUES (%s, %s, %s, %s)
-                            """
-                            execute_query(location_query, (
-                                doctor_id, 
-                                location.get('address', ''), 
-                                location.get('latitude'), 
-                                location.get('longitude')
-                            ), commit=True)
-                            print(f"Location {i} inserted successfully")
-                        else:
-                            print(f"Location {i} is not a dict: {location}")
-                else:
-                    print(f"Locations data is not a list: {type(locations_data)}")
-            except (json.JSONDecodeError, TypeError) as e:
+                    print("No locations data to process")
+                    
+            except Exception as e:
                 print(f"Errore nel parsing delle locations: {e}")
                 print(f"Raw data that caused error: {request[9]}")
                 # Continua anche se le locations non sono valide
