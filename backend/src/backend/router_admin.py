@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Form
+from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import List, Optional
 import json
@@ -84,6 +85,26 @@ async def get_doctor_requests():
                 except:
                     locations = []
             
+            # Recupera i documenti associati
+            docs_query = """
+            SELECT id, filename, mime_type, file_size, document_type, uploaded_at
+            FROM doctor_document 
+            WHERE request_id = %s
+            ORDER BY uploaded_at ASC
+            """
+            documents = execute_query(docs_query, (row[0],))
+            
+            doc_list = []
+            for doc in documents:
+                doc_list.append({
+                    "id": doc[0],
+                    "filename": doc[1],
+                    "mime_type": doc[2],
+                    "file_size": doc[3],
+                    "document_type": doc[4],
+                    "uploaded_at": doc[5].isoformat() if doc[5] else None
+                })
+            
             requests.append({
                 "id": row[0],
                 "name": f"{row[1]} {row[2]}",
@@ -91,6 +112,7 @@ async def get_doctor_requests():
                 "specialization": row[4],
                 "phone": row[5],
                 "locations": locations,
+                "documents": doc_list,
                 "status": row[7],
                 "created_at": row[8].isoformat() if row[8] else None
             })
@@ -135,4 +157,78 @@ async def reject_doctor(request_id: int, admin_notes: str = Form("")):
         from backend.router_doctor.doctor_registration import review_registration_request
         return await review_registration_request(request_id, "reject", admin_notes)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore durante il rifiuto: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Errore durante il rifiuto: {str(e)}")
+
+@router_admin.get("/doctor-document/{document_id}")
+async def get_doctor_document(document_id: int):
+    """Scarica un documento del dottore."""
+    try:
+        print(f"Richiesta documento ID: {document_id}")
+        
+        query = """
+        SELECT filename, file_data, mime_type, file_size
+        FROM doctor_document 
+        WHERE id = %s
+        """
+        
+        print(f"Eseguendo query per documento ID: {document_id}")
+        result = execute_query(query, (document_id,))
+        print(f"Risultato query: {result}")
+        
+        if not result:
+            print("Documento non trovato")
+            raise HTTPException(status_code=404, detail="Documento non trovato")
+        
+        doc = result[0]
+        filename = doc[0]
+        file_data = doc[1]
+        mime_type = doc[2]
+        file_size = doc[3]
+        
+        print(f"Documento trovato: {filename}")
+        print(f"Tipo MIME: {mime_type}")
+        print(f"Dimensione file: {file_size}")
+        print(f"Tipo file_data: {type(file_data)}")
+        print(f"Dimensione file_data: {len(file_data) if file_data else 'None'}")
+        
+        # Controlla se file_data è None o vuoto
+        if file_data is None:
+            print("file_data è None")
+            raise HTTPException(status_code=500, detail="Dati del file mancanti")
+        
+        # Converti memoryview in bytes per il controllo
+        file_bytes = bytes(file_data) if hasattr(file_data, 'tobytes') else file_data
+        
+        if len(file_bytes) == 0:
+            print("file_data è vuoto")
+            raise HTTPException(status_code=500, detail="Il file è vuoto")
+        
+        # Controlla se il file è un PDF valido
+        if mime_type == "application/pdf":
+            # Converti memoryview in bytes se necessario
+            file_bytes = bytes(file_data) if hasattr(file_data, 'tobytes') else file_data
+            if not file_bytes.startswith(b'%PDF'):
+                print("File non sembra essere un PDF valido")
+                print(f"Primi 10 bytes: {file_bytes[:10]}")
+        
+        # Converti memoryview in bytes se necessario
+        file_bytes = bytes(file_data) if hasattr(file_data, 'tobytes') else file_data
+        
+        return Response(
+            content=file_bytes,
+            media_type=mime_type or "application/octet-stream",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Length": str(len(file_bytes)),
+                "Cache-Control": "no-cache"
+            }
+        )
+        
+    except HTTPException as he:
+        print(f"HTTPException: {he}")
+        raise he
+    except Exception as e:
+        print(f"Errore generico: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Errore nel recupero del documento: {str(e)}") 

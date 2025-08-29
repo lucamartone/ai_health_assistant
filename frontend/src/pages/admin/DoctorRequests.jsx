@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, Clock, CheckCircle, XCircle, Shield } from 'lucide-react';
+import { Check, X, Clock, CheckCircle, XCircle, Shield, Download, FileText } from 'lucide-react';
 
 const DoctorRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -83,6 +83,51 @@ const DoctorRequests = () => {
     setAction(actionType);
     setNotes('');
     setShowModal(true);
+  };
+
+  const downloadDocument = async (documentId, filename) => {
+    try {
+      console.log(`Download documento: ${documentId} - ${filename}`);
+      
+      const response = await fetch(`http://localhost:8001/admin/doctor-document/${documentId}`);
+      console.log(`Risposta download: ${response.status} ${response.statusText}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        console.log(`Blob creato: ${blob.size} bytes, tipo: ${blob.type}`);
+        
+        if (blob.size === 0) {
+          alert('Il documento è vuoto');
+          return;
+        }
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        console.log('Download completato con successo');
+      } else {
+        const errorText = await response.text();
+        console.error('Errore risposta:', errorText);
+        alert(`Errore nel download del documento: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      console.error('Errore nel download:', error);
+      alert(`Errore nel download del documento: ${error.message}`);
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const formatDate = (dateString) => {
@@ -187,6 +232,9 @@ const DoctorRequests = () => {
                       Contatti
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Documenti
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Data Richiesta
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -220,6 +268,29 @@ const DoctorRequests = () => {
                             {request.locations[0].address}
                             {request.locations.length > 1 && '...'}
                           </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {request.documents && request.documents.length > 0 ? (
+                          <div className="space-y-1">
+                            {request.documents.map((doc, index) => (
+                              <div key={doc.id} className="flex items-center space-x-2">
+                                <FileText className="h-4 w-4 text-blue-600" />
+                                <span className="text-xs text-gray-600 truncate max-w-32">
+                                  {doc.filename}
+                                </span>
+                                <button
+                                  onClick={() => downloadDocument(doc.id, doc.filename)}
+                                  className="text-blue-600 hover:text-blue-800"
+                                  title={`Scarica ${doc.filename} (${formatFileSize(doc.file_size)})`}
+                                >
+                                  <Download className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">Nessun documento</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

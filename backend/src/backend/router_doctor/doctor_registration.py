@@ -3,8 +3,10 @@ from typing import List, Optional
 import json
 from datetime import datetime
 from backend.connection import execute_query
+from passlib.context import CryptContext
 
 router_doctor_registration = APIRouter()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router_doctor_registration.post("/request")
 async def submit_registration_request(
@@ -68,25 +70,42 @@ async def submit_registration_request(
         
         # Gestione documenti se presenti
         if documents:
-            for doc in documents:
+            print(f"Caricamento {len(documents)} documenti")
+            for i, doc in enumerate(documents):
+                print(f"Processando documento {i+1}: {doc.filename}")
+                
                 if doc.size > 10 * 1024 * 1024:  # 10MB limit
                     raise HTTPException(status_code=400, detail=f"Documento {doc.filename} troppo grande (max 10MB)")
                 
                 # Leggi il contenuto del file
                 file_content = await doc.read()
+                print(f"Dimensione file {doc.filename}: {len(file_content)} bytes")
+                
+                # Verifica che il file non sia vuoto
+                if len(file_content) == 0:
+                    raise HTTPException(status_code=400, detail=f"Documento {doc.filename} è vuoto")
+                
+                # Verifica che sia un PDF valido se il tipo è PDF
+                if doc.content_type == "application/pdf":
+                    # Converti memoryview in bytes se necessario
+                    file_bytes = bytes(file_content) if hasattr(file_content, 'tobytes') else file_content
+                    if not file_bytes.startswith(b'%PDF'):
+                        print(f"Attenzione: {doc.filename} non sembra essere un PDF valido")
+                        print(f"Primi 10 bytes: {file_bytes[:10]}")
                 
                 # Inserisci il documento
                 doc_query = """
                 INSERT INTO doctor_document 
-                (request_id, filename, mime_type, file_data, document_type, uploaded_at)
-                VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                (request_id, filename, mime_type, file_data, document_type, file_size, uploaded_at)
+                VALUES (%s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
                 """
                 
                 execute_query(
                     doc_query,
-                    (request_id, doc.filename, doc.content_type, file_content, 'altro'),
+                    (request_id, doc.filename, doc.content_type, file_content, 'altro', len(file_content)),
                     commit=True
                 )
+                print(f"Documento {doc.filename} salvato con successo")
         
         return {
             "message": "Richiesta di registrazione inviata con successo",
@@ -195,6 +214,9 @@ async def review_registration_request(
         request = request_data[0]
         
         if action == "approve":
+            # Hash della password prima di inserirla
+            hashed_password = pwd_context.hash(request[4])
+            
             # Crea l'account dottore
             account_query = """
             INSERT INTO account (name, surname, email, password, sex, birth_date, phone, role, status)
@@ -203,7 +225,7 @@ async def review_registration_request(
             """
             
             account_result = execute_query(account_query, (
-                request[1], request[2], request[3], request[4], request[5], request[6], request[8]
+                request[1], request[2], request[3], hashed_password, request[5], request[6], request[8]
             ), commit=True)
             
             if not account_result or not account_result[0]:
@@ -217,6 +239,43 @@ async def review_registration_request(
             VALUES (%s, %s, TRUE, CURRENT_TIMESTAMP)
             """
             execute_query(doctor_query, (doctor_id, request[7]), commit=True)
+            
+            # Inserisci le locations
+            try:
+                print(f"Processing locations for doctor {doctor_id}")
+                print(f"Raw locations data: {request[9]}")
+                
+                # Le locations potrebbero essere già una lista o una stringa JSON
+                if isinstance(request[9], str):
+                    locations_data = json.loads(request[9])
+                else:
+                    locations_data = request[9]
+                
+                print(f"Parsed locations data: {locations_data}")
+                
+                if isinstance(locations_data, list):
+                    for i, location in enumerate(locations_data):
+                        if isinstance(location, dict):
+                            print(f"Inserting location {i}: {location}")
+                            location_query = """
+                            INSERT INTO location (doctor_id, address, latitude, longitude)
+                            VALUES (%s, %s, %s, %s)
+                            """
+                            execute_query(location_query, (
+                                doctor_id, 
+                                location.get('address', ''), 
+                                location.get('latitude'), 
+                                location.get('longitude')
+                            ), commit=True)
+                            print(f"Location {i} inserted successfully")
+                        else:
+                            print(f"Location {i} is not a dict: {location}")
+                else:
+                    print(f"Locations data is not a list: {type(locations_data)}")
+            except (json.JSONDecodeError, TypeError) as e:
+                print(f"Errore nel parsing delle locations: {e}")
+                print(f"Raw data that caused error: {request[9]}")
+                # Continua anche se le locations non sono valide
             
             # Aggiorna status richiesta
             update_query = """

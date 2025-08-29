@@ -147,6 +147,51 @@ const AdminDashboard = () => {
     }
   };
 
+  const downloadDocument = async (documentId, filename) => {
+    try {
+      console.log(`Download documento: ${documentId} - ${filename}`);
+      
+      const response = await fetch(`http://localhost:8001/admin/doctor-document/${documentId}`);
+      console.log(`Risposta download: ${response.status} ${response.statusText}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        console.log(`Blob creato: ${blob.size} bytes, tipo: ${blob.type}`);
+        
+        if (blob.size === 0) {
+          alert('Il documento è vuoto');
+          return;
+        }
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        console.log('Download completato con successo');
+      } else {
+        const errorText = await response.text();
+        console.error('Errore risposta:', errorText);
+        alert(`Errore nel download del documento: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      console.error('Errore nel download:', error);
+      alert(`Errore nel download del documento: ${error.message}`);
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -275,6 +320,27 @@ const AdminDashboard = () => {
                         <h3 className="text-sm font-medium text-gray-900">{request.name}</h3>
                         <p className="text-sm text-gray-500">{request.email}</p>
                         <p className="text-xs text-gray-400">{request.specialization}</p>
+                        {request.documents && request.documents.length > 0 && (
+                          <div className="mt-1">
+                            <p className="text-xs text-gray-500">Documenti: {request.documents.length}</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {request.documents.slice(0, 2).map((doc) => (
+                                <button
+                                  key={doc.id}
+                                  onClick={() => downloadDocument(doc.id, doc.filename)}
+                                  className="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                                  title={`Scarica ${doc.filename} (${formatFileSize(doc.file_size)})`}
+                                >
+                                  <Download className="h-3 w-3 mr-1" />
+                                  {doc.filename.length > 15 ? doc.filename.substring(0, 15) + '...' : doc.filename}
+                                </button>
+                              ))}
+                              {request.documents.length > 2 && (
+                                <span className="text-xs text-gray-500">+{request.documents.length - 2} altri</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     

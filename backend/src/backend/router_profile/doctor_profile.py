@@ -78,6 +78,8 @@ async def register(data: RegisterDoctorRequest):
 @router_doctor_profile.post("/login")
 async def login(data: LoginRequest, response: Response):
     try:
+        print(f"Tentativo di login per email: {data.email}")
+        
         # 1) Account base
         query_account = """
         SELECT a.id, a.name, a.surname, a.email, a.password, a.profile_img,
@@ -87,6 +89,8 @@ async def login(data: LoginRequest, response: Response):
         WHERE a.email = %s
         """
         results = execute_query(query_account, (data.email,))
+        print(f"Risultati query account: {results}")
+        
         if not results:
             raise HTTPException(status_code=404, detail="Account non registrato")
 
@@ -112,12 +116,18 @@ async def login(data: LoginRequest, response: Response):
                 )
 
         # 3) Verifica password
+        print(f"Verifica password per email: {data.email}")
+        print(f"Password nel DB (primi 10 caratteri): {db_password[:10] if db_password else 'None'}")
+        
         if not pwd_context.verify(data.password, db_password):
+            print(f"Password errata per email: {data.email}")
             execute_query(
                 "UPDATE account SET failed_attempts = failed_attempts + 1, last_login_attempt = CURRENT_TIMESTAMP WHERE email = %s",
                 (data.email,), commit=True
             )
             raise HTTPException(status_code=401, detail="Password errata")
+        
+        print(f"Password corretta per email: {data.email}")
 
         # Reset tentativi falliti
         execute_query(
@@ -129,8 +139,11 @@ async def login(data: LoginRequest, response: Response):
         specialization = None
         addresses = []
         if role == "doctor":
+            print(f"Recupero dati dottore per ID: {account_id}")
+            
             res_doc = execute_query("SELECT specialization FROM doctor WHERE id = %s", (account_id,))
             specialization = res_doc[0][0] if res_doc else None
+            print(f"Specializzazione: {specialization}")
 
             res_loc = execute_query("""
                 SELECT address, latitude, longitude
@@ -138,6 +151,8 @@ async def login(data: LoginRequest, response: Response):
                 WHERE doctor_id = %s
                 ORDER BY id
             """, (account_id,))
+            print(f"Locations trovate: {res_loc}")
+            
             addresses = [
                 {
                     "address": r[0],
@@ -146,6 +161,7 @@ async def login(data: LoginRequest, response: Response):
                 }
                 for r in res_loc or []
             ]
+            print(f"Addresses processate: {addresses}")
 
         # 5) Immagine profilo in base64
         profile_img_base64 = (
@@ -207,8 +223,12 @@ async def login(data: LoginRequest, response: Response):
         }
 
     except HTTPException as he:
+        print(f"HTTPException nel login: {he}")
         raise he
     except Exception as e:
+        print(f"Errore generico nel login: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Errore interno: {str(e)}")
 
 @router_doctor_profile.post("/edit_profile")
