@@ -79,26 +79,7 @@ function BookingCalendar({ onSlotSelect, doctor }) {
           ←
         </button>
         <span className="font-bold">{currentDate.toLocaleDateString()}</span>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => {
-              setLoading(true);
-              getFreeSlots(doctor.id).then(data => {
-                const formattedSlots = formatSlots(data.slots || []);
-                setSlots(formattedSlots);
-                setLoading(false);
-              }).catch(error => {
-                console.error('Errore refresh slot:', error);
-                setLoading(false);
-              });
-            }}
-            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
-            disabled={loading}
-          >
-            🔄
-          </button>
-          <button onClick={() => changeDay(1)} className="px-2 py-1 bg-gray-300 rounded hover:bg-gray-400">→</button>
-        </div>
+        <button onClick={() => changeDay(1)} className="px-2 py-1 bg-gray-300 rounded hover:bg-gray-400">→</button>
       </div>
       <div className="flex flex-wrap gap-2">
         {loading ? (

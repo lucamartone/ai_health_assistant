@@ -37,7 +37,7 @@ function Book() {
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const [appointmentDetails, setAppointmentDetails] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+
   const [userLocation, setUserLocation] = useState(null);
   const [loading, setLoading] = useState(false);
   const { account } = useAuth();
@@ -140,7 +140,7 @@ function Book() {
 
   useEffect(() => {
     fetchDoctors();
-  }, [refreshKey, sortBy, specialization, price, userLocation]);
+  }, [sortBy, specialization, price, userLocation]);
 
   const filteredDoctors = Array.isArray(doctors)
     ? doctors.filter((doc) =>
@@ -312,7 +312,7 @@ function Book() {
             </div>
             
             {/* Ranking options */}
-            <div className="mb-3">
+            <div className="mt-6 mb-3">
               <label className="block text-sm font-medium text-blue-100 mb-2">
                 Ordina per:
               </label>
@@ -388,7 +388,6 @@ function Book() {
         appointmentDetails={appointmentDetails}
         onClose={() => {
           setAppointmentDetails(null);
-          setRefreshKey(prev => prev + 1); // forza un re-render della lista
         }}
       />
     </motion.div>
