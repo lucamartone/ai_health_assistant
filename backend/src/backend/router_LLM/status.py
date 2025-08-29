@@ -5,7 +5,6 @@ import httpx
 
 router_LLM_status = APIRouter()
 
-MODEL = 'gemma3:1b'
 OLLAMA_URL = 'http://ollama:11434'
 
 class ollama_message (BaseModel):
