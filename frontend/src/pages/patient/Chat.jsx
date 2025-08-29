@@ -8,21 +8,34 @@ import MessageList from '../../components/chat/MessageList';
 import ChatInput from '../../components/chat/ChatInput';
 import ChatStyles from '../../components/chat/ChatStyles';
 import { Bot, AlertCircle, CheckCircle } from 'lucide-react';
+import { useChat } from '../../contexts/ChatContext';
 
 const Chat = () => {
-  const [conversations, setConversations] = useState([]);
-  const [activeConversation, setActiveConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const {
+    conversations,
+    activeConversation,
+    activeMessages: messages,
+    lastSuggestions,
+    createNewChat,
+    selectChat,
+    deleteChat,
+    renameChat,
+    updateConversationTitle,
+    addMessage,
+    updateConversationMessages,
+    setLastSuggestions
+  } = useChat();
+  
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(312); // Larghezza iniziale della sidebar
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(false);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const navigate = useNavigate();
   const [visibleMessages, setVisibleMessages] = useState([]);
-  const [lastSuggestions, setLastSuggestions] = useState([]);
   const [ollamaStatus, setOllamaStatus] = useState({ status: 'checking' });
 
   // Example static user context (replace with dynamic source)
@@ -36,7 +49,19 @@ const Chat = () => {
     if (conversations.length === 0) {
       createNewChat();
     }
-  }, []);
+  }, [conversations.length, createNewChat]);
+
+  // Aggiorna isFirstMessage quando viene creata una nuova chat
+  useEffect(() => {
+    if (activeConversation) {
+      const currentConv = conversations.find(c => c.id === activeConversation);
+      if (currentConv) {
+        setIsFirstMessage(currentConv.messages.length === 0);
+      }
+    } else {
+      setIsFirstMessage(true);
+    }
+  }, [activeConversation, conversations]);
 
   useEffect(() => {
     // Check Ollama status on component mount
@@ -65,15 +90,7 @@ const Chat = () => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (activeConversation) {
-      const currentConv = conversations.find(c => c.id === activeConversation);
-      if (currentConv) {
-        setMessages(currentConv.messages);
-        setIsFirstMessage(currentConv.messages.length === 0);
-      }
-    }
-  }, [activeConversation, conversations]);
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -94,58 +111,30 @@ const Chat = () => {
     }
   };
 
-  const createNewChat = () => {
-    const newId = String(Date.now());
-    const newChat = {
-      id: newId,
-      title: 'Nuova Chat',
-      messages: []
-    };
-    setConversations(prev => [...prev, newChat]);
-    setActiveConversation(newId);
-    setMessages([]);
-    setIsFirstMessage(true);
-    setInput('');
-  };
-
   const handleSelectChat = (chatId) => {
-    if (chatId !== activeConversation) {
-      setActiveConversation(chatId);
-      const selectedChat = conversations.find(c => c.id === chatId);
-      if (selectedChat) {
-        setMessages(selectedChat.messages);
-        setIsFirstMessage(selectedChat.messages.length === 0);
-      }
+    selectChat(chatId);
+    const selectedChat = conversations.find(c => c.id === chatId);
+    if (selectedChat) {
+      setIsFirstMessage(selectedChat.messages.length === 0);
     }
   };
 
   const handleDeleteChat = (chatId) => {
-    const updatedConversations = conversations.filter(conv => conv.id !== chatId);
-    setConversations(updatedConversations);
-
-    if (chatId === activeConversation) {
-      if (updatedConversations.length > 0) {
-        const nextChat = updatedConversations[0];
-        setActiveConversation(nextChat.id);
-        setMessages(nextChat.messages);
-        setIsFirstMessage(nextChat.messages.length === 0);
-      } else {
-        createNewChat();
-      }
+    deleteChat(chatId);
+    const remainingConversations = conversations.filter(conv => conv.id !== chatId);
+    if (remainingConversations.length > 0) {
+      setIsFirstMessage(remainingConversations[0].messages.length === 0);
+    } else {
+      setIsFirstMessage(true);
     }
   };
 
   const handleRenameChat = (id, newTitle) => {
-    setConversations(prev =>
-      prev.map(conv => (conv.id === id ? { ...conv, title: newTitle } : conv))
-    );
+    renameChat(id, newTitle);
   };
 
-  const updateConversationTitle = (id, firstMessage) => {
-    const title = firstMessage.length > 30 ? firstMessage.slice(0, 30) + '...' : firstMessage;
-    setConversations(prev =>
-      prev.map(conv => (conv.id === id ? { ...conv, title } : conv))
-    );
+  const handleSidebarResize = (newWidth) => {
+    setSidebarWidth(newWidth);
   };
 
   const sendMessage = async () => {
@@ -154,19 +143,13 @@ const Chat = () => {
     const userMessage = { role: 'user', content: input.trim() };
     const updatedMessages = [...messages, userMessage];
 
-    setConversations(prev =>
-      prev.map(conv =>
-        conv.id === activeConversation
-          ? { ...conv, messages: updatedMessages }
-          : conv
-      )
-    );
+    // Aggiorna la conversazione con il messaggio utente
+    updateConversationMessages(activeConversation, updatedMessages);
 
     if (messages.length === 0) {
       updateConversationTitle(activeConversation, input.trim());
     }
 
-    setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
     setIsFirstMessage(false);
@@ -203,14 +186,8 @@ const Chat = () => {
       
       const finalMessages = [...updatedMessages, aiMessage];
 
-      setConversations(prev =>
-        prev.map(conv =>
-          conv.id === activeConversation
-            ? { ...conv, messages: finalMessages }
-            : conv
-        )
-      );
-      setMessages(finalMessages);
+      // Aggiorna la conversazione con la risposta AI
+      updateConversationMessages(activeConversation, finalMessages);
     } catch (error) {
       console.error('❌ Errore nella chat:', error);
       const errorMessage = {
@@ -219,14 +196,8 @@ const Chat = () => {
       };
       const finalMessages = [...updatedMessages, errorMessage];
 
-      setConversations(prev =>
-        prev.map(conv =>
-          conv.id === activeConversation
-            ? { ...conv, messages: finalMessages }
-            : conv
-        )
-      );
-      setMessages(finalMessages);
+      // Aggiorna la conversazione con il messaggio di errore
+      updateConversationMessages(activeConversation, finalMessages);
     } finally {
       setIsLoading(false);
     }
@@ -275,9 +246,14 @@ const Chat = () => {
         onRenameChat={handleRenameChat}
         onDeleteChat={handleDeleteChat}
         onCollapse={setIsSidebarCollapsed}
+        onResize={handleSidebarResize}
+        sidebarWidth={sidebarWidth}
       />
 
-      <main className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
+      <main 
+        className="flex-1 flex flex-col transition-all duration-300"
+        style={{ marginLeft: isSidebarCollapsed ? '120px' : `${sidebarWidth}px` }}
+      >
         {/* Ollama Status Header */}
         {!isFirstMessage && (
           <div className="bg-white border-b border-gray-200 px-4 py-2">

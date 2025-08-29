@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare, Calendar, User, Home, ChevronDown, Trash2 } from 'lucide-react';
 
-const Sidebar = ({ conversations, activeConversation, onNewChat, onSelectChat, onRenameChat, onDeleteChat, onCollapse }) => {
+const Sidebar = ({ conversations, activeConversation, onNewChat, onSelectChat, onRenameChat, onDeleteChat, onCollapse, onResize, sidebarWidth: externalWidth }) => {
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('sidebar_width');
+    return saved ? parseInt(saved) : (externalWidth || 312);
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef(null);
   const navigate = useNavigate();
 
   const handleRename = (conv) => {
@@ -32,6 +38,56 @@ const Sidebar = ({ conversations, activeConversation, onNewChat, onSelectChat, o
     onDeleteChat(id);
   };
 
+  // Funzioni per il ridimensionamento
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isResizing) return;
+    
+    const newWidth = e.clientX;
+    const minWidth = 120; // Larghezza minima
+    const maxWidth = 500; // Larghezza massima
+    
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      setSidebarWidth(newWidth);
+      localStorage.setItem('sidebar_width', newWidth.toString());
+      if (onResize) {
+        onResize(newWidth);
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  };
+
+  // Event listeners per il ridimensionamento
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isResizing]);
+
+  // Sincronizza la larghezza esterna con quella interna
+  useEffect(() => {
+    if (externalWidth && externalWidth !== sidebarWidth) {
+      setSidebarWidth(externalWidth);
+    }
+  }, [externalWidth]);
+
   const navItems = [
     { icon: <Home className="w-5 h-5" />, label: 'Home', path: '/' },
     { icon: <MessageSquare className="w-5 h-5" />, label: 'Chat', path: '/chat' },
@@ -40,15 +96,19 @@ const Sidebar = ({ conversations, activeConversation, onNewChat, onSelectChat, o
   ];
 
   return (
-    <div className={`
-      fixed top-0 left-0 h-full bg-gray-50 border-r border-gray-200 flex flex-col
-      transition-all duration-300 ease-in-out
-      ${isCollapsed ? 'w-30' : 'w-78'}
-    `}>
+    <div 
+      ref={sidebarRef}
+      className={`
+        fixed top-0 left-0 h-full bg-gray-50 border-r border-gray-200 flex flex-col
+        transition-all duration-300 ease-in-out
+        ${isCollapsed ? 'w-30' : ''}
+      `}
+      style={{ width: isCollapsed ? '120px' : `${sidebarWidth}px` }}
+    >
       {/* Collapse/Expand Button */}
       <button
         onClick={() => handleCollapse(!isCollapsed)}
-        className="absolute -right-3 top-6 bg-white rounded-full p-1 shadow-md border border-gray-200 hover:bg-gray-50"
+        className="absolute -right-3 top-6 bg-white rounded-full p-1 shadow-md border border-gray-200 hover:bg-gray-50 z-10"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -59,6 +119,17 @@ const Sidebar = ({ conversations, activeConversation, onNewChat, onSelectChat, o
           <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 010-1.06l7.5-7.5a.75.75 0 111.06 1.06L9.31 12l6.97 6.97a.75.75 0 11-1.06 1.06l-7.5-7.5z" clipRule="evenodd" />
         </svg>
       </button>
+
+      {/* Resize Handle */}
+      {!isCollapsed && (
+        <div
+          className="absolute -right-1 top-0 bottom-0 w-2 cursor-col-resize z-20"
+          onMouseDown={handleMouseDown}
+          title="Trascina per ridimensionare"
+        >
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-8 bg-gray-300 rounded-full"></div>
+        </div>
+      )}
 
       {/* Logo Section */}
       <div className="p-4 border-b border-gray-200">
