@@ -136,7 +136,7 @@ function Index() {
             </div>
 
             {/* Features Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-10 sm:pt-2 sm:pb-30">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-20 sm:pt-2 sm:pb-30">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}

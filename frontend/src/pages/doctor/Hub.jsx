@@ -91,7 +91,7 @@ function Hub() {
             <div className="flex items-center justify-center mb-1">
               <Calendar className="h-6 w-6" />
             </div>
-            <div className="text-2xl font-bold">{stats.totalAppointments}</div>
+            <div className="text-2xl font-bold">{stats.completedAppointments + stats.upcomingAppointments}</div>
             <div className="text-sm opacity-90">Appuntamenti</div>
           </div>
           <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-4 text-center">

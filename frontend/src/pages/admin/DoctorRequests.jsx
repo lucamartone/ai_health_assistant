@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, Clock, CheckCircle, XCircle, Shield, Download, FileText } from 'lucide-react';
+import { useAdmin } from '../../contexts/AdminContext';
 
 const DoctorRequests = () => {
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    doctorRequests, 
+    requestsLoading, 
+    fetchDoctorRequests, 
+    approveDoctorRequest, 
+    rejectDoctorRequest 
+  } = useAdmin();
+  
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [action, setAction] = useState('');
@@ -11,27 +18,11 @@ const DoctorRequests = () => {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    fetchRequests();
-  }, []);
-
-  const fetchRequests = async () => {
-    try {
-      const response = await fetch('http://localhost:8001/admin/doctor-requests');
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Dati ricevuti dal backend:', data);
-        setRequests(data.pending_requests || []);
-      } else {
-        console.error('Errore nel caricamento delle richieste:', response.status);
-        setRequests([]);
-      }
-    } catch (error) {
-      console.error('Errore di rete:', error);
-      setRequests([]);
-    } finally {
-      setLoading(false);
+    // Carica le richieste solo se non sono già presenti
+    if (doctorRequests.length === 0) {
+      fetchDoctorRequests();
     }
-  };
+  }, [doctorRequests.length]); // Rimossa fetchDoctorRequests dalle dipendenze
 
   const handleAction = async (requestId, actionType) => {
     if (!notes.trim() && actionType === 'reject') {
@@ -41,34 +32,21 @@ const DoctorRequests = () => {
 
     setProcessing(true);
     try {
-      const formData = new FormData();
-      formData.append('admin_notes', notes);
+      let result;
+      if (actionType === 'approve') {
+        result = await approveDoctorRequest(requestId, notes);
+      } else {
+        result = await rejectDoctorRequest(requestId, notes);
+      }
 
-      const endpoint = actionType === 'approve' 
-        ? `http://localhost:8001/admin/approve-doctor/${requestId}`
-        : `http://localhost:8001/admin/reject-doctor/${requestId}`;
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert(result.message);
-        
-        // Aggiorna lo status della richiesta
-        setRequests(prev => prev.map(req => 
-          req.id === requestId ? { ...req, status: actionType === 'approve' ? 'approved' : 'rejected' } : req
-        ));
-        
+      if (result.success) {
+        alert(actionType === 'approve' ? 'Richiesta approvata con successo!' : 'Richiesta rifiutata con successo!');
         setShowModal(false);
         setSelectedRequest(null);
         setAction('');
         setNotes('');
       } else {
-        const error = await response.json();
-        alert(`Errore: ${error.detail}`);
+        alert(`Errore: ${result.error}`);
       }
     } catch (error) {
       console.error('Errore durante l\'azione:', error);
@@ -142,11 +120,11 @@ const DoctorRequests = () => {
   };
 
   // Calcola i counter reali
-  const pendingCount = requests.filter(r => r.status === 'pending').length;
-  const approvedCount = requests.filter(r => r.status === 'approved').length;
-  const rejectedCount = requests.filter(r => r.status === 'rejected').length;
+  const pendingCount = doctorRequests.filter(r => r.status === 'pending').length;
+  const approvedCount = doctorRequests.filter(r => r.status === 'approved').length;
+  const rejectedCount = doctorRequests.filter(r => r.status === 'rejected').length;
 
-  if (loading) {
+  if (requestsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
@@ -205,11 +183,11 @@ const DoctorRequests = () => {
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-medium text-gray-900">
-              Richieste ({requests.length})
+              Richieste ({doctorRequests.length})
             </h2>
           </div>
 
-          {requests.length === 0 ? (
+          {doctorRequests.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <Clock className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">Nessuna richiesta</h3>
@@ -246,7 +224,7 @@ const DoctorRequests = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {requests.map((request) => (
+                  {doctorRequests.map((request) => (
                     <tr key={request.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
