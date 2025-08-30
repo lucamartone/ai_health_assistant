@@ -13,7 +13,7 @@
 - creazione cartella clinica
 
 # paziente
-- cronologia appuntamenti                                        ✅                                                  
+- cronologia appuntamenti                                        ✅                                              
 - recensione appuntamenti                                        ✅
 - modale di prenotazione effettuata                              ✅
 - elenco calendario / prossimi appuntamenti                      ✅
@@ -33,4 +33,14 @@
 - aggiunta caricamento documento nel profilo                                  ✅
 - pagina accettazione e autenticazione richieste nuovi dottori                ✅
 
-NOTA: controllare se quando un paziente prenota un appuntamento questo passa a booked
+
+# per terminare
+
+- rivedere configurazione orari dottore
+- counter appuntamenti totali (booked)
+- ricaricare con location pagina book dopo prenotazione
+- capire il senso delle informazioni di sanità
+- controllare path da chat verso le altre pagine
+- controllare i collegamenti a .env
+
+- ordinare il backend (endpoint, pydantic)

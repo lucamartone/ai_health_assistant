@@ -153,7 +153,6 @@ async def request_password_reset(email: EmailStr):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore durante la richiesta di reset password: {str(e)}")
 
-
 @router_account_profile.post("/reset_password")
 async def reset_password(payload: ResetPasswordRequest):
     """Imposta una nuova password usando un token di reset valido."""
@@ -175,7 +174,6 @@ async def reset_password(payload: ResetPasswordRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore durante il reset password: {str(e)}")
 
-
 @router_account_profile.get('/preferences')
 async def get_preferences(account_id: int = Query(..., gt=0)):
     try:
@@ -196,7 +194,6 @@ async def get_preferences(account_id: int = Query(..., gt=0)):
         return {"notifications": res[0][0], "privacy": res[0][1]}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero preferenze: {str(e)}")
-
 
 @router_account_profile.post('/preferences')
 async def save_preferences(account_id: int = Query(..., gt=0), payload: PreferencesPayload = None):
