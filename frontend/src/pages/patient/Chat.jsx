@@ -206,13 +206,9 @@ const Chat = () => {
           model: response.model,
           confidence: response.confidence,
           usage: response.usage
-        }
+        },
+        suggestions: response.suggestions || [] // Aggiungi i suggerimenti al messaggio
       };
-      
-      // Update suggestions if available
-      if (response.suggestions && response.suggestions.length > 0) {
-        setLastSuggestions(response.suggestions);
-      }
       
       const finalMessages = [...updatedMessages, aiMessage];
 
@@ -391,7 +387,6 @@ const Chat = () => {
               messages={messages}
               isLoading={isLoading}
               messagesEndRef={messagesEndRef}
-              suggestions={lastSuggestions}
               onSuggestionClick={handleSuggestionClick}
             />
           </div>
