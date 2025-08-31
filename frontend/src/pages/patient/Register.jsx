@@ -10,6 +10,7 @@ function Register() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [sex, setSex] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [modalMessage, setModalMessage] = useState('');
 
@@ -33,7 +34,7 @@ function Register() {
     e.preventDefault();
     if (passwordError) return; // sicurezza in più
     try {
-      const data = await register(name, surname, email, password, sex);
+      const data = await register(name, surname, email, password, sex, birthDate);
       console.log('Registrazione riuscita:', data);
       navigate('/login');
     } catch (err) {
@@ -75,6 +76,13 @@ function Register() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
+            className="w-full px-4 py-3 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
+          />
+          <input
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            placeholder="Data di nascita"
             className="w-full px-4 py-3 rounded-md bg-blue-100 text-blue-900 placeholder-blue-600 focus:outline-none focus:ring-2 focus:ring-white"
           />
           <div className="relative">

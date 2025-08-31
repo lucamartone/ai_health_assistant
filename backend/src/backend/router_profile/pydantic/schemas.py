@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import List, Literal, Optional
+from datetime import date
 
 
 class LocationData(BaseModel):
@@ -8,11 +9,12 @@ class LocationData(BaseModel):
     longitude: Optional[float]
 
 class RegisterRequest(BaseModel):
-    name:str
-    surname:str
+    name: str
+    surname: str
     email: EmailStr
     password: str
     sex: Literal['M', 'F']
+    birth_date: Optional[date] = None
 
 class RegisterDoctorRequest(BaseModel):
     name: str

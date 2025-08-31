@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { checkLLMStatus } from '../../services/ollama/status';
 import { ask } from '../../services/ollama/chat';
+import { useAuth } from '../../contexts/AuthContext';
+import { getPatientHealthProfile } from '../../services/profile/health';
 import Sidebar from '../../components/Sidebar';
 import WelcomeMessage from '../../components/chat/WelcomeMessage';
 import MessageList from '../../components/chat/MessageList';
@@ -37,19 +39,35 @@ const Chat = () => {
   const navigate = useNavigate();
   const [visibleMessages, setVisibleMessages] = useState([]);
   const [ollamaStatus, setOllamaStatus] = useState({ status: 'checking' });
-
-  // Example static user context (replace with dynamic source)
-  const userContext = {
-    eta: 30,
-    sesso: 'maschio',
-    patologie: ['ipertensione']
-  };
+  const [userHealthData, setUserHealthData] = useState(null);
+  const { account } = useAuth();
 
   useEffect(() => {
     if (conversations.length === 0) {
       createNewChat();
     }
   }, [conversations.length, createNewChat]);
+
+  // Carica i dati di salute del paziente
+  useEffect(() => {
+    const loadHealthData = async () => {
+      console.log('🔍 Account disponibile:', account);
+      if (account && account.id) {
+        try {
+          console.log('🔍 Caricamento dati salute per paziente:', account.id);
+          const healthData = await getPatientHealthProfile(account.id);
+          console.log('✅ Dati salute caricati:', healthData);
+          setUserHealthData(healthData);
+        } catch (error) {
+          console.error('❌ Errore nel caricamento dati salute:', error);
+        }
+      } else {
+        console.log('⚠️ Account non disponibile o senza ID');
+      }
+    };
+
+    loadHealthData();
+  }, [account]);
 
   // Aggiorna isFirstMessage quando viene creata una nuova chat
   useEffect(() => {
@@ -164,7 +182,7 @@ const Chat = () => {
       const response = await ask(
         input.trim(),
         activeConversation,
-        userContext,
+        getUserContext(),
         messageHistory
       );
 
@@ -201,6 +219,47 @@ const Chat = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Genera l'user context dinamico dai dati del paziente
+  const getUserContext = () => {
+    if (!account || !userHealthData) {
+      console.log('⚠️  Dati paziente non disponibili per user context');
+      return {
+        eta: null,
+        sesso: null,
+        patologie: [],
+        blood_type: null,
+        allergies: [],
+        chronic_conditions: []
+      };
+    }
+
+    // Calcola l'età dalla data di nascita
+    let eta = null;
+    if (account.birth_date) {
+      const birthDate = new Date(account.birth_date);
+      const today = new Date();
+      eta = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        eta--;
+      }
+    }
+
+    const context = {
+      eta: eta,
+      sesso: account.sex || null,
+      patologie: userHealthData.patient_info.chronic_conditions || [],
+      blood_type: userHealthData.patient_info.blood_type,
+      allergies: userHealthData.patient_info.allergies || [],
+      chronic_conditions: userHealthData.patient_info.chronic_conditions || []
+    };
+
+    console.log('🔍 User Context generato:', context);
+    console.log('🔍 Account usato per context:', account);
+    console.log('🔍 Health data usato per context:', userHealthData);
+    return context;
   };
 
   const handleKeyDown = (e) => {
@@ -254,6 +313,13 @@ const Chat = () => {
         className="flex-1 flex flex-col transition-all duration-300"
         style={{ marginLeft: isSidebarCollapsed ? '120px' : `${sidebarWidth}px` }}
       >
+        {/* Debug Info (solo in development) */}
+        {process.env.NODE_ENV === 'development' && userHealthData && (
+          <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2 text-xs">
+            <strong>DEBUG - Dati salute:</strong> {JSON.stringify(userHealthData)}
+          </div>
+        )}
+
         {/* Ollama Status Header */}
         {!isFirstMessage && (
           <div className="bg-white border-b border-gray-200 px-4 py-2">

@@ -208,6 +208,84 @@ async def get_past_appointments(patient_id: int = Query(..., gt=0, description="
         raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti passati: {str(e)}")
 
 
+@router_appointments.get("/get_patient_health_profile")
+async def get_patient_health_profile(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    """Ottiene il profilo sanitario completo del paziente per l'AI"""
+    try:
+        # Ottieni i dati di base del paziente
+        query_basic = """
+        SELECT 
+            a.name,
+            a.surname,
+            a.birth_date,
+            a.sex,
+            p.blood_type,
+            p.allergies,
+            p.chronic_conditions
+        FROM account a
+        JOIN patient p ON a.id = p.id
+        WHERE a.id = %s
+        """
+        
+        result = execute_query(query_basic, (patient_id,))
+        if not result:
+            raise HTTPException(status_code=404, detail="Paziente non trovato")
+        
+        patient_data = result[0]
+        
+        # Calcola l'età
+        age = None
+        if patient_data[2]:  # birth_date
+            from datetime import date
+            today = date.today()
+            birth_date = patient_data[2]
+            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+        
+        # Ottieni la cronologia medica recente
+        query_history = """
+        SELECT 
+            mr.symptoms,
+            mr.diagnosis,
+            mr.treatment_plan,
+            mr.record_date,
+            d.specialization
+        FROM medical_record mr
+        JOIN doctor d ON mr.doctor_id = d.id
+        JOIN clinical_folder cf ON mr.clinical_folder_id = cf.id
+        WHERE cf.patient_id = %s
+        ORDER BY mr.record_date DESC
+        LIMIT 5
+        """
+        
+        history_result = execute_query(query_history, (patient_id,))
+        
+        return {
+            "patient_info": {
+                "name": patient_data[0],
+                "surname": patient_data[1],
+                "age": age,
+                "sex": patient_data[3],
+                "blood_type": patient_data[4],
+                "allergies": patient_data[5] or [],
+                "chronic_conditions": patient_data[6] or []
+            },
+            "recent_medical_history": [
+                {
+                    "symptoms": row[0],
+                    "diagnosis": row[1],
+                    "treatment_plan": row[2],
+                    "record_date": row[3].isoformat() if row[3] else None,
+                    "specialization": row[4]
+                }
+                for row in history_result
+            ],
+            "total_records": len(history_result)
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore nel recupero del profilo sanitario: {str(e)}")
+
+
 @router_appointments.get("/get_free_slots")
 async def get_free_slots(
     doctor_id: int = Query(..., gt=0, description="ID of the doctor"),

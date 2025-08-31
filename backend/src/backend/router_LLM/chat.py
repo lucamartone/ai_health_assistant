@@ -17,6 +17,9 @@ class UserContext(BaseModel):
     eta: Optional[int] = None
     sesso: Optional[str] = None
     patologie: Optional[List[str]] = None
+    blood_type: Optional[str] = None
+    allergies: Optional[List[str]] = None
+    chronic_conditions: Optional[List[str]] = None
 
 class ChatRequest(BaseModel):
     message: str
@@ -38,6 +41,7 @@ async def ask(request: ChatRequest):
     Endpoint per inviare una domanda di salute all'AI
     """
     try:
+
         # Prepara il prompt di sistema per il contesto sanitario
         system_prompt = """Sei un assistente sanitario AI professionale e compassionevole. Il tuo ruolo è:
 1. Fornire informazioni sanitarie accurate e basate su evidenze
@@ -46,6 +50,7 @@ async def ask(request: ChatRequest):
 4. Offrire consigli su stili di vita sani
 5. Riconoscere situazioni di emergenza e guidare verso assistenza medica immediata
 6. Suggerire specializzazioni mediche in base alla diagnosi
+7. Considerare sempre il profilo sanitario del paziente nelle tue risposte
 
 Rispondi sempre in italiano e sii utile ma cauto nelle raccomandazioni mediche.
 
@@ -58,11 +63,17 @@ IMPORTANTE: Non fornire mai diagnosi definitive. Incoraggia sempre la consultazi
                 context_info.append(f"Età: {request.user_context.eta} anni")
             if request.user_context.sesso:
                 context_info.append(f"Sesso: {request.user_context.sesso}")
-            if request.user_context.patologie:
+            if request.user_context.blood_type:
+                context_info.append(f"Gruppo sanguigno: {request.user_context.blood_type}")
+            if request.user_context.allergies and len(request.user_context.allergies) > 0:
+                context_info.append(f"Allergie: {', '.join(request.user_context.allergies)}")
+            if request.user_context.chronic_conditions and len(request.user_context.chronic_conditions) > 0:
+                context_info.append(f"Condizioni croniche: {', '.join(request.user_context.chronic_conditions)}")
+            if request.user_context.patologie and len(request.user_context.patologie) > 0:
                 context_info.append(f"Patologie note: {', '.join(request.user_context.patologie)}")
             
             if context_info:
-                system_prompt += f"\n\nContesto utente: {'; '.join(context_info)}"
+                system_prompt += f"\n\nPROFILO SANITARIO DEL PAZIENTE:\n{' | '.join(context_info)}\n\nConsidera sempre questi dati nel fornire consigli e raccomandazioni. Presta particolare attenzione alle allergie e condizioni croniche quando suggerisci farmaci o trattamenti."
 
         # Costruisci l'array dei messaggi includendo la cronologia
         messages = [

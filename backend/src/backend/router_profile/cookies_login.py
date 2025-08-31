@@ -45,7 +45,7 @@ def get_current_account(access_token: str = Cookie(None)) -> dict:
 
         # Account
         q_acc = """
-            SELECT id, email, name, surname, phone, role
+            SELECT id, email, name, surname, phone, role, birth_date, sex
             FROM account
             WHERE id = %s
         """
@@ -53,7 +53,7 @@ def get_current_account(access_token: str = Cookie(None)) -> dict:
         if not ra:
             raise HTTPException(status_code=404, detail="Account non trovato")
 
-        id_, email, name, surname, phone, role = ra[0]
+        id_, email, name, surname, phone, role, birth_date, sex = ra[0]
 
         specialization = None
         addresses = []
@@ -86,6 +86,8 @@ def get_current_account(access_token: str = Cookie(None)) -> dict:
             "surname": surname,
             "phone": phone,
             "role": role,
+            "birth_date": birth_date.isoformat() if birth_date else None,
+            "sex": sex,
             "specialization": specialization,
             "addresses": addresses
         }

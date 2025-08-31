@@ -27,12 +27,12 @@ async def register(data: RegisterRequest):
 
         reg_query = """
         INSERT INTO account (
-            name, surname, email, password, sex, role,
+            name, surname, email, password, sex, birth_date, role,
             created_at, last_login_attempt, failed_attempts
-        ) VALUES (%s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, NULL, 0)
         RETURNING id
         """
-        params = (data.name, data.surname, data.email, hashed_password, data.sex, "patient")
+        params = (data.name, data.surname, data.email, hashed_password, data.sex, data.birth_date, "patient")
         result = execute_query(reg_query, params, commit=True)
 
         if not result or not result[0]:
@@ -56,7 +56,7 @@ async def register(data: RegisterRequest):
 async def login(data: LoginRequest, response: Response):
     try:
         query = """
-        SELECT account.id, name, surname, email, password, profile_img, last_login_attempt, failed_attempts, phone
+        SELECT account.id, name, surname, email, password, profile_img, last_login_attempt, failed_attempts, phone, birth_date, sex
         FROM account JOIN patient ON account.id = patient.id
         WHERE email = %s
         """
@@ -107,7 +107,9 @@ async def login(data: LoginRequest, response: Response):
             "surname": account[2],
             "email": account[3],
             "role": "patient",
-            "phone": account[8]
+            "phone": account[8],
+            "birth_date": account[9].isoformat() if account[9] else None,
+            "sex": account[10]
         })
 
         refresh_token = create_refresh_token({
@@ -148,6 +150,8 @@ async def login(data: LoginRequest, response: Response):
                 "email": account[3],
                 "profile_img": profile_img_base64,
                 "phone": account[8],
+                "birth_date": account[9].isoformat() if account[9] else None,
+                "sex": account[10],
                 "role": "patient"
             }
         }

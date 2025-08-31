@@ -1,7 +1,7 @@
 import api from '../../hooks/useApi';
 
-export async function register(name, surname, email, password, sex, locations, specialization){
-  const data = { name, surname, email, password, sex, locations, specialization };
+export async function register(name, surname, email, password, sex, birthDate){
+  const data = { name, surname, email, password, sex, birth_date: birthDate };
   return await api.post('/profile/patient/register', data, { skipRefresh: true });
 };
 
