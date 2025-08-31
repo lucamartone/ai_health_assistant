@@ -235,6 +235,8 @@ def generate_booking_suggestions(user_message: str) -> list:
         "frattura": "Ortopedia",
         "artrite": "Ortopedia",
         "reumatismi": "Ortopedia",
+        "ginocchio": "Ortopedia",
+        "dolore al ginocchio": "Ortopedia",
         "polmoni": "Pneumologia",
         "respirazione": "Pneumologia",
         "asma": "Pneumologia",
@@ -287,7 +289,8 @@ def generate_booking_suggestions(user_message: str) -> list:
     # Cerca specializzazioni nel messaggio
     suggested_specializations = []
     for keyword, specialization in specialization_map.items():
-        if keyword in user_message_lower:
+        # Cerca parole intere invece di sottostringhe
+        if f" {keyword} " in f" {user_message_lower} " or user_message_lower.startswith(keyword + " ") or user_message_lower.endswith(" " + keyword):
             suggested_specializations.append(specialization)
             print(f"🔍 Trovata keyword '{keyword}' -> {specialization}")
     
