@@ -179,10 +179,22 @@ const Chat = () => {
         content: msg.content
       }));
 
+      // Aggiungi il messaggio corrente alla cronologia
+      messageHistory.push({
+        role: 'user',
+        content: input.trim()
+      });
+
+      const userContext = getUserContext();
+      
+      console.log('📚 Cronologia completa inviata all\'AI:', messageHistory);
+      console.log('👤 User Context inviato all\'AI:', userContext);
+      console.log('🔢 Numero messaggi nella cronologia:', messageHistory.length);
+
       const response = await ask(
         input.trim(),
         activeConversation,
-        getUserContext(),
+        userContext,
         messageHistory
       );
 

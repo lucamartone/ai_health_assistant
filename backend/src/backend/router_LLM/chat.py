@@ -51,10 +51,13 @@ async def ask(request: ChatRequest):
 5. Riconoscere situazioni di emergenza e guidare verso assistenza medica immediata
 6. Suggerire specializzazioni mediche in base alla diagnosi
 7. Considerare sempre il profilo sanitario del paziente nelle tue risposte
+8. Mantenere sempre la memoria della conversazione precedente
 
-Rispondi sempre in italiano e sii utile ma cauto nelle raccomandazioni mediche.
-
-IMPORTANTE: Non fornire mai diagnosi definitive. Incoraggia sempre la consultazione con un medico per problemi seri."""
+IMPORTANTE: 
+- Ricorda sempre i sintomi e le informazioni che il paziente ha condiviso nella conversazione
+- Se il paziente chiede "che cos'ho" o simili, fai riferimento ai sintomi che ha menzionato prima
+- Non fornire mai diagnosi definitive. Incoraggia sempre la consultazione con un medico per problemi seri
+- Rispondi sempre in italiano e sii utile ma cauto nelle raccomandazioni mediche"""
 
         # Aggiungi il contesto utente se disponibile
         if request.user_context:
@@ -96,6 +99,23 @@ IMPORTANTE: Non fornire mai diagnosi definitive. Incoraggia sempre la consultazi
             "role": "user",
             "content": request.message
         })
+
+        # Debug: stampa i messaggi che vengono inviati all'AI
+        print(f"🔍 Messaggi inviati all'AI per conversazione {request.conversation_id}:")
+        for i, msg in enumerate(messages):
+            print(f"  {i+1}. {msg['role']}: {msg['content'][:100]}...")
+        
+        # Debug: stampa il user context ricevuto
+        if request.user_context:
+            print(f"👤 User Context ricevuto dal frontend:")
+            print(f"  - Età: {request.user_context.eta}")
+            print(f"  - Sesso: {request.user_context.sesso}")
+            print(f"  - Patologie: {request.user_context.patologie}")
+            print(f"  - Blood Type: {request.user_context.blood_type}")
+            print(f"  - Allergies: {request.user_context.allergies}")
+            print(f"  - Chronic Conditions: {request.user_context.chronic_conditions}")
+        else:
+            print("⚠️  Nessun user context ricevuto dal frontend")
 
         # Prepara il payload per Ollama
         payload = {
