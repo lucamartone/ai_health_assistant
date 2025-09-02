@@ -111,14 +111,14 @@ docker-compose down -v
 docker system prune -a
 ```
 
-## 🌐 Endpoint Disponibili
+## Endpoint Disponibili
 
 - **Frontend**: http://localhost
 - **Backend API**: http://localhost:8001
 - **Ollama API**: http://localhost:11434
 - **Database**: localhost:5433
 
-## 🆘 Risoluzione Problemi
+## Risoluzione Problemi
 
 ### Ollama non scarica il modello
 ```bash
@@ -176,7 +176,7 @@ Se tutto funziona correttamente:
 3. ✅ Il test setup passa tutti i controlli
 4. ✅ L'applicazione è accessibile su http://localhost
 
-**Congratulazioni!** Il tuo assistente sanitario AI è pronto per l'uso! 🤖🏥
+**Congratulazioni!** Il tuo assistente sanitario AI è pronto per l'uso!
 
 ---
 

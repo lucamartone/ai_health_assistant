@@ -1,3 +1,17 @@
+"""
+Sistema di registrazione e gestione delle richieste per i dottori.
+
+Questo modulo gestisce tutto il processo di registrazione dei dottori:
+- Invio di richieste di registrazione con documenti
+- Validazione dei dati inseriti
+- Gestione dei documenti di supporto
+- Verifica delle credenziali esistenti
+- Creazione di account dottore approvati
+
+Il sistema mantiene uno stato di approvazione per ogni richiesta
+e gestisce il caricamento sicuro dei documenti di supporto.
+"""
+
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from typing import List, Optional
 import json
@@ -5,7 +19,10 @@ from datetime import datetime
 from backend.connection import execute_query
 from passlib.context import CryptContext
 
+# Router per la registrazione dei dottori
 router_doctor_registration = APIRouter()
+
+# Contesto per la gestione delle password con bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router_doctor_registration.post("/request")
@@ -18,26 +35,51 @@ async def submit_registration_request(
     birth_date: str = Form(...),
     specialization: str = Form(...),
     phone: str = Form(...),
-    locations: str = Form(...),  # JSON string
+    locations: str = Form(...),  # Stringa JSON
     documents: Optional[List[UploadFile]] = File(None)
 ):
-    """Invia richiesta di registrazione dottore."""
+    """
+    Invia una richiesta di registrazione per un nuovo dottore.
+    
+    Questa funzione gestisce l'invio completo di una richiesta di registrazione,
+    inclusi i dati personali, professionali e i documenti di supporto.
+    Prima dell'inserimento verifica che non esistano già account o richieste
+    pendenti con la stessa email.
+    
+    Args:
+        name: Nome del dottore
+        surname: Cognome del dottore
+        email: Email del dottore (deve essere unica)
+        password: Password per l'account
+        sex: Sesso del dottore
+        birth_date: Data di nascita in formato YYYY-MM-DD
+        specialization: Specializzazione medica
+        phone: Numero di telefono
+        locations: Stringa JSON contenente le sedi di lavoro
+        documents: Lista opzionale di documenti di supporto
+        
+    Returns:
+        dict: Dizionario con l'ID della richiesta creata
+        
+    Raises:
+        HTTPException: In caso di email duplicata, richiesta pendente o errori di validazione
+    """
     try:
-        # Verifica se l'email esiste già
+        # Verifica se l'email esiste già in un account attivo
         check_query = "SELECT id FROM account WHERE email = %s"
         existing = execute_query(check_query, (email,))
         
         if existing:
-            raise HTTPException(status_code=400, detail="Email già registrata")
+            raise HTTPException(status_code=400, detail="Email già registrata nel sistema")
         
-        # Verifica se esiste già una richiesta pendente
+        # Verifica se esiste già una richiesta pendente per la stessa email
         check_request_query = "SELECT id FROM doctor_registration_request WHERE email = %s AND status = 'pending'"
         existing_request = execute_query(check_request_query, (email,))
         
         if existing_request:
-            raise HTTPException(status_code=400, detail="Hai già una richiesta di registrazione in attesa")
+            raise HTTPException(status_code=400, detail="Hai già una richiesta di registrazione in attesa di approvazione")
         
-        # Inserisci la richiesta
+        # Inserimento della richiesta di registrazione
         insert_query = """
         INSERT INTO doctor_registration_request 
         (name, surname, email, password, sex, birth_date, specialization, phone, locations, status, created_at)
@@ -45,18 +87,19 @@ async def submit_registration_request(
         RETURNING id
         """
         
-        # Parsing della data
+        # Parsing e validazione della data di nascita
         try:
             parsed_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
         except ValueError:
-            raise HTTPException(status_code=400, detail="Formato data non valido. Usa YYYY-MM-DD")
+            raise HTTPException(status_code=400, detail="Formato data non valido. Utilizza il formato YYYY-MM-DD")
         
-        # Parsing delle locations
+        # Parsing e validazione delle sedi di lavoro
         try:
             locations_data = json.loads(locations)
         except json.JSONDecodeError:
-            raise HTTPException(status_code=400, detail="Formato locations non valido")
+            raise HTTPException(status_code=400, detail="Formato delle sedi non valido. Invia un JSON valido")
         
+        # Esecuzione dell'inserimento della richiesta
         result = execute_query(
             insert_query, 
             (name, surname, email, password, sex, parsed_date, specialization, phone, json.dumps(locations_data),),
@@ -64,36 +107,37 @@ async def submit_registration_request(
         )
         
         if not result or not result[0]:
-            raise HTTPException(status_code=500, detail="Errore nell'inserimento della richiesta")
+            raise HTTPException(status_code=500, detail="Errore nell'inserimento della richiesta di registrazione")
         
         request_id = result[0][0]
         
-        # Gestione documenti se presenti
+        # Gestione dei documenti di supporto se presenti
         if documents:
-            print(f"Caricamento {len(documents)} documenti")
+            print(f"Caricamento di {len(documents)} documenti di supporto")
             for i, doc in enumerate(documents):
                 print(f"Processando documento {i+1}: {doc.filename}")
                 
-                if doc.size > 10 * 1024 * 1024:  # 10MB limit
-                    raise HTTPException(status_code=400, detail=f"Documento {doc.filename} troppo grande (max 10MB)")
+                # Verifica della dimensione del file (limite 10MB)
+                if doc.size > 10 * 1024 * 1024:
+                    raise HTTPException(status_code=400, detail=f"Documento {doc.filename} troppo grande (massimo 10MB consentiti)")
                 
-                # Leggi il contenuto del file
+                # Lettura del contenuto del file
                 file_content = await doc.read()
                 print(f"Dimensione file {doc.filename}: {len(file_content)} bytes")
                 
                 # Verifica che il file non sia vuoto
                 if len(file_content) == 0:
-                    raise HTTPException(status_code=400, detail=f"Documento {doc.filename} è vuoto")
+                    raise HTTPException(status_code=400, detail=f"Documento {doc.filename} è vuoto e non può essere caricato")
                 
-                # Verifica che sia un PDF valido se il tipo è PDF
+                # Verifica della validità del PDF se il tipo è PDF
                 if doc.content_type == "application/pdf":
-                    # Converti memoryview in bytes se necessario
+                    # Conversione in bytes se necessario
                     file_bytes = bytes(file_content) if hasattr(file_content, 'tobytes') else file_content
                     if not file_bytes.startswith(b'%PDF'):
                         print(f"Attenzione: {doc.filename} non sembra essere un PDF valido")
                         print(f"Primi 10 bytes: {file_bytes[:10]}")
                 
-                # Inserisci il documento
+                # Inserimento del documento nel database
                 doc_query = """
                 INSERT INTO doctor_document 
                 (request_id, filename, mime_type, file_data, document_type, file_size, uploaded_at)

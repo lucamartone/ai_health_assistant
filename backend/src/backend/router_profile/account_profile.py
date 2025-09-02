@@ -1,3 +1,18 @@
+"""
+Gestione completa degli account utente e delle preferenze.
+
+Questo modulo fornisce tutte le funzionalità necessarie per:
+- Eliminazione sicura degli account
+- Gestione delle password (cambio, reset, validazione)
+- Gestione delle preferenze utente (notifiche, privacy)
+- Logout con pulizia dei cookie
+- Invio email di reset password
+- Validazione della robustezza delle password
+
+Il sistema implementa misure di sicurezza avanzate
+e gestisce l'integrità referenziale durante le operazioni.
+"""
+
 from fastapi import APIRouter, HTTPException, Response, Depends, Query
 from datetime import datetime, timedelta
 from backend.connection import execute_query
@@ -8,11 +23,28 @@ from backend.utils.email_service import send_password_reset_email
 from passlib.context import CryptContext
 import re
 
+# Router per la gestione degli account e preferenze
 router_account_profile = APIRouter()
+
+# Contesto per la gestione delle password con bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def validate_password(password: str) -> bool:
-    """Verifica la robustezza della password."""
+    """
+    Verifica la robustezza della password secondo standard di sicurezza.
+    
+    La password deve contenere:
+    - Almeno 8 caratteri
+    - Almeno una lettera maiuscola
+    - Almeno una lettera minuscola
+    - Almeno un numero
+    
+    Args:
+        password: Password da validare
+        
+    Returns:
+        bool: True se la password è valida, False altrimenti
+    """
     if len(password) < 8:
         return False
     if not re.search(r"[A-Z]", password):
@@ -29,13 +61,30 @@ async def delete_account(
     password: str = Query(..., description="Password attuale per la verifica"),
     current_account: dict = Depends(get_current_account)
 ):
-    """Endpoint per eliminare un account utente."""
+    """
+    Endpoint per eliminare un account utente in modo sicuro.
+    
+    Questa funzione permette agli utenti di eliminare il proprio account
+    dopo aver verificato la password. L'eliminazione avviene in ordine
+    corretto per mantenere l'integrità referenziale del database.
+    
+    Args:
+        email: Email dell'account da eliminare
+        password: Password attuale per la verifica
+        current_account: Account corrente autenticato
+        
+    Returns:
+        dict: Messaggio di conferma dell'eliminazione
+        
+    Raises:
+        HTTPException: In caso di autorizzazione insufficiente, password errata o errori
+    """
     try:
-        # Verify account is deleting their own account
+        # Verifica che l'utente stia eliminando il proprio account
         if current_account["email"] != email:
             raise HTTPException(status_code=403, detail="Non autorizzato a eliminare questo account")
 
-        # Verify password
+        # Verifica della password per confermare l'identità
         query = """SELECT password FROM "account" WHERE email = %s"""
         result = execute_query(query, (email,))
         
@@ -45,12 +94,12 @@ async def delete_account(
         if not pwd_context.verify(password, result[0][0]):
             raise HTTPException(status_code=401, detail="Password non valida")
 
-        # Get account ID
+        # Recupero dell'ID dell'account per le operazioni di eliminazione
         select_id_account = """SELECT id FROM "account"" WHERE email = %s"""
         res = execute_query(select_id_account, (email,))
         account_id = res[0][0]
 
-        # Delete in correct order to maintain referential integrity
+        # Eliminazione in ordine corretto per mantenere l'integrità referenziale
         delete_patient = "DELETE FROM patient WHERE id_patient = %s"
         delete_doctor = "DELETE FROM doctor WHERE id_doctor = %s"
         delete_account = """DELETE FROM "account" WHERE id = %s"""
@@ -68,8 +117,19 @@ async def delete_account(
 
 @router_account_profile.post("/logout")
 async def logout(response: Response):
-    """Endpoint per effettuare il logout di un utente eliminando i cookies di accesso."""
-    # Elimina access token cookie
+    """
+    Endpoint per effettuare il logout di un utente eliminando i cookie di accesso.
+    
+    Questa funzione rimuove in modo sicuro tutti i cookie di autenticazione
+    (access_token e refresh_token) per terminare la sessione dell'utente.
+    
+    Args:
+        response: Oggetto Response per rimuovere i cookie
+        
+    Returns:
+        dict: Messaggio di conferma del logout
+    """
+    # Elimina il cookie del token di accesso
     response.delete_cookie(
         key="access_token",
         path="/",
@@ -77,7 +137,7 @@ async def logout(response: Response):
         httponly=True,
         samesite="Strict"
     )
-    # Elimina refresh token cookie
+    # Elimina il cookie del token di refresh
     response.delete_cookie(
         key="refresh_token",
         path="/",
@@ -89,16 +149,31 @@ async def logout(response: Response):
 
 @router_account_profile.post("/change_password")
 async def change_password(data: ChangePasswordRequest):
-    """Endpoint per modificare la password di un utente."""
+    """
+    Endpoint per modificare la password di un utente.
+    
+    Questa funzione permette agli utenti di cambiare la propria password
+    dopo aver verificato la password attuale. La nuova password viene
+    validata per robustezza e poi hashata con bcrypt.
+    
+    Args:
+        data: Oggetto ChangePasswordRequest con password attuale e nuova
+        
+    Returns:
+        dict: Messaggio di conferma del cambio password
+        
+    Raises:
+        HTTPException: In caso di password non valida, utente non trovato o errori
+    """
     try:
-        # Validate new password strength
+        # Validazione della robustezza della nuova password
         if not validate_password(data.new_password):
             raise HTTPException(
                 status_code=400,
                 detail="La nuova password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero"
             )
 
-        # Verify current password
+        # Verifica della password attuale
         query = "SELECT password FROM account WHERE email = %s"
         result = execute_query(query, (data.account_email,))
         
@@ -108,7 +183,7 @@ async def change_password(data: ChangePasswordRequest):
         if not pwd_context.verify(data.old_password, result[0][0]):
             raise HTTPException(status_code=401, detail="Password attuale non valida, reinseriscila")
 
-        # Hash and update new password
+        # Hash e aggiornamento della nuova password
         hashed_password = pwd_context.hash(data.new_password)
         update_query = """
         UPDATE account 
@@ -127,20 +202,35 @@ async def change_password(data: ChangePasswordRequest):
     
 @router_account_profile.post("/request_password_reset")
 async def request_password_reset(email: EmailStr):
-    """Endpoint per richiedere il reset della password."""
+    """
+    Endpoint per richiedere il reset della password.
+    
+    Questa funzione genera un token di reset temporaneo e invia
+    un'email all'utente con le istruzioni per reimpostare la password.
+    Per motivi di sicurezza, non rivela se l'email esiste o meno.
+    
+    Args:
+        email: Email dell'account per cui richiedere il reset
+        
+    Returns:
+        dict: Messaggio di conferma dell'invio dell'email
+        
+    Raises:
+        HTTPException: In caso di errori nell'invio dell'email
+    """
     try:
-        # Check if the account exists
+        # Verifica dell'esistenza dell'account
         query = "SELECT id FROM account WHERE email = %s"
         result = execute_query(query, (email,))
         
         if not result:
-            # Don't reveal if email exists or not for security
+            # Non rivelare se l'email esiste o meno per motivi di sicurezza
             return {"message": "Se l'email è registrata, riceverai un link di reimpostazione."}
 
-        # Generate reset token
+        # Generazione del token di reset valido per 1 ora
         reset_token = create_access_token(data={"email": email}, expires_delta=timedelta(hours=1))
 
-        # Send email
+        # Invio dell'email di reset
         email_sent = await send_password_reset_email(email, reset_token)
         
         if email_sent:
@@ -155,9 +245,24 @@ async def request_password_reset(email: EmailStr):
 
 @router_account_profile.post("/reset_password")
 async def reset_password(payload: ResetPasswordRequest):
-    """Imposta una nuova password usando un token di reset valido."""
+    """
+    Imposta una nuova password usando un token di reset valido.
+    
+    Questa funzione decodifica il token di reset ricevuto via email
+    e permette all'utente di impostare una nuova password senza
+    conoscere quella attuale.
+    
+    Args:
+        payload: Oggetto ResetPasswordRequest con token e nuova password
+        
+    Returns:
+        dict: Messaggio di conferma del reset password
+        
+    Raises:
+        HTTPException: In caso di token non valido, password debole o errori
+    """
     try:
-        # Decodifica token
+        # Decodifica del token di reset
         from jose import jwt
         from backend.router_profile.cookies_login import SECRET_KEY, ALGORITHM
         data = jwt.decode(payload.token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -165,9 +270,11 @@ async def reset_password(payload: ResetPasswordRequest):
         if not email:
             raise HTTPException(status_code=400, detail="Token non valido")
 
+        # Validazione della robustezza della nuova password
         if not validate_password(payload.new_password):
             raise HTTPException(status_code=400, detail="La nuova password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero")
 
+        # Hash e aggiornamento della nuova password
         hashed = pwd_context.hash(payload.new_password)
         execute_query("UPDATE account SET password = %s WHERE email = %s", (hashed, email), commit=True)
         return {"message": "Password reimpostata con successo"}
@@ -176,8 +283,23 @@ async def reset_password(payload: ResetPasswordRequest):
 
 @router_account_profile.get('/preferences')
 async def get_preferences(account_id: int = Query(..., gt=0)):
+    """
+    Recupera le preferenze dell'utente per notifiche e privacy.
+    
+    Questa funzione crea automaticamente la tabella delle preferenze
+    se non esiste e restituisce le preferenze salvate o valori di default.
+    
+    Args:
+        account_id: ID dell'account per cui recuperare le preferenze
+        
+    Returns:
+        dict: Dizionario con preferenze per notifiche e privacy
+        
+    Raises:
+        HTTPException: In caso di errori nel recupero delle preferenze
+    """
     try:
-        # Per semplicità, memorizziamo preferenze in una tabella JSON per account
+        # Creazione automatica della tabella delle preferenze se non esiste
         create_table = """
             CREATE TABLE IF NOT EXISTS account_preferences (
                 account_id INT PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
@@ -188,16 +310,37 @@ async def get_preferences(account_id: int = Query(..., gt=0)):
         """
         execute_query(create_table, commit=True)
 
+        # Recupero delle preferenze esistenti o restituzione di valori di default
         res = execute_query("SELECT notifications, privacy FROM account_preferences WHERE account_id = %s", (account_id,))
         if not res:
-            return {"notifications": {"reminders": True, "testResults": True, "newsletter": False}, "privacy": {"shareWithDoctors": True, "publicProfile": False}}
+            return {
+                "notifications": {"reminders": True, "testResults": True, "newsletter": False}, 
+                "privacy": {"shareWithDoctors": True, "publicProfile": False}
+            }
         return {"notifications": res[0][0], "privacy": res[0][1]}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero preferenze: {str(e)}")
 
 @router_account_profile.post('/preferences')
 async def save_preferences(account_id: int = Query(..., gt=0), payload: PreferencesPayload = None):
+    """
+    Salva le preferenze dell'utente per notifiche e privacy.
+    
+    Questa funzione crea automaticamente la tabella delle preferenze
+    se non esiste e salva o aggiorna le preferenze dell'utente.
+    
+    Args:
+        account_id: ID dell'account per cui salvare le preferenze
+        payload: Oggetto PreferencesPayload con le preferenze da salvare
+        
+    Returns:
+        dict: Messaggio di conferma del salvataggio
+        
+    Raises:
+        HTTPException: In caso di errori nel salvataggio delle preferenze
+    """
     try:
+        # Creazione automatica della tabella delle preferenze se non esiste
         create_table = """
             CREATE TABLE IF NOT EXISTS account_preferences (
                 account_id INT PRIMARY KEY REFERENCES account(id) ON DELETE CASCADE,
@@ -208,6 +351,7 @@ async def save_preferences(account_id: int = Query(..., gt=0), payload: Preferen
         """
         execute_query(create_table, commit=True)
 
+        # Upsert delle preferenze (inserimento o aggiornamento)
         upsert = """
             INSERT INTO account_preferences(account_id, notifications, privacy, updated_at)
             VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
@@ -217,6 +361,6 @@ async def save_preferences(account_id: int = Query(..., gt=0), payload: Preferen
                 updated_at = CURRENT_TIMESTAMP
         """
         execute_query(upsert, (account_id, payload.notifications, payload.privacy), commit=True)
-        return {"message": "Preferenze salvate"}
+        return {"message": "Preferenze salvate con successo"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel salvataggio preferenze: {str(e)}")

@@ -1,3 +1,18 @@
+"""
+Gestione completa dei profili dei pazienti.
+
+Questo modulo fornisce tutte le funzionalità necessarie per:
+- Registrazione di nuovi pazienti
+- Login e autenticazione dei pazienti
+- Modifica del profilo e immagine
+- Gestione dei dati sanitari (gruppo sanguigno, allergie, condizioni croniche)
+- Recupero statistiche e cronologia visite
+- Gestione sicura delle sessioni con token JWT
+
+Il sistema implementa misure di sicurezza avanzate
+incluso il blocco temporaneo degli account dopo tentativi falliti.
+"""
+
 from fastapi import APIRouter, HTTPException, Response, Query
 from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest, ModifyProfileRequest, HealthDataInput
 from backend.router_profile.account_profile import validate_password
@@ -7,24 +22,47 @@ from datetime import datetime, timedelta
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token
 import base64
 
+# Router per la gestione dei profili paziente
 router_patient_profile = APIRouter()
+
+# Contesto per la gestione delle password con bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router_patient_profile.post("/register")
 async def register(data: RegisterRequest):
+    """
+    Endpoint per la registrazione di nuovi pazienti.
+    
+    Questa funzione crea un nuovo account paziente nel sistema,
+    validando la password e verificando l'unicità dell'email.
+    Crea sia l'account base che il profilo paziente specifico.
+    
+    Args:
+        data: Oggetto RegisterRequest con i dati del nuovo paziente
+        
+    Returns:
+        dict: Messaggio di conferma e ID dell'account creato
+        
+    Raises:
+        HTTPException: In caso di password debole, email duplicata o errori
+    """
     try:
+        # Validazione della robustezza della password
         if not validate_password(data.password):
             raise HTTPException(
                 status_code=400,
                 detail="La password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero"
             )
 
+        # Verifica che l'email non sia già registrata
         check_email = """SELECT id FROM "account" WHERE email = %s"""
         if execute_query(check_email, (data.email,)):
             raise HTTPException(status_code=400, detail="Email già registrata")
 
+        # Hash della password per la sicurezza
         hashed_password = pwd_context.hash(data.password)
 
+        # Inserimento dell'account base
         reg_query = """
         INSERT INTO account (
             name, surname, email, password, sex, birth_date, role,
@@ -39,6 +77,7 @@ async def register(data: RegisterRequest):
             raise HTTPException(status_code=500, detail="Errore durante la creazione dell'utente")
         id_patient = result[0][0]
 
+        # Creazione del profilo paziente specifico
         reg_query = """INSERT INTO patient (id) VALUES (%s)"""
         execute_query(reg_query, (id_patient,), commit=True)
 
@@ -54,7 +93,29 @@ async def register(data: RegisterRequest):
 
 @router_patient_profile.post("/login")
 async def login(data: LoginRequest, response: Response):
+    """
+    Endpoint per il login dei pazienti.
+    
+    Questa funzione gestisce l'autenticazione completa dei pazienti:
+    1. Verifica dell'esistenza dell'account
+    2. Controllo del lockout temporaneo
+    3. Verifica della password
+    4. Reset dei tentativi falliti
+    5. Creazione e impostazione dei token JWT
+    6. Impostazione dei cookie sicuri
+    
+    Args:
+        data: Oggetto LoginRequest con email e password
+        response: Oggetto Response per impostare i cookie
+        
+    Returns:
+        dict: Messaggio di conferma e informazioni complete dell'account
+        
+    Raises:
+        HTTPException: In caso di account non trovato, bloccato, password errata o errori
+    """
     try:
+        # Recupero informazioni complete dell'account paziente
         query = """
         SELECT account.id, name, surname, email, password, profile_img, last_login_attempt, failed_attempts, phone, birth_date, sex
         FROM account JOIN patient ON account.id = patient.id
@@ -70,6 +131,7 @@ async def login(data: LoginRequest, response: Response):
         last_attempt = account[6]
         failed_attempts = account[7] or 0
 
+        # Controllo del lockout temporaneo (15 minuti dopo 5 tentativi falliti)
         if failed_attempts >= 5 and last_attempt:
             lockout_time = last_attempt + timedelta(minutes=15)
             if datetime.now() < lockout_time:
@@ -78,7 +140,9 @@ async def login(data: LoginRequest, response: Response):
                     detail=f"Account temporaneamente bloccato. Riprova dopo {lockout_time}"
                 )
 
+        # Verifica della password
         if not pwd_context.verify(data.password, db_password):
+            # Incrementa i tentativi falliti e aggiorna il timestamp
             update_attempts = """
             UPDATE "account" 
             SET failed_attempts = failed_attempts + 1,
@@ -88,6 +152,7 @@ async def login(data: LoginRequest, response: Response):
             execute_query(update_attempts, (data.email,), commit=True)
             raise HTTPException(status_code=401, detail="Password errata")
 
+        # Reset dei tentativi falliti dopo login riuscito
         reset_attempts = """
         UPDATE "account" 
         SET failed_attempts = 0,
@@ -96,10 +161,11 @@ async def login(data: LoginRequest, response: Response):
         """
         execute_query(reset_attempts, (data.email,), commit=True)
 
-        # Codifica immagine profilo in base64
+        # Conversione dell'immagine profilo in base64 per il frontend
         profile_img = account[5]
         profile_img_base64 = f"data:image/png;base64,{base64.b64encode(profile_img).decode()}" if profile_img else None
 
+        # Creazione del token di accesso con informazioni complete
         access_token = create_access_token({
             "sub": account[3],
             "id": account[0],
@@ -112,6 +178,7 @@ async def login(data: LoginRequest, response: Response):
             "sex": account[10]
         })
 
+        # Creazione del token di refresh
         refresh_token = create_refresh_token({
             "sub": account[3],
             "id": account[0],
@@ -122,25 +189,27 @@ async def login(data: LoginRequest, response: Response):
             "phone": account[8]
         })
 
+        # Impostazione dei cookie sicuri per l'autenticazione
         response.set_cookie(
             key="access_token",
             value=access_token,
-            httponly=True,
-            max_age=3600,
-            samesite="Strict",
-            secure=True,
+            httponly=True,           # Previene accesso JavaScript
+            max_age=3600,            # Scadenza 1 ora
+            samesite="Strict",       # Protezione CSRF
+            secure=True,              # Richiede HTTPS
             path="/"
         )
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
-            httponly=True,
-            max_age=7 * 24 * 3600,
-            samesite="Strict",
-            secure=True,
+            httponly=True,           # Previene accesso JavaScript
+            max_age=7 * 24 * 3600,  # Scadenza 7 giorni
+            samesite="Strict",       # Protezione CSRF
+            secure=True,              # Richiede HTTPS
             path="/"
         )
 
+        # Risposta con informazioni complete dell'account
         return {
             "message": "Login riuscito",
             "account": {
@@ -163,8 +232,25 @@ async def login(data: LoginRequest, response: Response):
 
 @router_patient_profile.post("/edit_profile")
 async def edit_profile(data: ModifyProfileRequest):
+    """
+    Endpoint per la modifica del profilo paziente.
+    
+    Questa funzione permette ai pazienti di aggiornare:
+    - Nome e cognome
+    - Numero di telefono
+    - Immagine del profilo (con conversione base64)
+    
+    Args:
+        data: Oggetto ModifyProfileRequest con i dati da aggiornare
+        
+    Returns:
+        dict: Messaggio di conferma dell'aggiornamento
+        
+    Raises:
+        HTTPException: In caso di errori durante l'aggiornamento
+    """
     try:
-        # Aggiorna i dati di base
+        # Aggiornamento dei dati di base (nome, cognome, telefono)
         query = """
             UPDATE account
             SET name = %s,
@@ -175,9 +261,10 @@ async def edit_profile(data: ModifyProfileRequest):
         params = (data.name, data.surname, data.phone, data.email)
         execute_query(query, params, commit=True)
 
-        # Aggiorna l'immagine se presente
+        # Gestione dell'immagine del profilo se presente
         if data.profile_img:
             try:
+                # Decodifica dell'immagine da base64 a bytes
                 img_bytes = base64.b64decode(data.profile_img.split(",")[-1])
                 query_img = "UPDATE account SET profile_img = %s WHERE email = %s"
                 execute_query(query_img, (img_bytes, data.email), commit=True)
@@ -185,17 +272,35 @@ async def edit_profile(data: ModifyProfileRequest):
                 raise HTTPException(status_code=400, detail="Errore durante la decodifica dell'immagine profilo")
         else:
             try:
+                # Rimozione dell'immagine profilo se non fornita
                 query_img = "UPDATE account SET profile_img = NULL WHERE email = %s"
                 execute_query(query_img, (data.email,), commit=True)
             except Exception as img_err:
                 raise HTTPException(status_code=400, detail="Errore durante la rimozione dell'immagine profilo")
-
 
         return {"message": "Dati aggiornati con successo"}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore durante l'aggiornamento: {str(e)}")
 
+@router_patient_profile.get("/get_last_visit")
+async def get_last_visit(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    """
+    Recupera la data dell'ultima visita del paziente.
+    
+    Questa funzione cerca l'ultimo appuntamento completato,
+    prenotato o cancellato per determinare quando il paziente
+    è stato visto l'ultima volta.
+    
+    Args:
+        patient_id: ID del paziente per cui recuperare l'ultima visita
+        
+    Returns:
+        dict: Dizionario con la data dell'ultima visita o 'N/A'
+        
+    Raises:
+        HTTPException: In caso di errori durante il recupero
+    """
     try:
         query = """
         SELECT MAX(date_time) FROM appointment
@@ -210,6 +315,25 @@ async def edit_profile(data: ModifyProfileRequest):
     
 @router_patient_profile.post("/update_health_data")
 async def update_health_data(data: HealthDataInput):
+    """
+    Aggiorna i dati sanitari di un paziente.
+    
+    Questa funzione permette di inserire o aggiornare:
+    - Gruppo sanguigno
+    - Allergie
+    - Condizioni croniche
+    
+    Utilizza UPSERT per gestire sia inserimenti che aggiornamenti.
+    
+    Args:
+        data: Oggetto HealthDataInput con i dati sanitari da aggiornare
+        
+    Returns:
+        dict: Messaggio di conferma dell'aggiornamento
+        
+    Raises:
+        HTTPException: In caso di errori durante l'aggiornamento
+    """
     try:
         query = """
         INSERT INTO patient (id, blood_type, allergies, chronic_conditions)
@@ -236,6 +360,21 @@ async def update_health_data(data: HealthDataInput):
     
 @router_patient_profile.get("/get_health_data")
 async def get_health_data(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    """
+    Recupera i dati sanitari di un paziente.
+    
+    Questa funzione restituisce tutte le informazioni sanitarie
+    memorizzate per un paziente specifico.
+    
+    Args:
+        patient_id: ID del paziente per cui recuperare i dati sanitari
+        
+    Returns:
+        dict: Dizionario con gruppo sanguigno, allergie e condizioni croniche
+        
+    Raises:
+        HTTPException: In caso di dati non trovati o errori
+    """
     try:
         query = """
         SELECT blood_type, allergies, chronic_conditions
@@ -257,6 +396,22 @@ async def get_health_data(patient_id: int = Query(..., gt=0, description="ID del
     
 @router_patient_profile.get("/get_stats")
 async def get_stats(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+    """
+    Recupera le statistiche complete di un paziente.
+    
+    Questa funzione fornisce un riepilogo completo dell'attività
+    medica del paziente, inclusi conteggi di appuntamenti e
+    informazioni sui dottori visitati.
+    
+    Args:
+        patient_id: ID del paziente per cui recuperare le statistiche
+        
+    Returns:
+        dict: Dizionario con tutte le statistiche dell'attività medica
+        
+    Raises:
+        HTTPException: In caso di errori durante il recupero delle statistiche
+    """
     try:
         query = """
             SELECT 

@@ -1,10 +1,27 @@
+"""
+Gestione completa degli appuntamenti per i pazienti.
+
+Questo modulo fornisce tutte le funzionalità necessarie per:
+- Prenotare appuntamenti disponibili
+- Cancellare appuntamenti prenotati
+- Visualizzare appuntamenti futuri e passati
+- Gestire lo stato degli appuntamenti
+- Recuperare informazioni complete sugli appuntamenti
+- Gestire il profilo sanitario per l'AI
+- Visualizzare slot liberi disponibili
+- Recuperare cronologia completa degli appuntamenti
+
+Il sistema gestisce la transizione degli stati degli appuntamenti
+da 'waiting' a 'booked' e viceversa, con controlli di sicurezza.
+"""
+
 from fastapi import APIRouter, HTTPException, Query, Body
 from typing import Optional, List
 from datetime import datetime
 from backend.connection import execute_query
 from backend.router_patient.pydantic.schemas import Appointment, BookAppointmentRequest
 
-
+# Router per la gestione degli appuntamenti dei pazienti
 router_appointments = APIRouter()
 
 @router_appointments.post("/book_appointment")

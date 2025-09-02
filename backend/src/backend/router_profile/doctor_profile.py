@@ -1,3 +1,18 @@
+"""
+Gestione completa dei profili dei dottori.
+
+Questo modulo fornisce tutte le funzionalità necessarie per:
+- Registrazione di nuovi dottori con specializzazione e sedi
+- Login e autenticazione dei dottori
+- Modifica del profilo, specializzazione e sedi di lavoro
+- Gestione dell'immagine del profilo
+- Visualizzazione appuntamenti e statistiche
+- Gestione sicura delle sessioni con token JWT
+
+Il sistema implementa misure di sicurezza avanzate
+incluso il blocco temporaneo degli account dopo tentativi falliti.
+"""
+
 from fastapi import APIRouter, HTTPException, Query, Response
 from backend.router_profile.pydantic.schemas import RegisterDoctorRequest, LoginRequest
 from backend.router_profile.account_profile import validate_password
@@ -8,28 +23,47 @@ import base64
 from backend.router_profile.pydantic.schemas import ModifyProfileRequest
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token
 
+# Router per la gestione dei profili dottore
 router_doctor_profile = APIRouter()
+
+# Contesto per la gestione delle password con bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router_doctor_profile.post("/register")
 async def register(data: RegisterDoctorRequest):
-    """Endpoint per registrare un nuovo dottore."""
+    """
+    Endpoint per la registrazione di nuovi dottori.
+    
+    Questa funzione crea un nuovo account dottore nel sistema,
+    validando la password e verificando l'unicità dell'email.
+    Crea l'account base, il profilo dottore specifico e le sedi di lavoro.
+    
+    Args:
+        data: Oggetto RegisterDoctorRequest con i dati del nuovo dottore
+        
+    Returns:
+        dict: Messaggio di conferma e ID dell'account creato
+        
+    Raises:
+        HTTPException: In caso di password debole, email duplicata o errori
+    """
     try:
-        # Validate password strength
+        # Validazione della robustezza della password
         if not validate_password(data.password):
             raise HTTPException(
                 status_code=400,
                 detail="La password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero"
             )
 
-        # Check if email already exists
+        # Verifica che l'email non sia già registrata
         check_email = """SELECT id FROM account WHERE email = %s"""
         if execute_query(check_email, (data.email,)):
             raise HTTPException(status_code=400, detail="Email già registrata")
 
-        # Hash password
+        # Hash della password per la sicurezza
         hashed_password = pwd_context.hash(data.password)
 
+        # Inserimento dell'account base
         reg_query = """
         INSERT INTO account (
             name, surname, email, password, sex, role,
@@ -45,6 +79,7 @@ async def register(data: RegisterDoctorRequest):
             raise HTTPException(status_code=500, detail="Errore durante la creazione dell'utente")
         id_doctor = result[0][0]
 
+        # Creazione del profilo dottore specifico
         reg_query = """
         INSERT INTO doctor (
             id, specialization
@@ -54,6 +89,7 @@ async def register(data: RegisterDoctorRequest):
         params = (id_doctor, data.specialization)
         execute_query(reg_query, params, commit=True)
 
+        # Inserimento delle sedi di lavoro del dottore
         reg_query = """
         INSERT INTO location (
             doctor_id, address, latitude, longitude
@@ -64,7 +100,6 @@ async def register(data: RegisterDoctorRequest):
             params = (id_doctor, loc.address, loc.latitude, loc.longitude)
             execute_query(reg_query, params, commit=True)
 
-    
         return {
             "message": "Registrazione completata con successo",
             "account_id": id_doctor
@@ -77,10 +112,32 @@ async def register(data: RegisterDoctorRequest):
 
 @router_doctor_profile.post("/login")
 async def login(data: LoginRequest, response: Response):
+    """
+    Endpoint per il login dei dottori.
+    
+    Questa funzione gestisce l'autenticazione completa dei dottori:
+    1. Verifica dell'esistenza dell'account
+    2. Controllo del lockout temporaneo
+    3. Verifica della password
+    4. Reset dei tentativi falliti
+    5. Recupero specializzazione e sedi di lavoro
+    6. Creazione e impostazione dei token JWT
+    7. Impostazione dei cookie sicuri
+    
+    Args:
+        data: Oggetto LoginRequest con email e password
+        response: Oggetto Response per impostare i cookie
+        
+    Returns:
+        dict: Messaggio di conferma e informazioni complete dell'account
+        
+    Raises:
+        HTTPException: In caso di account non trovato, bloccato, password errata o errori
+    """
     try:
         print(f"Tentativo di login per email: {data.email}")
         
-        # 1) Account base
+        # 1) Recupero informazioni base dell'account dottore
         query_account = """
         SELECT a.id, a.name, a.surname, a.email, a.password, a.profile_img,
                a.last_login_attempt, a.failed_attempts, a.phone, a.role
@@ -106,7 +163,7 @@ async def login(data: LoginRequest, response: Response):
         phone = account[8]
         role = account[9]
 
-        # 2) Controllo lockout
+        # 2) Controllo del lockout temporaneo (15 minuti dopo 5 tentativi falliti)
         if failed_attempts >= 5 and last_attempt:
             lockout_time = last_attempt + timedelta(minutes=15)
             if datetime.now() < lockout_time:
@@ -115,12 +172,13 @@ async def login(data: LoginRequest, response: Response):
                     detail=f"Account temporaneamente bloccato. Riprova dopo {lockout_time}"
                 )
 
-        # 3) Verifica password
+        # 3) Verifica della password
         print(f"Verifica password per email: {data.email}")
         print(f"Password nel DB (primi 10 caratteri): {db_password[:10] if db_password else 'None'}")
         
         if not pwd_context.verify(data.password, db_password):
             print(f"Password errata per email: {data.email}")
+            # Incrementa i tentativi falliti e aggiorna il timestamp
             execute_query(
                 "UPDATE account SET failed_attempts = failed_attempts + 1, last_login_attempt = CURRENT_TIMESTAMP WHERE email = %s",
                 (data.email,), commit=True
@@ -129,22 +187,24 @@ async def login(data: LoginRequest, response: Response):
         
         print(f"Password corretta per email: {data.email}")
 
-        # Reset tentativi falliti
+        # Reset dei tentativi falliti dopo login riuscito
         execute_query(
             "UPDATE account SET failed_attempts = 0, last_login_attempt = CURRENT_TIMESTAMP WHERE email = %s",
             (data.email,), commit=True
         )
 
-        # 4) Specialization e addresses (solo per doctor)
+        # 4) Recupero specializzazione e indirizzi delle sedi di lavoro
         specialization = None
         addresses = []
         if role == "doctor":
             print(f"Recupero dati dottore per ID: {account_id}")
             
+            # Recupero della specializzazione medica
             res_doc = execute_query("SELECT specialization FROM doctor WHERE id = %s", (account_id,))
             specialization = res_doc[0][0] if res_doc else None
             print(f"Specializzazione: {specialization}")
 
+            # Recupero delle sedi di lavoro con coordinate geografiche
             res_loc = execute_query("""
                 SELECT address, latitude, longitude
                 FROM location
@@ -153,6 +213,7 @@ async def login(data: LoginRequest, response: Response):
             """, (account_id,))
             print(f"Locations trovate: {res_loc}")
             
+            # Formattazione degli indirizzi per il frontend
             addresses = [
                 {
                     "address": r[0],
@@ -163,13 +224,13 @@ async def login(data: LoginRequest, response: Response):
             ]
             print(f"Addresses processate: {addresses}")
 
-        # 5) Immagine profilo in base64
+        # 5) Conversione dell'immagine profilo in base64 per il frontend
         profile_img_base64 = (
             f"data:image/png;base64,{base64.b64encode(profile_img).decode()}"
             if profile_img else None
         )
 
-        # 6) Payload per i token
+        # 6) Preparazione del payload per i token JWT
         token_payload = {
             "sub": email,
             "id": account_id,
@@ -182,31 +243,31 @@ async def login(data: LoginRequest, response: Response):
             "addresses": addresses
         }
 
-        # 7) Crea i token
+        # 7) Creazione dei token JWT (access e refresh)
         access_token = create_access_token(token_payload.copy())
         refresh_token = create_refresh_token(token_payload.copy())
 
-        # 8) Imposta i cookie
+        # 8) Impostazione dei cookie sicuri per l'autenticazione
         response.set_cookie(
             key="access_token",
             value=access_token,
-            httponly=True,
-            max_age=3600,
-            samesite="Strict",
-            secure=False,  # Cambiare a True in produzione
+            httponly=True,           # Previene accesso JavaScript
+            max_age=3600,            # Scadenza 1 ora
+            samesite="Strict",       # Protezione CSRF
+            secure=False,             # Cambiare a True in produzione con HTTPS
             path="/"
         )
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
-            httponly=True,
-            max_age=7 * 24 * 3600,
-            samesite="Strict",
-            secure=False,  # Cambiare a True in produzione
+            httponly=True,           # Previene accesso JavaScript
+            max_age=7 * 24 * 3600,  # Scadenza 7 giorni
+            samesite="Strict",       # Protezione CSRF
+            secure=False,             # Cambiare a True in produzione con HTTPS
             path="/"
         )
 
-        # 9) Risposta JSON identica a /me
+        # 9) Risposta JSON con informazioni complete dell'account
         return {
             "message": "Login riuscito",
             "account": {
@@ -233,8 +294,27 @@ async def login(data: LoginRequest, response: Response):
 
 @router_doctor_profile.post("/edit_profile")
 async def edit_profile(data: ModifyProfileRequest):
+    """
+    Endpoint per la modifica del profilo dottore.
+    
+    Questa funzione permette ai dottori di aggiornare:
+    - Nome e cognome
+    - Numero di telefono
+    - Specializzazione medica
+    - Sedi di lavoro (aggiunta di nuove sedi)
+    - Immagine del profilo (con conversione base64)
+    
+    Args:
+        data: Oggetto ModifyProfileRequest con i dati da aggiornare
+        
+    Returns:
+        dict: Messaggio di conferma dell'aggiornamento
+        
+    Raises:
+        HTTPException: In caso di errori durante l'aggiornamento
+    """
     try:
-        # Aggiorna i dati di base
+        # Aggiornamento dei dati di base (nome, cognome, telefono)
         query = """
             UPDATE account
             SET name = %s,
@@ -245,6 +325,7 @@ async def edit_profile(data: ModifyProfileRequest):
         params = (data.name, data.surname, data.phone, data.email)
         execute_query(query, params, commit=True)
 
+        # Aggiornamento della specializzazione medica
         query = """
             UPDATE doctor
             SET specialization = %s
@@ -253,15 +334,15 @@ async def edit_profile(data: ModifyProfileRequest):
         params = (data.specialization, data.email)
         execute_query(query, params, commit=True)
 
-        # Aggiungi solo le nuove location (non rimuovere quelle esistenti)
+        # Gestione delle sedi di lavoro (aggiunta di nuove sedi senza rimuovere quelle esistenti)
         if data.addresses is not None and len(data.addresses) > 0:
-            # Trova l'id del doctor
+            # Recupero dell'ID del dottore
             res = execute_query("SELECT id FROM account WHERE email = %s", (data.email,))
             if not res:
                 raise HTTPException(status_code=404, detail="Utente non trovato")
             doctor_id = res[0][0]
 
-            # Ottieni le location esistenti
+            # Recupero delle sedi di lavoro esistenti per evitare duplicati
             existing_locations = execute_query(
                 "SELECT address, latitude, longitude FROM location WHERE doctor_id = %s",
                 (doctor_id,)
@@ -270,7 +351,7 @@ async def edit_profile(data: ModifyProfileRequest):
             for loc in existing_locations or []:
                 existing_addresses.add((loc[0], loc[1], loc[2]))
 
-            # Inserisci solo le nuove location (non duplicate)
+            # Inserimento solo delle nuove sedi (evitando duplicati)
             insert_loc = """
                 INSERT INTO location (doctor_id, address, latitude, longitude)
                 VALUES (%s, %s, %s, %s)
@@ -290,9 +371,10 @@ async def edit_profile(data: ModifyProfileRequest):
                         print(f"DEBUG: Errore inserimento location (probabilmente duplicato): {e}")
                         pass
 
-        # Aggiorna l'immagine se presente
+        # Gestione dell'immagine del profilo se presente
         if data.profile_img:
             try:
+                # Decodifica dell'immagine da base64 a bytes
                 img_bytes = base64.b64decode(data.profile_img.split(",")[-1])
                 query_img = "UPDATE account SET profile_img = %s WHERE email = %s"
                 execute_query(query_img, (img_bytes, data.email), commit=True)
@@ -300,11 +382,11 @@ async def edit_profile(data: ModifyProfileRequest):
                 raise HTTPException(status_code=400, detail="Errore durante la decodifica dell'immagine profilo")
         else:
             try:
+                # Rimozione dell'immagine profilo se non fornita
                 query_img = "UPDATE account SET profile_img = NULL WHERE email = %s"
                 execute_query(query_img, (data.email,), commit=True)
             except Exception as img_err:
                 raise HTTPException(status_code=400, detail="Errore durante la rimozione dell'immagine profilo")
-
 
         return {"message": "Dati aggiornati con successo"}
 
@@ -313,7 +395,24 @@ async def edit_profile(data: ModifyProfileRequest):
 
 @router_doctor_profile.get("/appointments")
 async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description="ID del dottore")):
-    """Restituisce tutti gli appuntamenti del dottore (futuri e passati)."""
+    """
+    Recupera tutti gli appuntamenti di un dottore.
+    
+    Questa funzione restituisce tutti gli appuntamenti (futuri e passati)
+    per un dottore specifico, includendo informazioni complete su:
+    - Dettagli dell'appuntamento (data, ora, prezzo, stato)
+    - Sede di lavoro (indirizzo, città)
+    - Informazioni del paziente (se presente)
+    
+    Args:
+        doctor_id: ID del dottore per cui recuperare gli appuntamenti
+        
+    Returns:
+        dict: Dizionario contenente la lista degli appuntamenti
+        
+    Raises:
+        HTTPException: In caso di errori nel recupero degli appuntamenti
+    """
     try:
         query = """
         SELECT
@@ -334,6 +433,8 @@ async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description=
         ORDER BY a.date_time DESC
         """
         raw_result = execute_query(query, (doctor_id,))
+        
+        # Mappatura delle colonne del database ai nomi dei campi
         columns = [
             "appointment_id", "date_time", "price", "status", "address", "city",
             "patient_id", "patient_name", "patient_surname"
@@ -345,6 +446,22 @@ async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description=
     
 @router_doctor_profile.get("/get_stats")
 async def get_stats(doctor_id: int = Query(..., gt=0, description="ID del dottore")):
+    """
+    Recupera le statistiche complete di un dottore.
+    
+    Questa funzione fornisce un riepilogo completo dell'attività
+    medica del dottore, inclusi conteggi di appuntamenti e
+    informazioni sui pazienti visitati.
+    
+    Args:
+        doctor_id: ID del dottore per cui recuperare le statistiche
+        
+    Returns:
+        dict: Dizionario con tutte le statistiche dell'attività medica
+        
+    Raises:
+        HTTPException: In caso di errori durante il recupero delle statistiche
+    """
     try:
         query = """
             SELECT

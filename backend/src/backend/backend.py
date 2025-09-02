@@ -30,7 +30,7 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# ✅ CORS - DEVE ESSERE L'ULTIMO middleware per funzionare correttamente
+# CORS - DEVE ESSERE L'ULTIMO middleware per funzionare correttamente
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=r"^http://(localhost|127\.0\.0\.1)(:\d+)?$",
@@ -76,11 +76,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         return response
 
-# ✅ Middleware di logging (solo in dev)
+# Middleware di logging (solo in dev)
 if ENVIRONMENT == "development":
     app.add_middleware(LoggingMiddleware)
 
-# ✅ Middleware per redirect HTTPS e host trust solo in prod
+# Middleware per redirect HTTPS e host trust solo in prod
 if ENVIRONMENT == "production":
     app.add_middleware(
         TrustedHostMiddleware,
@@ -88,10 +88,10 @@ if ENVIRONMENT == "production":
     )
     app.add_middleware(HTTPSRedirectMiddleware)
 
-# ✅ Middleware per headers di sicurezza
+# Middleware per headers di sicurezza
 # app.add_middleware(SecurityHeadersMiddleware)
 
-# ✅ Health check semplice
+# Health check semplice
 @app.get("/health")
 async def health_check():
     return {
@@ -100,7 +100,7 @@ async def health_check():
         "timestamp": time.time()
     }
 
-# ✅ Include i router
+# Include i router
 app.include_router(router_profile, prefix="/profile", tags=["generic"])
 app.include_router(router_patient, prefix="/patient", tags=["patient"])
 app.include_router(router_doctor, prefix="/doctor", tags=["doctor"])
