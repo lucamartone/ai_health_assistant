@@ -1,8 +1,8 @@
-# 🚀 Setup su Nuova Macchina - MediFlow
+# Setup su Nuova Macchina - MediFlow
 
 Questa guida ti mostra come configurare MediFlow su una nuova macchina in pochi minuti.
 
-## 📋 Prerequisiti
+## Prerequisiti
 
 1. **Docker** installato
 2. **Docker Compose** installato
@@ -10,42 +10,36 @@ Questa guida ti mostra come configurare MediFlow su una nuova macchina in pochi 
 4. **5GB di spazio disco** libero
 5. **Connessione internet** (solo per il primo avvio)
 
-## ⚡ Setup Rapido
+## Setup Rapido
 
-### 1. Clona il repository
+### 1. Avvia tutto con un comando
 ```bash
-git clone <repository-url>
-cd ai_health_assistant
+docker-compose up --build
 ```
 
-### 2. Avvia tutto con un comando
-```bash
-docker-compose up -d
-```
-
-### 3. Aspetta il completamento
+### 2. Aspetta il completamento
 Il sistema impiegherà circa **5-10 minuti** per:
 - Scaricare le immagini Docker
 - Avviare il database PostgreSQL
 - Scaricare il modello AI llama3.2 (2GB)
 - Configurare tutti i servizi
 
-### 4. Verifica il setup
+### 3. Verifica il setup
 ```bash
 python test_setup.py
 ```
 
-### 5. Accedi all'applicazione
+### 4. Accedi all'applicazione
 Apri il browser e vai su: **http://localhost**
 
-## 🎯 Cosa succede automaticamente
+## Cosa succede automaticamente
 
 1. **Database**: Si avvia con dati di test preconfigurati
 2. **Backend**: API FastAPI per gestire l'applicazione
 3. **Ollama**: Scarica automaticamente il modello llama3.2
-4. **Frontend**: Interfaccia React moderna e responsive
+4. **Frontend**: Interfaccia React moderna 
 
-## 👥 Credenziali di Accesso
+## Credenziali di Accesso
 
 ### Paziente
 - Email: `patient@test.com`
@@ -56,10 +50,17 @@ Apri il browser e vai su: **http://localhost**
 - Password: `password123`
 
 ### Admin
-- Email: `admin@test.com`
+- Email: `admin@mediflow.com`
 - Password: `admin123`
 
-## 🔍 Verifica del Setup
+**Nota importante per l'accesso admin**: 
+- L'account amministratore viene creato automaticamente durante l'inizializzazione del database
+- Utilizza le credenziali specifiche per l'amministratore
+- L'accesso admin ti permette di gestire le richieste di registrazione dei dottori
+- Puoi approvare o rifiutare le nuove richieste di registrazione
+- Hai accesso completo al sistema di amministrazione
+
+## Verifica del Setup
 
 ### Controlla lo stato dei container
 ```bash
@@ -67,6 +68,8 @@ docker-compose ps
 ```
 
 Dovresti vedere tutti i container con status "Up" e Ollama con "healthy".
+
+**Nota**: L'account amministratore (`admin@mediflow.com`) viene creato automaticamente e sarà disponibile per l'accesso.
 
 ### Controlla i log
 ```bash
@@ -91,7 +94,7 @@ curl -X POST http://localhost:11434/api/generate \
   -d '{"model": "llama3.2", "prompt": "Ciao!", "stream": false}'
 ```
 
-## 🛠️ Comandi Utili
+## Comandi Utili
 
 ```bash
 # Ferma tutto
@@ -150,7 +153,7 @@ docker-compose restart database
 docker-compose logs database
 ```
 
-## 📊 Monitoraggio
+## Monitoraggio
 
 ### Stato dei servizi
 ```bash
@@ -167,14 +170,14 @@ docker-compose logs -f
 docker stats
 ```
 
-## 🎉 Successo!
+## Successo!
 
 Se tutto funziona correttamente:
 
-1. ✅ Tutti i container sono "Up"
-2. ✅ Ollama è "healthy"
-3. ✅ Il test setup passa tutti i controlli
-4. ✅ L'applicazione è accessibile su http://localhost
+1. Tutti i container sono "Up"
+2. Ollama è "healthy"
+3. Il test setup passa tutti i controlli
+4. L'applicazione è accessibile su http://localhost
 
 **Congratulazioni!** Il tuo assistente sanitario AI è pronto per l'uso!
 
