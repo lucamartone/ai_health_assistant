@@ -23,7 +23,7 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8001")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
 app = FastAPI(
-    title="MediFlow API",
+    title="MedFlow API",
     description="API per l'assistente sanitario AI",
     version="1.0.0",
     docs_url="/docs",

@@ -80,7 +80,7 @@ function Index() {
         {
             name: "Maria Rossi",
             role: "Paziente",
-            content: "MediFlow ha semplificato completamente la gestione delle mie visite mediche. Fantastico!",
+            content: "MedFlow ha semplificato completamente la gestione delle mie visite mediche. Fantastico!",
             rating: 5
         },
         {
@@ -161,7 +161,7 @@ function Index() {
                         className="text-center mb-16"
                     >
                         <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-                            Perché Scegliere MediFlow
+                            Perché Scegliere MedFlow
                         </h2>
                         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
                             Scopri i vantaggi di una piattaforma sanitaria moderna e affidabile
@@ -207,7 +207,7 @@ function Index() {
                             Cosa Dicono i Nostri Utenti
                         </h2>
                         <p className="text-xl text-blue-100">
-                            Le esperienze di chi ha già scelto MediFlow
+                            Le esperienze di chi ha già scelto MedFlow
                         </p>
                     </motion.div>
 
@@ -252,7 +252,7 @@ function Index() {
                             Inizia Oggi la Tua Esperienza
                         </h2>
                         <p className="text-xl text-blue-100 mb-8">
-                            Unisciti a migliaia di persone che hanno già scelto MediFlow 
+                            Unisciti a migliaia di persone che hanno già scelto MedFlow 
                             per la loro salute digitale.
                         </p>
                         <motion.button

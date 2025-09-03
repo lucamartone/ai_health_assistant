@@ -1,5 +1,5 @@
 """
-Router per le funzionalità di amministrazione del sistema MediFlow.
+Router per le funzionalità di amministrazione del sistema MedFlow.
 
 Questo modulo fornisce tutte le funzionalità necessarie per:
 - Autenticazione degli amministratori
@@ -79,7 +79,7 @@ async def admin_login(request: AdminLoginRequest):
     """
     try:
         # Credenziali hardcoded per semplicità (da sostituire in produzione)
-        if request.email == "admin@mediflow.com" and request.password == "admin123":
+        if request.email == "admin@medsflow.com" and request.password == "admin123":
             return {
                 "message": "Login admin riuscito",
                 "admin": {

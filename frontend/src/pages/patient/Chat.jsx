@@ -87,7 +87,7 @@ const Chat = () => {
       try {
         const status = await checkLLMStatus();
         setOllamaStatus(status);
-        console.log('🤖 Stato Ollama:', status);
+        console.log(' Stato Ollama:', status);
       } catch (error) {
         console.error('❌ Errore nel controllo dello stato Ollama:', error);
         setOllamaStatus({ status: 'error', error: error.message });
@@ -187,9 +187,9 @@ const Chat = () => {
 
       const userContext = getUserContext();
       
-      console.log('📚 Cronologia completa inviata all\'AI:', messageHistory);
-      console.log('👤 User Context inviato all\'AI:', userContext);
-      console.log('🔢 Numero messaggi nella cronologia:', messageHistory.length);
+      console.log('Cronologia completa inviata all\'AI:', messageHistory);
+      console.log('User Context inviato all\'AI:', userContext);
+      console.log('Numero messaggi nella cronologia:', messageHistory.length);
 
       const response = await ask(
         input.trim(),

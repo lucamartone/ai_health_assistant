@@ -87,7 +87,7 @@ function About() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
             >
-              MediFlow è la piattaforma che rivoluziona l'assistenza sanitaria digitale, 
+              MedFlow è la piattaforma che rivoluziona l'assistenza sanitaria digitale, 
               mettendo la tecnologia al servizio della salute di tutti.
             </motion.p>
           </motion.div>
@@ -272,7 +272,7 @@ function About() {
               Inizia Oggi la Tua Esperienza
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              Unisciti a migliaia di persone che hanno già scelto MediFlow 
+              Unisciti a migliaia di persone che hanno già scelto MedFlow 
               per la loro salute digitale.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

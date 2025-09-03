@@ -139,12 +139,12 @@ const Sidebar = ({ conversations, activeConversation, onNewChat, onSelectChat, o
         >
           <img 
             src="/favicon.png" 
-            alt="MediFlow Logo" 
+            alt="MedFlow Logo" 
             className="w-8 h-8 sm:w-10 sm:h-10 transition-transform group-hover:scale-110"
           />
           {!isCollapsed && (
             <h1 className="text-xl font-bold whitespace-nowrap bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
-              MediFlow
+              MedFlow
             </h1>
           )}
         </div>

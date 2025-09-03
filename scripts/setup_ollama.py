@@ -91,7 +91,7 @@ async def test_model(model_name: str):
 
 async def main():
     """Funzione principale"""
-    print("🚀 Setup Ollama per MediFlow")
+    print("Setup Ollama per MedFlow")
     print("=" * 40)
     
     # Verifica che Ollama sia in esecuzione

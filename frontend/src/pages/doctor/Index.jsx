@@ -90,7 +90,7 @@ function Index() {
         {
             name: "Dr. Marco Rossi",
             role: "Cardiologo",
-            content: "MediFlow ha rivoluzionato la gestione del mio studio. Tutto è più organizzato e veloce.",
+            content: "MedFlow ha rivoluzionato la gestione del mio studio. Tutto è più organizzato e veloce.",
             rating: 5
         },
         {
@@ -171,7 +171,7 @@ function Index() {
                         className="text-center mb-16"
                     >
                         <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-                            Perché Scegliere MediFlow
+                            Perché Scegliere MedFlow
                         </h2>
                         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
                             Scopri i vantaggi di una piattaforma sanitaria moderna per professionisti
@@ -217,7 +217,7 @@ function Index() {
                             Cosa Dicono i Nostri Medici
                         </h2>
                         <p className="text-xl text-blue-100">
-                            Le esperienze di chi ha già scelto MediFlow
+                            Le esperienze di chi ha già scelto MedFlow
                         </p>
                     </motion.div>
 
@@ -262,7 +262,7 @@ function Index() {
                             Inizia Oggi la Tua Esperienza
                         </h2>
                         <p className="text-xl text-blue-100 mb-8">
-                            Unisciti a centinaia di medici che hanno già scelto MediFlow 
+                            Unisciti a centinaia di medici che hanno già scelto MedFlow 
                             per la gestione della loro pratica professionale.
                         </p>
                         <motion.button
