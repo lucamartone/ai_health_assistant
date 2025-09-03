@@ -13,14 +13,13 @@ Il sistema implementa misure di sicurezza avanzate
 incluso il blocco temporaneo degli account dopo tentativi falliti.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from backend.router_profile.pydantic.schemas import DoctorAppointmentsRequest, DoctorInfo, DoctorInfoRequest, RegisterDoctorRequest, LoginRequest
+from fastapi import APIRouter, Depends, HTTPException, Response
+from backend.router_profile.pydantic.schemas import DoctorInfoRequest, RegisterDoctorRequest, LoginRequest, ModifyProfileRequest
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import base64
-from backend.router_profile.pydantic.schemas import ModifyProfileRequest
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token
 
 # Router per la gestione dei profili dottore

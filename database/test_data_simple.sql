@@ -5,7 +5,7 @@ INSERT INTO account (name, surname, email, password, sex, birth_date, role, crea
 ('Admin', 'Sistema', 'admin@mediflow.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'M', '1980-01-01', 'admin', '2020-01-01')
 ON CONFLICT (email) DO NOTHING;
 
--- Account (con ID esplicito)
+-- Account
 INSERT INTO account (name, surname, email, password, sex, birth_date, role, created_at) VALUES
 ('Dottore', 'Test', 'dottore@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'M', '1980-01-01', 'doctor', '2020-01-01'),
 ('Paziente', 'Test', 'paziente@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'F', '1990-01-01', 'patient', '2022-01-01'),

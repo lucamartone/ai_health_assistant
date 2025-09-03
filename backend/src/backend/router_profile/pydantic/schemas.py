@@ -8,12 +8,12 @@ I modelli garantiscono la validazione dei dati e la consistenza
 delle informazioni scambiate tra frontend e backend.
 """
 
-from fastapi.params import Depends
+from fastapi.params import Cookie, Depends
 from pydantic import BaseModel, EmailStr
 from typing import List, Literal, Optional
 from datetime import date
 
-from backend.src.backend.router_profile.cookies_login import get_current_account
+from backend.router_profile.cookies_login import get_current_account
 
 class LocationData(BaseModel):
     """
@@ -157,7 +157,7 @@ class RefreshRequest(BaseModel):
     Definisce il token di refresh necessario
     per ottenere un nuovo access token.
     """
-    refresh_token: str                       # Token di refresh
+    refresh_token: str = Cookie(None)                      # Token di refresh
 
 class DoctorInfoRequest(BaseModel):
     """
@@ -166,10 +166,9 @@ class DoctorInfoRequest(BaseModel):
     """
     doctor_id: int                          # ID del dottore
 
-class DoctorInfoRequest(BaseModel):
+class PatientInfoRequest(BaseModel):
     """
     Modello per fornire l'id paziente.
     
     """
-    patient_id: int                          # ID del dottore
-    
+    patient_id: int                          # ID del dottore                     # ID del paziente

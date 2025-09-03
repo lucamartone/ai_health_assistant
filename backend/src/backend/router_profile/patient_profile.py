@@ -14,15 +14,13 @@ incluso il blocco temporaneo degli account dopo tentativi falliti.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Response, Query
-from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest, ModifyProfileRequest, HealthDataInput
+from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest, ModifyProfileRequest, HealthDataInput, PatientInfoRequest
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token
 import base64
-
-from backend.src.backend.router_patient.pydantic.schemas import PatientInfoRequest
 
 # Router per la gestione dei profili paziente
 router_patient_profile = APIRouter()
