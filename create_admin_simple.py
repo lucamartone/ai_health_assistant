@@ -102,7 +102,7 @@ def create_admin():
             print("\n🔌 Connessione chiusa")
 
 if __name__ == "__main__":
-    print("🚀 Creazione Admin Semplice")
+    print(" Creazione Admin Semplice")
     print("=" * 40)
     create_admin()
     print("\n✨ Script completato!") 

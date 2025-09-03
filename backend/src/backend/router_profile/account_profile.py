@@ -17,7 +17,7 @@ from fastapi import APIRouter, HTTPException, Response, Depends, Query
 from datetime import datetime, timedelta
 from backend.connection import execute_query
 from pydantic import EmailStr
-from backend.router_profile.pydantic.schemas import ChangePasswordRequest, ResetPasswordRequest, PreferencesPayload
+from backend.router_profile.pydantic.schemas import ChangePasswordRequest, ResetPasswordRequest, PreferencesPayload, DeleteRequest
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token, get_current_account
 from backend.utils.email_service import send_password_reset_email
 from passlib.context import CryptContext
@@ -56,11 +56,7 @@ def validate_password(password: str) -> bool:
     return True
 
 @router_account_profile.delete("/delete_account") 
-async def delete_account(
-    email: EmailStr = Query(..., description="Email dell'account da eliminare"),
-    password: str = Query(..., description="Password attuale per la verifica"),
-    current_account: dict = Depends(get_current_account)
-):
+async def delete_account(data: DeleteRequest):
     """
     Endpoint per eliminare un account utente in modo sicuro.
     
@@ -81,22 +77,22 @@ async def delete_account(
     """
     try:
         # Verifica che l'utente stia eliminando il proprio account
-        if current_account["email"] != email:
+        if data.current_account["email"] != data.email:
             raise HTTPException(status_code=403, detail="Non autorizzato a eliminare questo account")
 
         # Verifica della password per confermare l'identità
         query = """SELECT password FROM "account" WHERE email = %s"""
-        result = execute_query(query, (email,))
+        result = execute_query(query, (data.email,))
         
         if not result:
             raise HTTPException(status_code=404, detail="Utente non trovato")
             
-        if not pwd_context.verify(password, result[0][0]):
+        if not pwd_context.verify(data.password, result[0][0]):
             raise HTTPException(status_code=401, detail="Password non valida")
 
         # Recupero dell'ID dell'account per le operazioni di eliminazione
-        select_id_account = """SELECT id FROM "account"" WHERE email = %s"""
-        res = execute_query(select_id_account, (email,))
+        select_id_account = """SELECT id FROM "account" WHERE email = %s"""
+        res = execute_query(select_id_account, (data.email,))
         account_id = res[0][0]
 
         # Eliminazione in ordine corretto per mantenere l'integrità referenziale
@@ -114,6 +110,7 @@ async def delete_account(
         raise he
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore durante l'eliminazione dell'account: {str(e)}")
+    
 
 @router_account_profile.post("/logout")
 async def logout(response: Response):
@@ -146,6 +143,7 @@ async def logout(response: Response):
         samesite="Strict"
     )
     return {"message": "Logout effettuato con successo"}
+
 
 @router_account_profile.post("/change_password")
 async def change_password(data: ChangePasswordRequest):
@@ -200,6 +198,7 @@ async def change_password(data: ChangePasswordRequest):
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Errore durante il cambio password: {str(e)}")
     
+    
 @router_account_profile.post("/request_password_reset")
 async def request_password_reset(email: EmailStr):
     """
@@ -244,7 +243,7 @@ async def request_password_reset(email: EmailStr):
         raise HTTPException(status_code=400, detail=f"Errore durante la richiesta di reset password: {str(e)}")
 
 @router_account_profile.post("/reset_password")
-async def reset_password(payload: ResetPasswordRequest):
+async def reset_password(data: ResetPasswordRequest):
     """
     Imposta una nuova password usando un token di reset valido.
     
@@ -265,21 +264,22 @@ async def reset_password(payload: ResetPasswordRequest):
         # Decodifica del token di reset
         from jose import jwt
         from backend.router_profile.cookies_login import SECRET_KEY, ALGORITHM
-        data = jwt.decode(payload.token, SECRET_KEY, algorithms=[ALGORITHM])
+        data = jwt.decode(data.token, SECRET_KEY, algorithms=[ALGORITHM])
         email = data.get("email")
         if not email:
             raise HTTPException(status_code=400, detail="Token non valido")
 
         # Validazione della robustezza della nuova password
-        if not validate_password(payload.new_password):
+        if not validate_password(data.new_password):
             raise HTTPException(status_code=400, detail="La nuova password deve contenere almeno 8 caratteri, una lettera maiuscola, una minuscola e un numero")
 
         # Hash e aggiornamento della nuova password
-        hashed = pwd_context.hash(payload.new_password)
+        hashed = pwd_context.hash(data.new_password)
         execute_query("UPDATE account SET password = %s WHERE email = %s", (hashed, email), commit=True)
         return {"message": "Password reimpostata con successo"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore durante il reset password: {str(e)}")
+    
 
 @router_account_profile.get('/preferences')
 async def get_preferences(account_id: int = Query(..., gt=0)):

@@ -16,18 +16,17 @@ Il sistema implementa un algoritmo di ranking complessivo che considera:
 - Disponibilità di appuntamenti
 """
 
-from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import List
 from backend.connection import execute_query
-from datetime import datetime
+
+from backend.router_patient.pydantic.schemas import DoctorQueryRequest, LimitInfo, PatientInfoRequest
 
 # Router per la visualizzazione e ranking dei dottori
 router_show_doctors = APIRouter()
 
 @router_show_doctors.get("/get_all_doctors")
-async def get_all_doctors(
-    limit: Optional[int] = Query(default=50, ge=1, le=100, description="Numero massimo di dottori da restituire")
-):
+async def get_all_doctors(data: LimitInfo = Depends()) -> List[dict]:
     """
     Recupera tutti i dottori disponibili nel sistema.
     
@@ -44,6 +43,7 @@ async def get_all_doctors(
     Raises:
         Exception: In caso di errori del database
     """
+
     try:
         # Query per recuperare tutti i dottori con informazioni complete
         query = """
@@ -68,7 +68,7 @@ async def get_all_doctors(
         LIMIT %s;
         """
 
-        raw_result = execute_query(query, (limit,))
+        raw_result = execute_query(query, (data.limit,))
 
         # Mappatura delle colonne del database ai nomi dei campi
         columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude", "address", "city", "price"]
@@ -79,15 +79,7 @@ async def get_all_doctors(
         return {"error": str(e)}
 
 @router_show_doctors.get("/get_ranked_doctors")
-async def get_ranked_doctors(
-    latitude: Optional[float] = Query(None, ge=-90, le=90, description="Latitudine del paziente per il calcolo della distanza"),
-    longitude: Optional[float] = Query(None, ge=-180, le=180, description="Longitudine del paziente per il calcolo della distanza"),
-    specialization: Optional[str] = Query(None, min_length=2, max_length=50, description="Filtro per specializzazione medica"),
-    min_price: Optional[float] = Query(None, ge=0, description="Prezzo minimo per il filtro"),
-    max_price: Optional[float] = Query(None, ge=0, description="Prezzo massimo per il filtro"),
-    sort_by: Optional[str] = Query("comprehensive", description="Criteri di ordinamento: distance, rating, experience, price, comprehensive"),
-    limit: Optional[int] = Query(default=50, ge=1, le=100, description="Numero massimo di dottori da restituire")
-):
+async def get_ranked_doctors(data: DoctorQueryRequest = Depends()) -> List[dict]:
     """
     Recupera dottori con ranking complessivo basato su multiple metriche.
     
@@ -113,6 +105,7 @@ async def get_ranked_doctors(
     Raises:
         HTTPException: In caso di errori nei parametri o del database
     """
+
     try:
         # Query base con tutti i fattori di ranking
         base_query = """
@@ -135,9 +128,9 @@ async def get_ranked_doctors(
         """
         
         # Calcolo della distanza se le coordinate sono fornite
-        if latitude is not None and longitude is not None:
+        if data.latitude is not None and data.longitude is not None:
             base_query += f""",
-            (6371 * acos(cos(radians({latitude})) * cos(radians(l.latitude)) * cos(radians(l.longitude) - radians({longitude})) + sin(radians({latitude})) * sin(radians(l.latitude)))) AS distance_km
+            (6371 * acos(cos(radians({data.latitude})) * cos(radians(l.latitude)) * cos(radians(l.longitude) - radians({data.longitude})) + sin(radians({data.latitude})) * sin(radians(l.latitude)))) AS distance_km
             """
         else:
             base_query += ", NULL as distance_km"
@@ -153,19 +146,19 @@ async def get_ranked_doctors(
         # Condizioni WHERE per i filtri applicati
         where_conditions = []
         params = []
-        
-        if specialization:
+
+        if data.specialization:
             where_conditions.append("d.specialization = %s")
-            params.append(specialization)
-        
-        if min_price is not None:
+            params.append(data.specialization)
+
+        if data.min_price is not None:
             where_conditions.append("a.price >= %s")
-            params.append(min_price)
-        
-        if max_price is not None:
+            params.append(data.min_price)
+
+        if data.max_price is not None:
             where_conditions.append("a.price <= %s")
-            params.append(max_price)
-        
+            params.append(data.max_price)
+
         if where_conditions:
             base_query += " WHERE " + " AND ".join(where_conditions)
         
@@ -174,26 +167,26 @@ async def get_ranked_doctors(
         """
         
         # Ordinamento basato sui criteri specificati
-        if sort_by == "distance" and latitude is not None and longitude is not None:
+        if data.sort_by == "distance" and data.latitude is not None and data.longitude is not None:
             base_query += " ORDER BY distance_km ASC"
-        elif sort_by == "rating":
+        elif data.sort_by == "rating":
             base_query += " ORDER BY avg_rating DESC, review_count DESC"
-        elif sort_by == "experience":
+        elif data.sort_by == "experience":
             base_query += " ORDER BY years_experience DESC"
-        elif sort_by == "price":
+        elif data.sort_by == "price":
             base_query += " ORDER BY price ASC"
-        elif sort_by == "availability":
+        elif data.sort_by == "availability":
             base_query += " ORDER BY available_slots DESC"
         else:  # ranking complessivo - ordinamento semplice
             base_query += " ORDER BY avg_rating DESC, years_experience DESC, available_slots DESC"
         
         base_query += " LIMIT %s"
-        params.append(limit)
+        params.append(data.limit)
         
         raw_result = execute_query(base_query, tuple(params))
         
         # Definizione delle colonne basate sulla presenza della distanza
-        if latitude is not None and longitude is not None:
+        if data.latitude is not None and data.longitude is not None:
             columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude", "address", "city", "price", "years_experience", "avg_rating", "review_count", "available_slots", "distance_km"]
         else:
             columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude", "address", "city", "price", "years_experience", "avg_rating", "review_count", "available_slots", "distance_km"]
@@ -214,11 +207,10 @@ async def get_ranked_doctors(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero dei dottori con ranking: {str(e)}")
+    
 
 @router_show_doctors.get("/get_free_doctors")
-async def get_free_doctors(
-    limit: Optional[int] = Query(default=50, ge=1, le=100, description="Numero massimo di dottori da restituire")
-):
+async def get_free_doctors(data: LimitInfo = Depends()) -> List[dict]:
     """
     Recupera dottori che hanno almeno un appuntamento libero.
     
@@ -234,6 +226,7 @@ async def get_free_doctors(
     Raises:
         Exception: In caso di errori del database
     """
+
     try:
         query = """
         SELECT DISTINCT 
@@ -254,7 +247,7 @@ async def get_free_doctors(
         LIMIT %s;
         """
 
-        raw_result = execute_query(query, (limit,))
+        raw_result = execute_query(query, (data.limit,))
 
         columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
@@ -264,10 +257,7 @@ async def get_free_doctors(
         return {"error": str(e)} 
     
 @router_show_doctors.get("/free_doctors_by_specialization")
-async def get_doctors_by_specialization(
-    specialization: str = Query(..., min_length=2, max_length=50, description="Specializzazione medica per filtrare i dottori"),
-    limit: Optional[int] = Query(default=50, ge=1, le=100, description="Numero massimo di dottori da restituire")
-):
+async def get_doctors_by_specialization(data: DoctorQueryRequest = Depends()) -> List[dict]:
     """
     Recupera dottori che hanno almeno un appuntamento libero per una specializzazione specifica.
     
@@ -285,6 +275,7 @@ async def get_doctors_by_specialization(
     Raises:
         HTTPException: In caso di errori nei parametri o del database
     """
+
     try:
         query = """
         SELECT DISTINCT 
@@ -305,7 +296,7 @@ async def get_doctors_by_specialization(
         ORDER BY d.rank DESC
         LIMIT %s;
         """
-        raw_result = execute_query(query, (specialization, limit))
+        raw_result = execute_query(query, (data.specialization, data.limit))
 
         columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
@@ -314,13 +305,9 @@ async def get_doctors_by_specialization(
     except Exception as e:
         raise HTTPException(status_code=400, detail="Errore nel recupero della disponibilità dei dottori")
     
+    
 @router_show_doctors.get("/free_doctors_by_specialization_priceASC")
-async def get_doctors_by_priceASC(
-    specialization: str = Query(..., min_length=2, max_length=50, description="Specializzazione medica per filtrare i dottori"),
-    min_price: Optional[float] = Query(default=0, ge=0, description="Prezzo minimo per il filtro"),
-    max_price: Optional[float] = Query(default=None, ge=0, description="Prezzo massimo per il filtro"),
-    limit: Optional[int] = Query(default=50, ge=1, le=100, description="Numero massimo di dottori da restituire")
-) -> List[dict]:
+async def get_doctors_by_priceASC(data: DoctorQueryRequest = Depends()) -> List[dict]:
     """
     Recupera dottori con almeno un appuntamento in attesa per una specializzazione, ordinati per prezzo crescente.
     
@@ -340,6 +327,7 @@ async def get_doctors_by_priceASC(
     Raises:
         HTTPException: In caso di errori nei parametri o del database
     """
+
     try:
         query = """
         SELECT DISTINCT 
@@ -360,19 +348,19 @@ async def get_doctors_by_priceASC(
           AND a.status = 'waiting'
           AND a.price >= %s
         """
-        params = [specialization, min_price]
-        
-        if max_price is not None:
+        params = [data.specialization, data.min_price]
+
+        if data.max_price is not None:
             query += " AND a.price <= %s"
-            params.append(max_price)
-            
+            params.append(data.max_price)
+
         query += """
         GROUP BY d.id, u.name, u.surname, d.specialization, d.rank, u.profile_img, l.latitude, l.longitude
         ORDER BY min_price ASC
         LIMIT %s;
         """
-        params.append(limit)
-        
+        params.append(data.limit)
+
         raw_result = execute_query(query, tuple(params))
         columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "min_price", "latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
@@ -383,12 +371,7 @@ async def get_doctors_by_priceASC(
 
 
 @router_show_doctors.get("/free_doctors_by_specialization_priceDESC")
-async def get_doctors_by_priceDESC(
-    specialization: str = Query(..., min_length=2, max_length=50, description="Specializzazione medica per filtrare i dottori"),
-    min_price: Optional[float] = Query(default=0, ge=0, description="Prezzo minimo per il filtro"),
-    max_price: Optional[float] = Query(default=None, ge=0, description="Prezzo massimo per il filtro"),
-    limit: Optional[int] = Query(default=50, ge=1, le=100, description="Numero massimo di dottori da restituire")
-) -> List[dict]:
+async def get_doctors_by_priceDESC(data: DoctorQueryRequest = Depends()) -> List[dict]:
     """
     Recupera dottori con almeno un appuntamento in attesa per una specializzazione, ordinati per prezzo decrescente.
     
@@ -408,6 +391,7 @@ async def get_doctors_by_priceDESC(
     Raises:
         HTTPException: In caso di errori nei parametri o del database
     """
+
     try:
         query = """
         SELECT DISTINCT 
@@ -428,19 +412,19 @@ async def get_doctors_by_priceDESC(
           AND a.status = 'waiting'
           AND a.price >= %s
         """
-        params = [specialization, min_price]
-        
-        if max_price is not None:
+        params = [data.specialization, data.min_price]
+
+        if data.max_price is not None:
             query += " AND a.price <= %s"
-            params.append(max_price)
-            
+            params.append(data.max_price)
+
         query += """
         GROUP BY d.id, u.name, u.surname, d.specialization, d.rank, u.profile_img, l.latitude, l.longitude
         ORDER BY max_price DESC
         LIMIT %s;
         """
-        params.append(limit)
-        
+        params.append(data.limit)
+
         raw_result = execute_query(query, tuple(params))
         columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "max_price", "latitude", "longitude"]
         result = [dict(zip(columns, row)) for row in raw_result]
@@ -451,12 +435,7 @@ async def get_doctors_by_priceDESC(
 
 
 @router_show_doctors.get("/doctors_by_location")
-async def get_doctors_by_location(
-    latitude: float = Query(..., ge=-90, le=90, description="Coordinate di latitudine"),
-    longitude: float = Query(..., ge=-180, le=180, description="Coordinate di longitudine"),
-    radius_km: Optional[float] = Query(default=10.0, ge=0.1, le=100.0, description="Raggio di ricerca in chilometri"),
-    limit: Optional[int] = Query(default=50, ge=1, le=100, description="Numero massimo di dottori da restituire")
-) -> list:
+async def get_doctors_by_location(data: DoctorQueryRequest = Depends()) -> list:
     """
     Recupera dottori entro un raggio specificato dalle coordinate.
     
@@ -476,6 +455,7 @@ async def get_doctors_by_location(
     Raises:
         HTTPException: In caso di errori nei parametri o del database
     """
+
     try:
         # Formula di Haversine per calcolare la distanza
         query = """
@@ -500,20 +480,19 @@ async def get_doctors_by_location(
         ORDER BY distance_km ASC
         LIMIT %s;
         """
-        
-        raw_result = execute_query(query, (latitude, longitude, latitude, radius_km, limit))
-        
+
+        raw_result = execute_query(query, (data.latitude, data.longitude, data.latitude, data.radius_km, data.limit))
+
         columns = ["id", "name", "surname", "specialization", "rank", "profile_img", "latitude", "longitude", "address", "city", "distance_km"]
         result = [dict(zip(columns, row)) for row in raw_result]
         return result
 
     except Exception as e:
         raise HTTPException(status_code=400, detail="Errore nel recupero dei dottori per posizione")
+    
 
 @router_show_doctors.get("/patient_doctors")
-async def get_patient_doctors(
-    patient_id: int = Query(..., description="ID del paziente")
-):
+async def get_patient_doctors(data: PatientInfoRequest = Depends()):
     """
     Recupera dottori associati a un paziente specifico attraverso appuntamenti o cartelle cliniche.
     
@@ -529,6 +508,7 @@ async def get_patient_doctors(
     Raises:
         HTTPException: In caso di errori nei parametri o del database
     """
+
     try:
         query = """
         SELECT DISTINCT 
@@ -555,7 +535,7 @@ async def get_patient_doctors(
         ORDER BY u.name, u.surname;
         """
 
-        raw_result = execute_query(query, (patient_id, patient_id))
+        raw_result = execute_query(query, (data.patient_id, data.patient_id))
 
         columns = ["id", "name", "surname", "specialization", "email"]
         result = []

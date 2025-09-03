@@ -15,17 +15,33 @@ Il sistema gestisce la transizione degli stati degli appuntamenti
 da 'waiting' a 'booked' e viceversa, con controlli di sicurezza.
 """
 
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from typing import Optional, List
 from datetime import datetime
 from backend.connection import execute_query
-from backend.router_patient.pydantic.schemas import Appointment, BookAppointmentRequest
+from backend.router_patient.pydantic.schemas import Appointment, BookAppointmentRequest, CancelAppointmentRequest, PatientInfoRequest, DoctorSlotsRequest
 
 # Router per la gestione degli appuntamenti dei pazienti
 router_appointments = APIRouter()
 
 @router_appointments.post("/book_appointment")
 async def book_appointment(data: BookAppointmentRequest):
+    """
+    Effettua una prenotazione di un appuntamento.
+
+    Questa funzione restituisce una conferma della prenotazione
+    dell'appuntamento richiesto.
+
+    Args:
+        patient_id: ID del paziente che prenota l'appuntamento
+        appointment_id: ID dell'appuntamento da prenotare
+
+    Returns:
+        Conferma prenotazione e stato booked dell'appuntamento
+
+    Raises:
+        Exception: In caso di errori di accesso ad appuntamenti gia prenotati/con orari sbagliati
+    """
     try:
         check_query = """
         SELECT status, patient_id
@@ -67,25 +83,38 @@ async def book_appointment(data: BookAppointmentRequest):
 
 
 @router_appointments.post("/cancel_appointment")
-async def cancel_appointment(
-    appointment_id: int = Query(..., gt=0, description="ID of the appointment to cancel"),
-    patient_id: int = Query(..., gt=0, description="ID of the patient who booked the appointment"),
-    reason: Optional[str] = Query(None, min_length=3, max_length=500, description="Optional reason for cancellation")
-):
+async def cancel_appointment(data: CancelAppointmentRequest):
+    """
+    Rimuove la prenotazione per un appuntamento.
+    
+    Questa funzione restituisce una conferma di cancellazione dell'appuntamento richiesto.
+    
+    Args:
+        patient_id: ID del paziente che prenota l'appuntamento
+        appointment_id: ID dell'appuntamento da prenotare
+        reason: Motivo della cancellazione
+
+    Returns:
+        Conferma cancellazione e stato cancelled dell'appuntamento
+
+    Raises:
+        Exception: In caso di errori di accesso ad appuntamenti non prenotati/con orari sbagliati
+    """
+
     try:
         check_query = """
         SELECT status, patient_id 
         FROM appointment 
         WHERE id = %s
         """
-        check_result = execute_query(check_query, (appointment_id,))
+        check_result = execute_query(check_query, (data.appointment_id,))
 
         if not check_result:
             raise HTTPException(status_code=404, detail="Appointment not found")
 
         current_status, current_user = check_result[0]
 
-        if current_status != 'booked' or current_user != patient_id:
+        if current_status != 'booked' or current_user != data.patient_id:
             raise HTTPException(status_code=400, detail="Cannot cancel this appointment - it may not exist or you may not have permission")
 
         update_query = """
@@ -94,17 +123,17 @@ async def cancel_appointment(
         WHERE id = %s AND patient_id = %s AND status = 'booked'
         RETURNING id
         """
-        result = execute_query(update_query, (appointment_id, patient_id), commit=True)
+        result = execute_query(update_query, (data.appointment_id, data.patient_id), commit=True)
 
         if not result:
             raise HTTPException(status_code=400, detail="Failed to cancel appointment")
 
         return {
             "message": "Appointment canceled successfully",
-            "appointment_id": appointment_id,
-            "patient_id": patient_id,
+            "appointment_id": data.appointment_id,
+            "patient_id": data.patient_id,
             "status": "cancelled",
-            "reason": reason
+            "reason": data.reason
         }
 
     except HTTPException as he:
@@ -114,8 +143,20 @@ async def cancel_appointment(
 
 
 @router_appointments.get("/upcoming_appointments")
-async def get_upcoming_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
-    """Ottieni gli appuntamenti prossimi del paziente"""
+async def get_upcoming_appointments(data: PatientInfoRequest = Depends()):
+    """
+    Ottiene tutti gli appuntamenti futuri per un paziente.
+    
+    Args:
+        patient_id: ID del paziente che prenota l'appuntamento
+
+    Returns:
+        List: appuntamenti prenotati con data futura
+
+    Raises:
+        Exception: In caso di errori di accesso ad appuntamenti non prenotati/con orari sbagliati
+    """
+
     try:
         query = """
             SELECT
@@ -141,7 +182,7 @@ async def get_upcoming_appointments(patient_id: int = Query(..., gt=0, descripti
             ORDER BY a.date_time ASC
         """
         
-        raw_result = execute_query(query, (patient_id,))
+        raw_result = execute_query(query, (data.patient_id,))
         
         appointments = [
             {
@@ -167,8 +208,20 @@ async def get_upcoming_appointments(patient_id: int = Query(..., gt=0, descripti
 
 
 @router_appointments.get("/past_appointments")
-async def get_past_appointments(patient_id: int = Query(..., gt=0, description="ID del paziente")):
-    """Ottieni gli appuntamenti passati del paziente"""
+async def get_past_appointments(data: PatientInfoRequest = Depends()):
+    """
+    Ottiene tutti gli appuntamenti passati per un paziente.
+    
+    Args:
+        patient_id: ID del paziente che prenota l'appuntamento
+
+    Returns:
+        List: appuntamenti prenotati con data passata
+
+    Raises:
+        Exception: In caso di errori di accesso ad appuntamenti non prenotati/con orari sbagliati
+    """
+
     try:
         query = """
             SELECT
@@ -196,9 +249,9 @@ async def get_past_appointments(patient_id: int = Query(..., gt=0, description="
                 AND a.status = 'completed'
             ORDER BY a.date_time DESC
         """
-        
-        raw_result = execute_query(query, (patient_id,))
-        
+
+        raw_result = execute_query(query, (data.patient_id,))
+
         appointments = [
             {
                 "id": row[0],
@@ -226,8 +279,20 @@ async def get_past_appointments(patient_id: int = Query(..., gt=0, description="
 
 
 @router_appointments.get("/get_patient_health_profile")
-async def get_patient_health_profile(patient_id: int = Query(..., gt=0, description="ID del paziente")):
-    """Ottiene il profilo sanitario completo del paziente per l'AI"""
+async def get_patient_health_profile(data: PatientInfoRequest = Depends()):
+    """
+    Ottiene tutti i dettagli di salute per un paziente.
+    
+    Args:
+        patient_id: ID del paziente che prenota l'appuntamento
+
+    Returns:
+        List: caratteristiche di salute del paziente
+
+    Raises:
+        Exception: In caso di errori di accesso all'utente
+    """
+
     try:
         # Ottieni i dati di base del paziente
         query_basic = """
@@ -243,8 +308,8 @@ async def get_patient_health_profile(patient_id: int = Query(..., gt=0, descript
         JOIN patient p ON a.id = p.id
         WHERE a.id = %s
         """
-        
-        result = execute_query(query_basic, (patient_id,))
+
+        result = execute_query(query_basic, (data.patient_id,))
         if not result:
             raise HTTPException(status_code=404, detail="Paziente non trovato")
         
@@ -273,9 +338,11 @@ async def get_patient_health_profile(patient_id: int = Query(..., gt=0, descript
         ORDER BY mr.record_date DESC
         LIMIT 5
         """
-        
-        history_result = execute_query(query_history, (patient_id,))
-        
+
+        history_result = execute_query(query_history, (data.patient_id,))
+        if not history_result:
+            raise HTTPException(status_code=404, detail="Cronologia medica non trovata")
+
         return {
             "patient_info": {
                 "name": patient_data[0],
@@ -304,12 +371,23 @@ async def get_patient_health_profile(patient_id: int = Query(..., gt=0, descript
 
 
 @router_appointments.get("/get_free_slots")
-async def get_free_slots(
-    doctor_id: int = Query(..., gt=0, description="ID of the doctor"),
-    start_date: Optional[datetime] = Query(None, description="Start date for filtering slots (inclusive)"),
-    end_date: Optional[datetime] = Query(None, description="End date for filtering slots (inclusive)"),
-    limit: Optional[int] = Query(50, ge=1, le=100, description="Maximum number of slots to return")
-):
+async def get_free_slots(data: DoctorSlotsRequest = Depends()):
+    """
+    Ottiene tutti gli slot orari disponibili per un medico.
+
+    Args:
+        doctor_id: ID del medico
+        start_date: Data di inizio per la ricerca degli slot
+        end_date: Data di fine per la ricerca degli slot
+        limit: Numero massimo di slot da restituire
+
+    Returns:
+        List: Slot disponibili per la prenotazione
+
+    Raises:
+        Exception: In caso di errori di accesso agli orari del dottore
+    """
+
     try:
         query = """
         SELECT 
@@ -325,21 +403,21 @@ async def get_free_slots(
           AND a.status = 'waiting'
           AND a.date_time > NOW()
         """
-        params = [doctor_id]
+        params = [data.doctor_id]
 
-        if start_date:
+        if data.start_date:
             query += " AND a.date_time >= %s"
-            params.append(start_date)
+            params.append(data.start_date)
 
-        if end_date:
+        if data.end_date:
             query += " AND a.date_time <= %s"
-            params.append(end_date)
+            params.append(data.end_date)
 
         query += """
         ORDER BY a.date_time ASC
         LIMIT %s
         """
-        params.append(limit)
+        params.append(data.limit)
 
         raw_result = execute_query(query, tuple(params))
         columns = ["appointment_id", "date_time", "price", "address", "city"]
@@ -359,7 +437,20 @@ async def get_free_slots(
 
 
 @router_appointments.get("/get_history")
-async def history(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+async def history(data: PatientInfoRequest = Depends()):
+    """
+    Ottiene tutti gli appuntamenti passati per un paziente.
+    
+    Args:
+        patient_id: ID del paziente che prenota l'appuntamento
+
+    Returns:
+        List: appuntamenti prenotati con data passata
+
+    Raises:
+        Exception: In caso di errori di accesso ad appuntamenti non prenotati/con orari sbagliati
+    """
+
     try:
         #query
         query = ''' SELECT
@@ -383,7 +474,7 @@ async def history(patient_id: int = Query(..., gt=0, description="ID del pazient
                         ORDER BY a.date_time ASC;
                 '''
         #esecuzione query
-        raw_result = execute_query(query, (patient_id,))
+        raw_result = execute_query(query, (data.patient_id,))
         
         appointments: List[Appointment] = [
             Appointment(
@@ -407,7 +498,20 @@ async def history(patient_id: int = Query(..., gt=0, description="ID del pazient
     
 
 @router_appointments.get("/get_booked_appointments")
-async def get_booked_appointment(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+async def get_booked_appointment(data: PatientInfoRequest = Depends()):
+    """
+    Ottiene tutti gli appuntamenti prenotati da un paziente.
+    
+    Args:
+        patient_id: ID del paziente
+
+    Returns:
+        List: appuntamenti prenotati
+
+    Raises:
+        Exception: In caso di errori di accesso ad appuntamenti non prenotati/con orari sbagliati
+    """
+
     try:
         query =   """
             SELECT 
@@ -427,7 +531,7 @@ async def get_booked_appointment(patient_id: int = Query(..., gt=0, description=
             WHERE a.status = 'booked' AND a.patient_id = %s
             ORDER BY a.date_time ASC
         """
-        raw_result = execute_query(query, (patient_id,))
+        raw_result = execute_query(query, (data.patient_id,))
         
         appointments: List[Appointment] = [
             Appointment(

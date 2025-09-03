@@ -8,9 +8,12 @@ I modelli garantiscono la validazione dei dati e la consistenza
 delle informazioni scambiate tra frontend e backend.
 """
 
+from fastapi.params import Depends
 from pydantic import BaseModel, EmailStr
 from typing import List, Literal, Optional
 from datetime import date
+
+from backend.src.backend.router_profile.cookies_login import get_current_account
 
 class LocationData(BaseModel):
     """
@@ -51,6 +54,14 @@ class RegisterDoctorRequest(BaseModel):
     sex: Literal['M', 'F']         # Sesso (M o F)
     specialization: str             # Specializzazione medica
     locations: List[LocationData]   # Lista delle sedi di lavoro
+
+class DeleteRequest(BaseModel):
+    """
+    Modello per le richieste di eliminazione.
+    """
+    email: EmailStr                   # Email dell'elemento da eliminare
+    password: str                     # Password per confermare l'eliminazione
+    current_account: dict = Depends(get_current_account)  # Account attualmente autenticato
 
 class LoginRequest(BaseModel):
     """

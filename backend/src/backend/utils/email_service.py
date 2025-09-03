@@ -22,7 +22,7 @@ MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "your-app-password")         # Passwo
 MAIL_FROM = os.getenv("MAIL_FROM", "your-email@gmail.com")              # Indirizzo email mittente
 MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))                           # Porta SMTP (default: 587 per STARTTLS)
 MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")                 # Server SMTP (default: Gmail)
-MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "MediFlow")                 # Nome visualizzato del mittente
+MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "MedFlow")                 # Nome visualizzato del mittente
 
 # Configurazione della connessione SMTP con FastAPI-Mail
 conf = ConnectionConfig(
@@ -46,7 +46,7 @@ async def send_password_reset_email(email: EmailStr, reset_token: str, frontend_
     - Un pulsante cliccabile per il reset della password
     - Il link diretto per il reset
     - Avvisi di sicurezza e scadenza del token
-    - Template professionale con branding MediFlow
+    - Template professionale con branding MedFlow
     
     Args:
         email: Indirizzo email del destinatario
@@ -66,13 +66,13 @@ async def send_password_reset_email(email: EmailStr, reset_token: str, frontend_
         
         # Creazione del messaggio email con template HTML personalizzato
         message = MessageSchema(
-            subject="Reset della Password - MediFlow",
+            subject="Reset della Password - MedFlow",
             recipients=[email],
             body=f"""
             <html>
                 <body>
                     <h2>Reset della Password</h2>
-                    <p>Hai richiesto il reset della password per il tuo account MediFlow.</p>
+                    <p>Hai richiesto il reset della password per il tuo account MedFlow.</p>
                     <p>Clicca sul pulsante seguente per reimpostare la tua password:</p>
                     <p><a href="{reset_url}" style="background-color: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Reimposta Password</a></p>
                     <p>Oppure copia questo link nel browser:</p>
@@ -80,7 +80,7 @@ async def send_password_reset_email(email: EmailStr, reset_token: str, frontend_
                     <p><strong>Attenzione:</strong> Questo link scade tra 1 ora per motivi di sicurezza.</p>
                     <p>Se non hai richiesto tu questo reset, ignora questa email.</p>
                     <br>
-                    <p>Cordiali saluti,<br>Team MediFlow</p>
+                    <p>Cordiali saluti,<br>Team MedFlow</p>
                 </body>
             </html>
             """,

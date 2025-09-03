@@ -52,3 +52,99 @@ class BookAppointmentRequest(BaseModel):
     """
     appointment_id: int               # ID dell'appuntamento da prenotare
     patient_id: int                   # ID del paziente che prenota
+
+class CancelAppointmentRequest(BaseModel):
+    """
+    Modello per le richieste di cancellazione appuntamenti.
+    
+    Definisce i dati necessari per cancellare
+    un appuntamento prenotato.
+    """
+    appointment_id: int               # ID dell'appuntamento da cancellare
+    patient_id: int                   # ID del paziente che cancella
+    reason: Optional[str] = None      # Motivo opzionale della cancellazione
+
+class PatientInfoRequest(BaseModel):
+    """
+    Modello per le richieste di informazioni sul paziente.
+
+    Definisce i dati necessari per recuperare
+    le informazioni di un paziente.
+    """
+    patient_id: int                   # ID del paziente
+
+class DoctorSlotsRequest(BaseModel):
+    """
+    Modello per le richieste di disponibilità degli slot del dottore.
+
+    Definisce i dati necessari per recuperare
+    gli slot disponibili per un dottore specifico.
+    """
+    doctor_id: int
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    limit: Optional[int] = 50
+
+class SortByInfo(BaseModel):
+    """
+    Modello per le informazioni di ordinamento.
+
+    Definisce i dati necessari per specificare i criteri di ordinamento
+    dei risultati.
+    """
+    sort_by: Optional[str]
+
+class LimitInfo(BaseModel):
+    """
+    Modello per le richieste di limitazione dei risultati.
+
+    Definisce i dati necessari per applicare
+    limiti ai risultati delle query.
+    """
+    limit: Optional[int]
+
+class SpecializationInfo(BaseModel):
+    """
+    Modello per le richieste di specializzazione.
+
+    Definisce i dati necessari per filtrare i dottori
+    in base alla specializzazione.
+    """
+    specialization: Optional[str] = None
+
+class PriceRangeInfo(BaseModel):
+    """
+    Modello per le informazioni di intervallo di prezzo.
+
+    Definisce i dati necessari per filtrare i dottori
+    in base a un intervallo di prezzo.
+    """
+    min_price: Optional[float]
+    max_price: Optional[float]
+
+class LocationInfo(BaseModel):
+    """
+    Modello per le informazioni di posizione.
+
+    Definisce i dati necessari per filtrare i dottori
+    in base alla posizione geografica.
+    """
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    radius_km: Optional[float] = 10.0
+
+class DoctorQueryRequest(BaseModel):
+    """
+    Modello per le richieste di ricerca dottori.
+
+    Definisce i dati necessari per cercare dottori
+    in base a diversi criteri.
+    """
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    radius_km: Optional[float] = 10.0
+    specialization: Optional[str] = None
+    min_price: Optional[float] = None
+    max_price: Optional[float] = None
+    sort_by: Optional[str] = None
+    limit: Optional[int] = 50

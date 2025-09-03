@@ -11,16 +11,16 @@ Il sistema permette ai pazienti di valutare i dottori dopo
 gli appuntamenti completati, contribuendo al sistema di ranking.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List
 from backend.connection import execute_query
-from backend.router_patient.pydantic.schemas import Appointment, ReviewRequest
+from backend.router_patient.pydantic.schemas import Appointment, ReviewRequest, PatientInfoRequest
 
 # Router per la gestione delle recensioni dei pazienti
 router_reviews = APIRouter()
 
 @router_reviews.get("/appointments_to_rank")
-async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+async def get_appointments_to_rank(data: PatientInfoRequest = Depends()):
     """
     Recupera gli appuntamenti completati ma non ancora valutati da un paziente.
     
@@ -65,7 +65,7 @@ async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, descriptio
                 '''
         
         # Esecuzione della query per recuperare gli appuntamenti
-        raw_result = execute_query(query, (patient_id,), commit = True)
+        raw_result = execute_query(query, (data.patient_id,), commit = True)
         
         # Formattazione dei risultati in oggetti Appointment
         appointments: List[Appointment] = [
@@ -90,9 +90,10 @@ async def get_appointments_to_rank(patient_id: int = Query(..., gt=0, descriptio
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti da valutare: {str(e)}")
 
+
 # Alias per compatibilità con il frontend esistente
 @router_reviews.get("/get_to_rank_appointments")
-async def get_to_rank_appointments(id_patient: int = Query(..., gt=0, description="ID del paziente")):
+async def get_to_rank_appointments(data: PatientInfoRequest = Depends()):
     """
     Alias per get_appointments_to_rank per compatibilità con il frontend.
     
@@ -105,7 +106,7 @@ async def get_to_rank_appointments(id_patient: int = Query(..., gt=0, descriptio
     Returns:
         dict: Dizionario contenente la lista degli appuntamenti da valutare
     """
-    return await get_appointments_to_rank(id_patient)
+    return await get_appointments_to_rank(data.id_patient)
 
 @router_reviews.post("/review_appointment")
 async def review_appointment(data: ReviewRequest):
@@ -164,7 +165,7 @@ async def review_appointment(data: ReviewRequest):
 
 
 @router_reviews.get("/patient_reviews")
-async def get_patient_reviews(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+async def get_patient_reviews(data: PatientInfoRequest = Depends()):
     """
     Recupera tutte le recensioni lasciate da un paziente specifico.
     
@@ -200,8 +201,8 @@ async def get_patient_reviews(patient_id: int = Query(..., gt=0, description="ID
             WHERE a.patient_id = %s AND r.stars IS NOT NULL
             ORDER BY a.date_time DESC
         """
-        
-        raw_result = execute_query(query, (patient_id,))
+
+        raw_result = execute_query(query, (data.patient_id,))
         
         # Formattazione dei risultati con conversione delle date
         reviews = [
