@@ -10,21 +10,21 @@ const Chat = () => {
         e.preventDefault();
         if (!input.trim()) return;
 
-        // Add user message
+        // aggiungi messaggio utente
         const userMessage = { role: 'user', content: input };
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
         try {
-            // Get AI response
+            // Ottieni risposta AI
             const response = await llmService.askHealthQuestion(input);
-            
-            // Add AI message
+
+            // Aggiungi messaggio AI
             const aiMessage = { role: 'assistant', content: response.response };
             setMessages(prev => [...prev, aiMessage]);
         } catch (error) {
-            // Add error message
+            // Aggiungi messaggio di errore
             const errorMessage = { 
                 role: 'error', 
                 content: 'Mi dispiace, si è verificato un errore. Riprova più tardi.' 

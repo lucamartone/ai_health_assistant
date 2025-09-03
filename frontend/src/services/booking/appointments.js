@@ -44,7 +44,6 @@ export async function clearSlots(payload) {
     return await api.post('/doctor/appointments/clear_slots', payload);
 };
 
-// Nuovi servizi per appuntamenti paziente
 export async function getUpcomingAppointments(patient_id) {
     return await api.get(`/patient/appointments/upcoming_appointments?patient_id=${patient_id}`);
 };

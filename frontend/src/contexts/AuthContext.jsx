@@ -8,7 +8,7 @@ export function AuthProvider({ children }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasAttemptedRefresh, setHasAttemptedRefresh] = useState(false);
 
-  // 🔁 Chiamata all'endpoint /me per ottenere i dati utente
+  // Chiamata all'endpoint /me per ottenere i dati utente
   const fetchUserData = useCallback(async (isRefreshAttempt = false) => {
     try {
       const response = await fetch('http://localhost:8001/profile/cookies/me', {
@@ -31,7 +31,7 @@ export function AuthProvider({ children }) {
       setAccount(null);
       return false;
     } catch (error) {
-      console.error('❌ Errore nel fetch dei dati utente:', error);
+      console.error('  Errore nel fetch dei dati utente:', error);
       setAccount(null);
       return false;
     }
@@ -58,12 +58,12 @@ export function AuthProvider({ children }) {
         console.log('✅ Token refreshato');
         return await fetchUserData(true);
       } else {
-        console.log('❌ Refresh fallito, logout richiesto');
+        console.log('  Refresh fallito, logout richiesto');
         setAccount(null);
         return false;
       }
     } catch (error) {
-      console.error('❌ Errore durante il refresh del token:', error);
+      console.error(' Errore durante il refresh del token:', error);
       setAccount(null);
       return false;
     } finally {
@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
     }
   }, [fetchUserData, isRefreshing, hasAttemptedRefresh]);
 
-  // 🔓 Logout manuale
+  // Logout manuale
   const logout = useCallback(async () => {
     try {
       await fetch('http://localhost:8001/profile/account/logout', {
@@ -79,7 +79,7 @@ export function AuthProvider({ children }) {
         credentials: 'include',
       });
     } catch (error) {
-      console.error('❌ Errore durante il logout:', error);
+      console.error(' Errore durante il logout:', error);
     } finally {
       setAccount(null);
       setHasAttemptedRefresh(false);

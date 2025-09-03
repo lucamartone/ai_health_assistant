@@ -94,7 +94,6 @@ const ClinicalFolder = () => {
       console.log('DEBUG: useEffect triggered with patientId:', patientId);
       loadFolder();
     }
-    // eslint-disable-next-line
   }, [patientId]);
 
   const handleFormChange = e => {

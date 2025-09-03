@@ -43,7 +43,7 @@ export function ChatProvider({ children }) {
   // Salva le conversazioni nel localStorage quando cambiano
   useEffect(() => {
     if (account?.id && conversations.length > 0) {
-      console.log('💾 Salvando nel localStorage per account:', account.id);
+      console.log('Salvando nel localStorage per account:', account.id);
       localStorage.setItem(`chat_conversations_${account.id}`, JSON.stringify(conversations));
     }
   }, [conversations, account?.id]);
@@ -112,14 +112,14 @@ export function ChatProvider({ children }) {
   }, []);
 
   const updateConversationMessages = useCallback((conversationId, messages) => {
-    console.log('🔄 Aggiornando conversazione:', conversationId, 'con', messages.length, 'messaggi');
+    console.log('Aggiornando conversazione:', conversationId, 'con', messages.length, 'messaggi');
     setConversations(prev => {
       const updated = prev.map(conv =>
         conv.id === conversationId
           ? { ...conv, messages }
           : conv
       );
-      console.log('💾 Nuove conversazioni:', updated);
+      console.log('Nuove conversazioni:', updated);
       return updated;
     });
   }, []);

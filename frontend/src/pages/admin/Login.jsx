@@ -20,7 +20,7 @@ const AdminLogin = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
-    setError(''); // Clear error when user types
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -33,7 +33,6 @@ const AdminLogin = () => {
       
       if (result.success) {
         console.log('Login riuscito:', result.data);
-        // Redirect to admin dashboard
         navigate('/admin/');
       } else {
         setError(result.error);

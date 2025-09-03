@@ -114,12 +114,10 @@ function Register() {
       formData.append('specialization', specialization);
       formData.append('locations', JSON.stringify(locations));
       
-      // Add documents
       documents.forEach(doc => {
         formData.append('documents', doc.file);
       });
 
-      // Debug log
       console.log('Invio richiesta con dati:', {
         name, surname, email, sex, birthDate, phone, specialization,
         locations, documentsCount: documents.length

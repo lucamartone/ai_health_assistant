@@ -17,8 +17,6 @@ function PasswordValidator({ password, onValidationChange }) {
     };
     
     setValidations(newValidations);
-    
-    // Notify parent component
     const isValid = Object.values(newValidations).every(Boolean);
     onValidationChange(isValid);
   }, [password, onValidationChange]);

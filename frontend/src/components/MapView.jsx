@@ -51,7 +51,7 @@ function MapView({ doctors, selectedDoctorId }) {
     });
   }, [doctors, selectedDoctorId]);
 
-  // 👉 Centra e zooma sulla posizione del medico selezionato
+  // Centra e zooma sulla posizione del medico selezionato
   useEffect(() => {
     if (!mapReady || !mapRef.current || !selectedDoctorId) return;
 

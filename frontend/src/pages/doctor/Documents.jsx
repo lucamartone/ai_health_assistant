@@ -22,12 +22,6 @@ const Documents = () => {
 
   const fetchDocuments = async () => {
     try {
-      // TODO: Implement API call to fetch doctor documents
-      // const response = await fetch(`/api/doctor/documents/${doctorId}`);
-      // const data = await response.json();
-      // setDocuments(data.documents);
-      
-      // Mock data for now
       setDocuments([
         {
           id: 1,
@@ -81,16 +75,10 @@ const Documents = () => {
       formData.append('document_type', documentType);
       formData.append('doctor_id', '1'); // TODO: Get from auth context
 
-      // TODO: Implement API call to upload document
-      // const response = await fetch('/api/doctor/documents/upload', {
-      //   method: 'POST',
-      //   body: formData
-      // });
-
-      // Simulate upload delay
+      // Simulazione
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Add new document to list
+      // Aggiungi documento
       const newDocument = {
         id: Date.now(),
         document_type: documentType,
@@ -123,9 +111,6 @@ const Documents = () => {
     }
 
     try {
-      // TODO: Implement API call to delete document
-      // await fetch(`/api/doctor/documents/${documentId}`, { method: 'DELETE' });
-      
       setDocuments(prev => prev.filter(doc => doc.id !== documentId));
       alert('Documento eliminato con successo');
     } catch (error) {
@@ -135,7 +120,6 @@ const Documents = () => {
   };
 
   const downloadDocument = (document) => {
-    // TODO: Implement actual download from API
     alert(`Download di ${document.file_name}`);
   };
 

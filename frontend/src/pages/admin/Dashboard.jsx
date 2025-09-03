@@ -34,7 +34,7 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch doctor requests
+      // Fetch dottori
       const requestsResponse = await fetch('http://localhost:8001/admin/doctor-requests');
       if (requestsResponse.ok) {
         const requestsData = await requestsResponse.json();
@@ -47,12 +47,10 @@ const AdminDashboard = () => {
           rejectedRequests: requests.filter(r => r.status === 'rejected').length
         }));
 
-        // Get recent requests for display
         setRecentRequests(requests.slice(0, 5)); // Show last 5
       }
 
-      // TODO: Fetch real user counts from backend
-      // For now using mock data
+      // TODO: Fetch contatori utente dal backend
       setStats(prev => ({
         ...prev,
         totalDoctors: 15,
