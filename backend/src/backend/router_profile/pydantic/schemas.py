@@ -121,6 +121,15 @@ class ResetPasswordRequest(BaseModel):
     token: str                      # Token di reset password
     new_password: str               # Nuova password desiderata
 
+class PreResetRequest(BaseModel):
+    """
+    Modello per le richieste di pre-reset password.
+    
+    Definisce i dati necessari per avviare il processo
+    di reset della password.
+    """
+    email: EmailStr                 # Email dell'utente
+
 class PreferencesPayload(BaseModel):
     """
     Modello per le preferenze dell'utente.
@@ -130,3 +139,37 @@ class PreferencesPayload(BaseModel):
     """
     notifications: Optional[dict] = None    # Preferenze notifiche
     privacy: Optional[dict] = None          # Preferenze privacy
+    account_id: Optional[int] = None        # ID dell'account associato
+
+class AccountInfo(BaseModel):
+    """
+    Modello per le informazioni dell'account.
+    
+    Definisce l'ID associato
+    a un account utente.
+    """
+    account_id: int                          # ID univoco dell'account
+
+class RefreshRequest(BaseModel):
+    """
+    Modello per le richieste di refresh token.
+    
+    Definisce il token di refresh necessario
+    per ottenere un nuovo access token.
+    """
+    refresh_token: str                       # Token di refresh
+
+class DoctorInfoRequest(BaseModel):
+    """
+    Modello per fornire l'id dottore.
+    
+    """
+    doctor_id: int                          # ID del dottore
+
+class DoctorInfoRequest(BaseModel):
+    """
+    Modello per fornire l'id paziente.
+    
+    """
+    patient_id: int                          # ID del dottore
+    

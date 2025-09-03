@@ -85,15 +85,6 @@ class DoctorSlotsRequest(BaseModel):
     end_date: Optional[datetime] = None
     limit: Optional[int] = 50
 
-class SortByInfo(BaseModel):
-    """
-    Modello per le informazioni di ordinamento.
-
-    Definisce i dati necessari per specificare i criteri di ordinamento
-    dei risultati.
-    """
-    sort_by: Optional[str]
-
 class LimitInfo(BaseModel):
     """
     Modello per le richieste di limitazione dei risultati.
@@ -102,36 +93,6 @@ class LimitInfo(BaseModel):
     limiti ai risultati delle query.
     """
     limit: Optional[int]
-
-class SpecializationInfo(BaseModel):
-    """
-    Modello per le richieste di specializzazione.
-
-    Definisce i dati necessari per filtrare i dottori
-    in base alla specializzazione.
-    """
-    specialization: Optional[str] = None
-
-class PriceRangeInfo(BaseModel):
-    """
-    Modello per le informazioni di intervallo di prezzo.
-
-    Definisce i dati necessari per filtrare i dottori
-    in base a un intervallo di prezzo.
-    """
-    min_price: Optional[float]
-    max_price: Optional[float]
-
-class LocationInfo(BaseModel):
-    """
-    Modello per le informazioni di posizione.
-
-    Definisce i dati necessari per filtrare i dottori
-    in base alla posizione geografica.
-    """
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    radius_km: Optional[float] = 10.0
 
 class DoctorQueryRequest(BaseModel):
     """

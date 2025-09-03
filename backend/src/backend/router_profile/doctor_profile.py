@@ -13,8 +13,8 @@ Il sistema implementa misure di sicurezza avanzate
 incluso il blocco temporaneo degli account dopo tentativi falliti.
 """
 
-from fastapi import APIRouter, HTTPException, Query, Response
-from backend.router_profile.pydantic.schemas import RegisterDoctorRequest, LoginRequest
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from backend.router_profile.pydantic.schemas import DoctorAppointmentsRequest, DoctorInfo, DoctorInfoRequest, RegisterDoctorRequest, LoginRequest
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
 from passlib.context import CryptContext
@@ -394,7 +394,7 @@ async def edit_profile(data: ModifyProfileRequest):
         raise HTTPException(status_code=500, detail=f"Errore durante l'aggiornamento: {str(e)}")
 
 @router_doctor_profile.get("/appointments")
-async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description="ID del dottore")):
+async def get_doctor_appointments(data: DoctorInfoRequest = Depends()):
     """
     Recupera tutti gli appuntamenti di un dottore.
     
@@ -432,7 +432,7 @@ async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description=
         WHERE a.doctor_id = %s
         ORDER BY a.date_time DESC
         """
-        raw_result = execute_query(query, (doctor_id,))
+        raw_result = execute_query(query, (data.doctor_id,))
         
         # Mappatura delle colonne del database ai nomi dei campi
         columns = [
@@ -445,7 +445,7 @@ async def get_doctor_appointments(doctor_id: int = Query(..., gt=0, description=
         raise HTTPException(status_code=400, detail=f"Errore nel recupero appuntamenti: {str(e)}")
     
 @router_doctor_profile.get("/get_stats")
-async def get_stats(doctor_id: int = Query(..., gt=0, description="ID del dottore")):
+async def get_stats(data: DoctorInfoRequest = Depends()):
     """
     Recupera le statistiche complete di un dottore.
     
@@ -473,7 +473,7 @@ async def get_stats(doctor_id: int = Query(..., gt=0, description="ID del dottor
             WHERE doctor_id = %s;
 
         """
-        result = execute_query(query, (doctor_id,))
+        result = execute_query(query, (data.doctor_id,))
         if not result:
             return {
                 "total_appointments": 0,

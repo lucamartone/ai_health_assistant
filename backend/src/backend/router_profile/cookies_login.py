@@ -18,6 +18,7 @@ from fastapi import Depends, Cookie, APIRouter, HTTPException, Response
 import os
 import base64
 from typing import Optional
+from backend.src.backend.router_profile.pydantic.schemas import RefreshRequest
 from dotenv import load_dotenv
 from backend.connection import execute_query
 
@@ -193,7 +194,7 @@ async def get_me(account=Depends(get_current_account)):
         raise HTTPException(status_code=500, detail=f"Errore durante la lettura del profilo: {str(e)}")
 
 @router_cookies_login.post("/refresh")
-async def refresh_token(refresh_token: str = Cookie(None)):
+async def refresh_token(data: RefreshRequest):
     """
     Endpoint per il refresh del token di accesso.
     
@@ -210,12 +211,12 @@ async def refresh_token(refresh_token: str = Cookie(None)):
     Raises:
         HTTPException: In caso di refresh token mancante, scaduto o non valido
     """
-    if not refresh_token:
+    if not data.refresh_token:
         raise HTTPException(status_code=401, detail="Refresh token mancante")
     
     try:
         # Decodifica del refresh token
-        payload = jwt.decode(refresh_token, REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(data.refresh_token, REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
         
         # Creazione di un nuovo token di accesso
         new_access_token = create_access_token({

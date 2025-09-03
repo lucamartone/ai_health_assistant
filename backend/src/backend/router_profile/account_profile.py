@@ -17,7 +17,7 @@ from fastapi import APIRouter, HTTPException, Response, Depends, Query
 from datetime import datetime, timedelta
 from backend.connection import execute_query
 from pydantic import EmailStr
-from backend.router_profile.pydantic.schemas import ChangePasswordRequest, ResetPasswordRequest, PreferencesPayload, DeleteRequest
+from backend.router_profile.pydantic.schemas import AccountInfo, ChangePasswordRequest, PreResetRequest, ResetPasswordRequest, PreferencesPayload, DeleteRequest
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token, get_current_account
 from backend.utils.email_service import send_password_reset_email
 from passlib.context import CryptContext
@@ -200,7 +200,7 @@ async def change_password(data: ChangePasswordRequest):
     
     
 @router_account_profile.post("/request_password_reset")
-async def request_password_reset(email: EmailStr):
+async def request_password_reset(data: PreResetRequest):
     """
     Endpoint per richiedere il reset della password.
     
@@ -220,18 +220,18 @@ async def request_password_reset(email: EmailStr):
     try:
         # Verifica dell'esistenza dell'account
         query = "SELECT id FROM account WHERE email = %s"
-        result = execute_query(query, (email,))
+        result = execute_query(query, (data.email,))
         
         if not result:
             # Non rivelare se l'email esiste o meno per motivi di sicurezza
             return {"message": "Se l'email è registrata, riceverai un link di reimpostazione."}
 
         # Generazione del token di reset valido per 1 ora
-        reset_token = create_access_token(data={"email": email}, expires_delta=timedelta(hours=1))
+        reset_token = create_access_token(data={"email": data.email}, expires_delta=timedelta(hours=1))
 
         # Invio dell'email di reset
-        email_sent = await send_password_reset_email(email, reset_token)
-        
+        email_sent = await send_password_reset_email(data.email, reset_token)
+
         if email_sent:
             return {"message": "Email di reset inviata con successo"}
         else:
@@ -282,7 +282,7 @@ async def reset_password(data: ResetPasswordRequest):
     
 
 @router_account_profile.get('/preferences')
-async def get_preferences(account_id: int = Query(..., gt=0)):
+async def get_preferences(data: AccountInfo = Depends()):
     """
     Recupera le preferenze dell'utente per notifiche e privacy.
     
@@ -298,6 +298,7 @@ async def get_preferences(account_id: int = Query(..., gt=0)):
     Raises:
         HTTPException: In caso di errori nel recupero delle preferenze
     """
+
     try:
         # Creazione automatica della tabella delle preferenze se non esiste
         create_table = """
@@ -311,7 +312,7 @@ async def get_preferences(account_id: int = Query(..., gt=0)):
         execute_query(create_table, commit=True)
 
         # Recupero delle preferenze esistenti o restituzione di valori di default
-        res = execute_query("SELECT notifications, privacy FROM account_preferences WHERE account_id = %s", (account_id,))
+        res = execute_query("SELECT notifications, privacy FROM account_preferences WHERE account_id = %s", (data.account_id,))
         if not res:
             return {
                 "notifications": {"reminders": True, "testResults": True, "newsletter": False}, 
@@ -320,9 +321,10 @@ async def get_preferences(account_id: int = Query(..., gt=0)):
         return {"notifications": res[0][0], "privacy": res[0][1]}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero preferenze: {str(e)}")
+    
 
 @router_account_profile.post('/preferences')
-async def save_preferences(account_id: int = Query(..., gt=0), payload: PreferencesPayload = None):
+async def save_preferences(data: PreferencesPayload = None):
     """
     Salva le preferenze dell'utente per notifiche e privacy.
     
@@ -360,7 +362,7 @@ async def save_preferences(account_id: int = Query(..., gt=0), payload: Preferen
                 privacy = EXCLUDED.privacy,
                 updated_at = CURRENT_TIMESTAMP
         """
-        execute_query(upsert, (account_id, payload.notifications, payload.privacy), commit=True)
+        execute_query(upsert, (data.account_id, data.notifications, data.privacy), commit=True)
         return {"message": "Preferenze salvate con successo"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel salvataggio preferenze: {str(e)}")

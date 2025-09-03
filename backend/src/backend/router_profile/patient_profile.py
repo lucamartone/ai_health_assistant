@@ -13,7 +13,7 @@ Il sistema implementa misure di sicurezza avanzate
 incluso il blocco temporaneo degli account dopo tentativi falliti.
 """
 
-from fastapi import APIRouter, HTTPException, Response, Query
+from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest, ModifyProfileRequest, HealthDataInput
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
@@ -21,6 +21,8 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from backend.router_profile.cookies_login import create_access_token, create_refresh_token
 import base64
+
+from backend.src.backend.router_patient.pydantic.schemas import PatientInfoRequest
 
 # Router per la gestione dei profili paziente
 router_patient_profile = APIRouter()
@@ -284,7 +286,7 @@ async def edit_profile(data: ModifyProfileRequest):
         raise HTTPException(status_code=500, detail=f"Errore durante l'aggiornamento: {str(e)}")
 
 @router_patient_profile.get("/get_last_visit")
-async def get_last_visit(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+async def get_last_visit(data: PatientInfoRequest = Depends()):
     """
     Recupera la data dell'ultima visita del paziente.
     
@@ -306,12 +308,13 @@ async def get_last_visit(patient_id: int = Query(..., gt=0, description="ID del 
         SELECT MAX(date_time) FROM appointment
         WHERE patient_id = %s AND status IN ('completed', 'booked', 'cancelled')
         """
-        result = execute_query(query, (patient_id,))
+        result = execute_query(query, (data.patient_id,))
         if not result or not result[0][0]:
             return {"last_visit": 'N/A'}
         return {"last_visit": result[0][0]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore durante il recupero dell'ultima visita: {str(e)}")
+    
     
 @router_patient_profile.post("/update_health_data")
 async def update_health_data(data: HealthDataInput):
@@ -359,7 +362,7 @@ async def update_health_data(data: HealthDataInput):
         )
     
 @router_patient_profile.get("/get_health_data")
-async def get_health_data(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+async def get_health_data(data: PatientInfoRequest = Depends()):
     """
     Recupera i dati sanitari di un paziente.
     
@@ -381,7 +384,7 @@ async def get_health_data(patient_id: int = Query(..., gt=0, description="ID del
         FROM patient
         WHERE id = %s
         """
-        result = execute_query(query, (patient_id,))
+        result = execute_query(query, (data.patient_id,))
         if not result:
             raise HTTPException(status_code=404, detail="Dati sanitari non trovati")
         
@@ -394,8 +397,10 @@ async def get_health_data(patient_id: int = Query(..., gt=0, description="ID del
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore durante il recupero dei dati sanitari: {str(e)}")
     
+
+
 @router_patient_profile.get("/get_stats")
-async def get_stats(patient_id: int = Query(..., gt=0, description="ID del paziente")):
+async def get_stats(data: PatientInfoRequest = Depends()):
     """
     Recupera le statistiche complete di un paziente.
     
@@ -423,7 +428,7 @@ async def get_stats(patient_id: int = Query(..., gt=0, description="ID del pazie
             FROM appointment
             WHERE patient_id = %s;
         """
-        result = execute_query(query, (patient_id,))
+        result = execute_query(query, (data.patient_id,))
         if not result:
             return {
                 "total_appointments": 0,
