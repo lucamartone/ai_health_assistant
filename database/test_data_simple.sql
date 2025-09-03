@@ -1,10 +1,5 @@
 -- Dati di test semplici per MediFlow
 
--- Account Admin (creato automaticamente)
-INSERT INTO account (name, surname, email, password, sex, birth_date, role, created_at) VALUES
-('Admin', 'Sistema', 'admin@mediflow.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'M', '1980-01-01', 'admin', '2020-01-01')
-ON CONFLICT (email) DO NOTHING;
-
 -- Account
 INSERT INTO account (name, surname, email, password, sex, birth_date, role, created_at) VALUES
 ('Dottore', 'Test', 'dottore@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'M', '1980-01-01', 'doctor', '2020-01-01'),
@@ -15,6 +10,11 @@ INSERT INTO account (name, surname, email, password, sex, birth_date, role, crea
 ('Sofia', 'Neri', 'sofia.neri@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'F', '1979-04-18', 'doctor', '2017-11-05'),
 ('Giulia', 'Martini', 'giulia.martini@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'F', '1995-06-12', 'patient', '2023-02-15'),
 ('Marco', 'Ferrari', 'marco.ferrari@test.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'M', '1987-09-25', 'patient', '2022-08-10')
+ON CONFLICT (email) DO NOTHING;
+
+-- Account Admin (creato automaticamente)
+INSERT INTO account (name, surname, email, password, sex, birth_date, role, created_at) VALUES
+('Admin', 'Sistema', 'admin@medflow.com', '$2b$12$wk6BXhTQuTfwNAoT4ofAO.eIdt0tTke6R3/xcpnVX.X/2DWgogvXW', 'M', '1980-01-01', 'admin', '2020-01-01')
 ON CONFLICT (email) DO NOTHING;
 
 -- Dottori con diverse specializzazioni e anni di esperienza

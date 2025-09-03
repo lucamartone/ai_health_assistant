@@ -150,15 +150,6 @@ class AccountInfo(BaseModel):
     """
     account_id: int                          # ID univoco dell'account
 
-class RefreshRequest(BaseModel):
-    """
-    Modello per le richieste di refresh token.
-    
-    Definisce il token di refresh necessario
-    per ottenere un nuovo access token.
-    """
-    refresh_token: str = Cookie(None)                      # Token di refresh
-
 class DoctorInfoRequest(BaseModel):
     """
     Modello per fornire l'id dottore.

@@ -79,7 +79,7 @@ async def admin_login(request: AdminLoginRequest):
     """
     try:
         # Credenziali hardcoded per semplicità (da sostituire in produzione)
-        if request.email == "admin@medsflow.com" and request.password == "admin123":
+        if request.email == "admin@medflow.com" and request.password == "admin123":
             return {
                 "message": "Login admin riuscito",
                 "admin": {

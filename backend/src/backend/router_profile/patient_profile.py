@@ -13,7 +13,7 @@ Il sistema implementa misure di sicurezza avanzate
 incluso il blocco temporaneo degli account dopo tentativi falliti.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Response, Query
+from fastapi import APIRouter, Depends, HTTPException, Response
 from backend.router_profile.pydantic.schemas import RegisterRequest, LoginRequest, ModifyProfileRequest, HealthDataInput, PatientInfoRequest
 from backend.router_profile.account_profile import validate_password
 from backend.connection import execute_query
