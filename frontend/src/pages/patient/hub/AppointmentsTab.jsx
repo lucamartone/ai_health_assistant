@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { convertStatus } from '../../../services/booking/aux_book';
 import { getUpcomingAppointments, getPastAppointments } from '../../../services/booking/appointments';
 
 function AppointmentsTab() {
@@ -114,7 +115,7 @@ function AppointmentsTab() {
                               <p className="text-sm text-gray-500">Ore: {formatTime(apt.date_time)}</p>
                               <p className="text-sm text-gray-500">Luogo: {apt.address}, {apt.city}</p>
                               <p className="text-sm text-gray-500">Prezzo: €{apt.price}</p>
-                              <p className="text-sm text-green-600 font-medium">Stato: {apt.status}</p>
+                              <p className="text-sm text-green-600 font-medium">Stato: {convertStatus(apt.status)}</p>
                             </div>
                           ))}
                         </div>

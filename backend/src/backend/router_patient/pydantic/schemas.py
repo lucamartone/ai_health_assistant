@@ -2,7 +2,7 @@
 Modelli Pydantic per la gestione dei dati dei pazienti.
 
 Questo modulo definisce tutti i modelli di dati utilizzati dalle API dei pazienti,
-inclusi modelli per appuntamenti, recensioni e richieste di prenotazione.
+inclusi modelli per appuntamenti, recensioni, prenotazioni e ricerche.
 
 I modelli garantiscono la validazione dei dati e la consistenza
 delle informazioni scambiate tra frontend e backend.
@@ -11,6 +11,10 @@ delle informazioni scambiate tra frontend e backend.
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+
+# =========================================
+# Modelli per la Gestione Appuntamenti
+# =========================================
 
 class Appointment(BaseModel):
     """
@@ -32,6 +36,10 @@ class Appointment(BaseModel):
     status: str                       # Stato dell'appuntamento (waiting, booked, completed)
     created_at: datetime              # Data di creazione dell'appuntamento
 
+# =========================================
+# Modelli per Recensioni
+# =========================================
+
 class ReviewRequest(BaseModel):
     """
     Modello per le richieste di recensione.
@@ -41,7 +49,11 @@ class ReviewRequest(BaseModel):
     """
     appointment_id: int               # ID dell'appuntamento da recensire
     stars: int                        # Rating in stelle (1-5)
-    report: Optional[str] = None     # Commento opzionale della recensione
+    report: Optional[str] = None      # Commento opzionale della recensione
+
+# =========================================
+# Modelli per Prenotazioni e Cancellazioni
+# =========================================
 
 class BookAppointmentRequest(BaseModel):
     """
@@ -64,6 +76,10 @@ class CancelAppointmentRequest(BaseModel):
     patient_id: int                   # ID del paziente che cancella
     reason: Optional[str] = None      # Motivo opzionale della cancellazione
 
+# =========================================
+# Modelli per Informazioni Paziente
+# =========================================
+
 class PatientInfoRequest(BaseModel):
     """
     Modello per le richieste di informazioni sul paziente.
@@ -73,6 +89,10 @@ class PatientInfoRequest(BaseModel):
     """
     patient_id: int                   # ID del paziente
 
+# =========================================
+# Modelli per Disponibilità Dottori
+# =========================================
+
 class DoctorSlotsRequest(BaseModel):
     """
     Modello per le richieste di disponibilità degli slot del dottore.
@@ -80,10 +100,14 @@ class DoctorSlotsRequest(BaseModel):
     Definisce i dati necessari per recuperare
     gli slot disponibili per un dottore specifico.
     """
-    doctor_id: int
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    limit: Optional[int] = 50
+    doctor_id: int                    # ID del dottore
+    start_date: Optional[datetime] = None  # Finestra temporale (inizio)
+    end_date: Optional[datetime] = None    # Finestra temporale (fine)
+    limit: Optional[int] = 50              # Numero massimo di risultati
+
+# =========================================
+# Modelli per Limitazioni e Ricerca Dottori
+# =========================================
 
 class LimitInfo(BaseModel):
     """
@@ -92,7 +116,7 @@ class LimitInfo(BaseModel):
     Definisce i dati necessari per applicare
     limiti ai risultati delle query.
     """
-    limit: Optional[int]
+    limit: Optional[int]              # Numero massimo di risultati
 
 class DoctorQueryRequest(BaseModel):
     """
@@ -101,11 +125,11 @@ class DoctorQueryRequest(BaseModel):
     Definisce i dati necessari per cercare dottori
     in base a diversi criteri.
     """
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    radius_km: Optional[float] = 10.0
-    specialization: Optional[str] = None
-    min_price: Optional[float] = None
-    max_price: Optional[float] = None
-    sort_by: Optional[str] = None
-    limit: Optional[int] = 50
+    latitude: Optional[float] = None       # Latitudine per calcolo distanza
+    longitude: Optional[float] = None      # Longitudine per calcolo distanza
+    radius_km: Optional[float] = 10.0      # Raggio di ricerca in km
+    specialization: Optional[str] = None   # Specializzazione richiesta
+    min_price: Optional[float] = None      # Prezzo minimo
+    max_price: Optional[float] = None      # Prezzo massimo
+    sort_by: Optional[str] = None          # Campo di ordinamento
+    limit: Optional[int] = 50              # Numero massimo di risultati

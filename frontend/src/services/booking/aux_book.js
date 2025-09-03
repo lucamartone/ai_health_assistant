@@ -42,3 +42,16 @@ export function getNewDate(currentDate, delta) {
   newDate.setDate(newDate.getDate() + delta);
   return newDate;
 }
+
+export function convertStatus(status) {
+  switch (status) {
+    case 'booked':
+      return 'Prenotato';
+    case 'cancelled':
+      return 'Annullato';
+    case 'completed':
+      return 'Completato';
+    default:
+      return 'Stato Sconosciuto';
+  }
+}

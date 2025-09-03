@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { doctorGetHistory } from '../../../services/booking/appointments';
+import { convertStatus } from '../../../services/booking/aux_book';
 import { useAuth } from '../../../contexts/AuthContext';
 
 function HistoryTab() {
@@ -67,7 +68,7 @@ function HistoryTab() {
                 <p className="text-sm text-gray-500">Prezzo: €{apt.price}</p>
               </div>
               <span className="px-3 py-1 text-sm rounded-full font-medium bg-blue-100 text-blue-800">
-                {apt.status}
+                {convertStatus(apt.status)}
               </span>
             </div>
           </div>

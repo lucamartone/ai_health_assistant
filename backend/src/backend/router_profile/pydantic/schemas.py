@@ -8,12 +8,16 @@ I modelli garantiscono la validazione dei dati e la consistenza
 delle informazioni scambiate tra frontend e backend.
 """
 
-from fastapi.params import Cookie, Depends
+from fastapi.params import Depends
 from pydantic import BaseModel, EmailStr
 from typing import List, Literal, Optional
 from datetime import date
 
 from backend.router_profile.cookies_login import get_current_account
+
+# =========================================
+# Modelli per Dati di Localizzazione
+# =========================================
 
 class LocationData(BaseModel):
     """
@@ -26,6 +30,10 @@ class LocationData(BaseModel):
     latitude: Optional[float]       # Coordinate di latitudine
     longitude: Optional[float]      # Coordinate di longitudine
 
+# =========================================
+# Modelli per Registrazione ed Eliminazione
+# =========================================
+
 class RegisterRequest(BaseModel):
     """
     Modello per le richieste di registrazione generiche.
@@ -37,7 +45,7 @@ class RegisterRequest(BaseModel):
     surname: str                    # Cognome dell'utente
     email: EmailStr                 # Email dell'utente (validata)
     password: str                   # Password per l'account
-    sex: Literal['M', 'F']         # Sesso (M o F)
+    sex: Literal['M', 'F']          # Sesso (M o F)
     birth_date: Optional[date] = None  # Data di nascita opzionale
 
 class RegisterDoctorRequest(BaseModel):
@@ -51,7 +59,7 @@ class RegisterDoctorRequest(BaseModel):
     surname: str                    # Cognome del dottore
     email: EmailStr                 # Email del dottore (validata)
     password: str                   # Password per l'account
-    sex: Literal['M', 'F']         # Sesso (M o F)
+    sex: Literal['M', 'F']          # Sesso (M o F)
     specialization: str             # Specializzazione medica
     locations: List[LocationData]   # Lista delle sedi di lavoro
 
@@ -61,7 +69,11 @@ class DeleteRequest(BaseModel):
     """
     email: EmailStr                   # Email dell'elemento da eliminare
     password: str                     # Password per confermare l'eliminazione
-    current_account: dict = Depends(get_current_account)  # Account attualmente autenticato
+    current_account: dict = Depends(get_current_account)  # Account autenticato
+
+# =========================================
+# Modelli per Autenticazione e Sicurezza
+# =========================================
 
 class LoginRequest(BaseModel):
     """
@@ -84,33 +96,6 @@ class ChangePasswordRequest(BaseModel):
     new_password: str               # Nuova password desiderata
     account_email: EmailStr         # Email dell'account da modificare
 
-class ModifyProfileRequest(BaseModel):
-    """
-    Modello per le richieste di modifica del profilo.
-    
-    Definisce i campi modificabili del profilo utente,
-    con supporto per informazioni specifiche dei dottori.
-    """
-    name: str                       # Nome aggiornato
-    surname: str                    # Cognome aggiornato
-    phone: Optional[str] = None     # Numero di telefono opzionale
-    email: EmailStr                 # Email aggiornata (validata)
-    specialization: Optional[str] = None  # Specializzazione (per dottori)
-    addresses: Optional[List[LocationData]] = None  # Sedi aggiornate (per dottori)
-    profile_img: Optional[str] = None  # Immagine del profilo in base64
-
-class HealthDataInput(BaseModel):
-    """
-    Modello per l'inserimento di dati sanitari dei pazienti.
-    
-    Definisce i dati sanitari opzionali che possono
-    essere associati a un profilo paziente.
-    """
-    patient_id: int                 # ID del paziente
-    blood_type: Optional[str] = None        # Gruppo sanguigno
-    allergies: Optional[List[str]] = None   # Lista delle allergie
-    chronic_conditions: Optional[List[str]] = None  # Condizioni croniche
-
 class ResetPasswordRequest(BaseModel):
     """
     Modello per le richieste di reset password.
@@ -130,6 +115,45 @@ class PreResetRequest(BaseModel):
     """
     email: EmailStr                 # Email dell'utente
 
+# =========================================
+# Modelli per Modifica Profilo
+# =========================================
+
+class ModifyProfileRequest(BaseModel):
+    """
+    Modello per le richieste di modifica del profilo.
+    
+    Definisce i campi modificabili del profilo utente,
+    con supporto per informazioni specifiche dei dottori.
+    """
+    name: str                              # Nome aggiornato
+    surname: str                           # Cognome aggiornato
+    phone: Optional[str] = None            # Numero di telefono opzionale
+    email: EmailStr                        # Email aggiornata (validata)
+    specialization: Optional[str] = None   # Specializzazione (per dottori)
+    addresses: Optional[List[LocationData]] = None  # Sedi aggiornate (per dottori)
+    profile_img: Optional[str] = None      # Immagine profilo in base64
+
+# =========================================
+# Modelli per Dati Sanitari
+# =========================================
+
+class HealthDataInput(BaseModel):
+    """
+    Modello per l'inserimento di dati sanitari dei pazienti.
+    
+    Definisce i dati sanitari opzionali che possono
+    essere associati a un profilo paziente.
+    """
+    patient_id: int                        # ID del paziente
+    blood_type: Optional[str] = None       # Gruppo sanguigno
+    allergies: Optional[List[str]] = None  # Lista delle allergie
+    chronic_conditions: Optional[List[str]] = None  # Condizioni croniche
+
+# =========================================
+# Modelli per Preferenze e Info Account
+# =========================================
+
 class PreferencesPayload(BaseModel):
     """
     Modello per le preferenze dell'utente.
@@ -145,21 +169,22 @@ class AccountInfo(BaseModel):
     """
     Modello per le informazioni dell'account.
     
-    Definisce l'ID associato
-    a un account utente.
+    Definisce l'ID associato a un account utente.
     """
-    account_id: int                          # ID univoco dell'account
+    account_id: int                         # ID univoco dell'account
+
+# =========================================
+# Modelli per Richieste di Identificazione
+# =========================================
 
 class DoctorInfoRequest(BaseModel):
     """
-    Modello per fornire l'id dottore.
-    
+    Modello per fornire l'ID di un dottore.
     """
     doctor_id: int                          # ID del dottore
 
 class PatientInfoRequest(BaseModel):
     """
-    Modello per fornire l'id paziente.
-    
+    Modello per fornire l'ID di un paziente.
     """
-    patient_id: int                          # ID del dottore                     # ID del paziente
+    patient_id: int                         # ID del paziente
