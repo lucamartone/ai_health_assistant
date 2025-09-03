@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getAllDoctors, getRankedDoctors, bookAppointment } from '../../services/booking/book';
 import { getCoordinatesFromAddress } from '../../services/maps/maps';
 import BookingCalendar from '../../components/BookingCalendar';
@@ -28,6 +28,7 @@ const SORT_OPTIONS = [
 
 function Book() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [doctors, setDoctors] = useState([]);
   const [search, setSearch] = useState('');
   const [specialization, setSpecialization] = useState('');
@@ -388,6 +389,7 @@ function Book() {
         appointmentDetails={appointmentDetails}
         onClose={() => {
           setAppointmentDetails(null);
+          navigate(0);
         }}
       />
     </motion.div>

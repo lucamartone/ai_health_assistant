@@ -20,7 +20,7 @@ from backend.router_patient.pydantic.schemas import Appointment, ReviewRequest, 
 router_reviews = APIRouter()
 
 @router_reviews.get("/appointments_to_rank")
-async def get_appointments_to_rank(data: PatientInfoRequest = Depends()):
+async def appointments_to_rank(data: PatientInfoRequest = Depends()):
     """
     Recupera gli appuntamenti completati ma non ancora valutati da un paziente.
     
@@ -90,23 +90,6 @@ async def get_appointments_to_rank(data: PatientInfoRequest = Depends()):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Errore nel recupero degli appuntamenti da valutare: {str(e)}")
 
-
-# Alias per compatibilità con il frontend esistente
-@router_reviews.get("/get_to_rank_appointments")
-async def get_to_rank_appointments(data: PatientInfoRequest = Depends()):
-    """
-    Alias per get_appointments_to_rank per compatibilità con il frontend.
-    
-    Questa funzione mantiene la compatibilità con il frontend esistente
-    utilizzando un nome di endpoint diverso ma la stessa logica.
-    
-    Args:
-        id_patient: ID del paziente per cui recuperare gli appuntamenti da valutare
-        
-    Returns:
-        dict: Dizionario contenente la lista degli appuntamenti da valutare
-    """
-    return await get_appointments_to_rank(data.id_patient)
 
 @router_reviews.post("/review_appointment")
 async def review_appointment(data: ReviewRequest):

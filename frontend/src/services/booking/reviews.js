@@ -1,7 +1,7 @@
 import api from '../../hooks/useApi';
 
-export async function getToRankAppointments(id_patient){
-    return await api.get(`/patient/reviews/get_to_rank_appointments?id_patient=${id_patient}`);
+export async function getToRankAppointments(patient_id){
+    return await api.get(`/patient/reviews/appointments_to_rank?patient_id=${patient_id}`);
 };
 
 export async function reviewAppointment(appointment_id, stars, report){

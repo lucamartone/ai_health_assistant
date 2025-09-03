@@ -222,7 +222,9 @@ def generate_slots(payload: BulkGenerateSlots):
             if current_day.weekday() in payload.weekdays:
                 # Parsing degli orari di inizio e fine
                 start_hour, start_minute = map(int, payload.start_time.split(':'))
+                start_hour -= 2
                 end_hour, end_minute = map(int, payload.end_time.split(':'))
+                end_hour -= 2
                 start_dt = datetime.combine(current_day, time(start_hour, start_minute))
                 end_dt = datetime.combine(current_day, time(end_hour, end_minute))
 
