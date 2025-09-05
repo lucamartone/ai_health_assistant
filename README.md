@@ -1,6 +1,20 @@
 
 **MedFlow** - Assistente Sanitario Intelligente
 
+## Panoramica
+
+MedFlow è una piattaforma web full‑stack per la gestione dell’assistenza sanitaria che mette in contatto pazienti, medici e amministratori in un unico ecosistema. L’app integra funzionalità di prenotazione visite, cartelle cliniche, gestione dei profili, recensioni e una chat intelligente alimentata da modelli LLM (Ollama + llama3.2) per supportare pazienti e clinici con risposte contestuali e suggerimenti operativi. Il progetto è containerizzato (Docker) e pronto all’uso in locale o in ambienti cloud.
+
+- **A chi è rivolto**: pazienti che desiderano prenotare e gestire visite; medici che vogliono amministrare agenda, profilo e cartelle cliniche; amministratori che supervisionano il sistema e approvano le richieste di registrazione dei medici.
+- **Cosa offre**:
+  - Prenotazione e gestione appuntamenti end‑to‑end
+  - Profili completi per pazienti e medici, con preferenze e sicurezza account
+  - Cartelle cliniche e storico sanitario
+  - Recensioni e feedback dei pazienti
+  - Chat AI integrata per assistenza e triage informativo
+- **Architettura**: frontend React, backend FastAPI, database PostgreSQL, modelli LLM via Ollama; orchestrazione con Docker Compose.
+- **Nota sull’uso**: la chat AI fornisce supporto informativo e non sostituisce il parere medico professionale.
+
 
 
 # Setup su Nuova Macchina
