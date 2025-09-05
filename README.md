@@ -140,8 +140,7 @@ Se tutto funziona correttamente:
 
 1. Tutti i container sono "Up"
 2. Ollama è "healthy"
-3. Il test setup passa tutti i controlli
-4. L'applicazione è accessibile su http://localhost
+3. L'applicazione è accessibile su http://localhost
 
 **Congratulazioni!** Il tuo assistente sanitario AI è pronto per l'uso!
 
