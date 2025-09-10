@@ -2,6 +2,9 @@
 CREATE ROLE admin WITH LOGIN PASSWORD 'userpwd';
 GRANT ALL PRIVILEGES ON DATABASE "HealthDB" TO admin;
 
+-- Set timezone
+-- ALTER DATABASE "HealthDB" SET TIMEZONE TO 'Europe/Rome';
+
 -- Tabella account
 CREATE TABLE account (
     id SERIAL PRIMARY KEY,
